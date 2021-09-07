@@ -10,14 +10,14 @@
 		"Other"
 	],
 	"activationEvents": [
-        "onCommand:book-mark-demo.helloWorld"
+		"onStartupFinished"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
 		"commands": [
 			{
-				"command": "book-mark-demo.helloWorld",
-				"title": "Hello World"
+				"command": "book-mark-demo.toggleBookmark",
+				"title": "book-mark-demo: toggle bookmark"
 			}
 		]
 	},
