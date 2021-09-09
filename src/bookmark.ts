@@ -3,6 +3,7 @@
  */
 
 import {SerializableBookmark} from './serializable_bookmark';
+import {Group} from './group';
 
 export class Bookmark {
     fsPath: string;
@@ -12,6 +13,7 @@ export class Bookmark {
     lineText: string;
     failedJump: boolean;
     isLineNumberChanged: boolean;
+    group: Group;
 
     constructor(
         fsPath: string,
@@ -19,6 +21,7 @@ export class Bookmark {
         characterNumber: number,
         label: string | undefined,
         lineText: string,
+        group: Group,
     ) {
         this.fsPath = fsPath;
         this.lineNumber = lineNumber;
@@ -27,10 +30,12 @@ export class Bookmark {
         this.lineText = lineText;
         this.failedJump = false;
         this.isLineNumberChanged = false;
+        this.group = group;
     }
 
     public static fromSerializableBookMark(
         serialized: SerializableBookmark,
+        groupGetter: (groupName: string) => Group
     ): Bookmark {
         return new Bookmark(
             serialized.fsPath,
@@ -38,6 +43,11 @@ export class Bookmark {
             serialized.characterNumber,
             serialized.label,
             serialized.lineText,
+            groupGetter(serialized.groupName)
         );
+    }
+
+    public getDecoration() {
+        return this.group.getDecoration();
     }
 }

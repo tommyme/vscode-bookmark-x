@@ -18,6 +18,10 @@
 			{
 				"command": "book-mark-demo.toggleBookmark",
 				"title": "book-mark-demo: toggle bookmark"
+			},
+			{
+				"command": "book-mark-demo.addGroup",
+				"title": "book-mark-demo: add group"
 			}
 		]
 	},
