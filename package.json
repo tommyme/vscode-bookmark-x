@@ -22,6 +22,15 @@
 			{
 				"command": "book-mark-demo.addGroup",
 				"title": "book-mark-demo: add group"
+			},
+			{
+				"command": "book-mark-demo.activateGroup",
+				"title": "Activate bookmark group",
+				"icon": "$(eye)"
+			},
+			{
+				"command": "book-mark-demo.jumpToBookmark",
+				"title": "Jump to book mark"
 			}
 		],
 		"viewsContainers": {
@@ -41,6 +50,25 @@
 					"id": "bookmarksByGroup",
 					"name": "By Group",
 					"icon": "$(bookmark)"
+				}
+			]
+		},
+		"menus": {
+			"view/item/context": [
+			  {
+				"command": "book-mark-demo.activateGroup",
+				"when": "view == bookmarksByGroup && viewItem == group",
+				"group": "inline"
+			  }
+			],
+			"commandPalette": [
+				{
+					"command": "book-mark-demo.jumpToBookmark",
+					"when": "false"
+				},
+				{
+					"command": "book-mark-demo.activateGroup",
+					"when": "false"
 				}
 			]
 		}

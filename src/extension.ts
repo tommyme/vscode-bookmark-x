@@ -1,6 +1,8 @@
 import * as vscode from 'vscode';
 import {Main} from './main';
 import {BookmarkTreeView} from './bookmark_tree_view';
+import {BookmarkTreeItem} from './bookmark_tree_item';
+import {Bookmark} from './bookmark';
 
 export function activate(context: vscode.ExtensionContext) {
 	let treeView: BookmarkTreeView = new BookmarkTreeView();
@@ -17,6 +19,17 @@ export function activate(context: vscode.ExtensionContext) {
 	disposable = vscode.commands.registerCommand(
 		'book-mark-demo.addGroup', () => main.actionAddGroup()
 	);
+	context.subscriptions.push(disposable);
+
+	disposable = vscode.commands.registerCommand(
+		'book-mark-demo.activateGroup', (item: BookmarkTreeItem) => treeView.activateGroup(item)
+	);
+	context.subscriptions.push(disposable);
+
+	disposable = vscode.commands.registerCommand(
+		'book-mark-demo.jumpToBookmark', (bookmark: Bookmark) => main.jumpToBookmark(bookmark)
+	);
+
 	context.subscriptions.push(disposable);
 
 	treeView.init(main);

@@ -4,6 +4,7 @@ import {
     TextEditor,
     TextEditorDecorationType,
     window,
+    Uri
 } from 'vscode';
 import {Bookmark} from './bookmark';
 import {Group} from './group';
@@ -200,6 +201,11 @@ export class Main {
         return this.activeGroup;
     }
 
+    public setActiveGroup(groupName: string) {
+        this.activateGroup(groupName);
+        this.saveState();
+    }
+
     // 监听标签更新的时机
     private handleGroupDecorationUpdated() {
         this.updateDecorations();
@@ -303,5 +309,16 @@ export class Main {
     // 初始化文件列表数据
     public getTreeDataProviderByFile() {
         return new BookmarkTreeDataProvider(this.groups, this.bookmarks, false);
+    }
+
+    public jumpToBookmark(bookmark: Bookmark,) {
+        window.showTextDocument(Uri.file(bookmark.fsPath), {
+            selection: new Range(
+                bookmark.lineNumber,
+                bookmark.characterNumber,
+                bookmark.lineNumber,
+                bookmark.characterNumber
+            )
+        });
     }
 }

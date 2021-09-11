@@ -24,6 +24,11 @@ export class BookmarkTreeItem extends TreeItem {
         result.iconPath = bookmark.group.decorationSvg;
         result.base = bookmark;
         result.tooltip = workspace.asRelativePath(bookmark.fsPath) + ': ' + label;
+        result.command = {
+            "title": "jump to bookmark",
+            "command": "book-mark-demo.jumpToBookmark",
+            "arguments": [bookmark]
+        };
         return result;
     }
 

@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import {Main} from './main';
+import {BookmarkTreeItem} from './bookmark_tree_item';
 
 export class BookmarkTreeView {
 
@@ -30,5 +31,15 @@ export class BookmarkTreeView {
         vscode.window.createTreeView('bookmarksByFile', {
             treeDataProvider: this.treeDataProviderByFile
         });
+    }
+
+    public activateGroup(treeItem: BookmarkTreeItem) {
+        const group = treeItem.getBaseGroup();
+        const activeGroup = this.main!.getActiveGroup();
+        if (group === null || activeGroup.name === group.name) {
+            return;
+        }
+        vscode.window.showInformationMessage(`切换至${group.name}`);
+        this.main!.setActiveGroup(group.name);
     }
 }
