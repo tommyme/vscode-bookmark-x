@@ -32,9 +32,9 @@ export class BookmarkTreeItem extends TreeItem {
         return result;
     }
 
-    static fromGroup(group: Group): BookmarkTreeItem {
+    static fromGroup(group: Group, isActiveGroup: boolean): BookmarkTreeItem {
         const label = group.name;
-        const result = new BookmarkTreeItem(label, TreeItemCollapsibleState.Expanded);
+        const result = new BookmarkTreeItem(label, isActiveGroup ?TreeItemCollapsibleState.Expanded : TreeItemCollapsibleState.Collapsed);
         result.contextValue = 'group';
         result.iconPath = group.decorationSvg;
         result.base = group;

@@ -20,8 +20,16 @@
 				"title": "book-mark-demo: toggle bookmark"
 			},
 			{
+				"command": "book-mark-demo.toggleLabeledBookmark",
+				"title": "book-mark-demo: toggle label bookmark"
+			},
+			{
 				"command": "book-mark-demo.addGroup",
 				"title": "book-mark-demo: add group"
+			},
+			{
+				"command": "book-mark-demo.clearData",
+				"title": "book-mark-demo: clear data"
 			},
 			{
 				"command": "book-mark-demo.activateGroup",

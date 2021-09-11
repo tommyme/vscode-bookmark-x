@@ -50,4 +50,10 @@ export class Bookmark {
     public getDecoration() {
         return this.group.getDecoration();
     }
+
+    public static sortByLocation(a: Bookmark, b: Bookmark): number {
+        return a.fsPath.localeCompare(b.fsPath)
+            || (a.lineNumber - b.lineNumber)
+            || (a.characterNumber - b.characterNumber);
+    }
 }

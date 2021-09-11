@@ -39,4 +39,8 @@ export class Group {
     public getDecoration() {
         return this.decoration;
     }
+
+    public static sortByName(a: Group, b: Group): number {
+        return a.name.localeCompare(b.name);
+    }
 }

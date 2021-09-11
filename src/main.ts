@@ -70,6 +70,7 @@ export class Main {
             for (let i = 0; i < serializedGroups.length; i++) {
                 this.addNewGroup(Group.fromSerializableGroup(serializedGroups[i]));
             }
+            this.groups.sort(Group.sortByName);
         }
 
         // 初始化标签
@@ -77,6 +78,7 @@ export class Main {
             for (let i = 0; i < serializedBookmarks.length; i++) {
                 const serializedBookmark = Bookmark.fromSerializableBookMark(serializedBookmarks[i], this.getGroupByName.bind(this)); // 反序列化数据
                 this.bookmarks.push(serializedBookmark);
+                this.bookmarks.sort(Bookmark.sortByLocation);
             }
         }
 
@@ -105,6 +107,54 @@ export class Main {
                 this.activeGroup,
             );
         }
+    }
+
+    public editorActionToggleLabeledBookmark(textEditor: TextEditor) {
+        if (textEditor.selections.length === 0) {
+            return;
+        }
+        
+        const fsPath = textEditor.document.uri.fsPath;
+        const lineNumber = textEditor.selection.start.line;
+
+        // 获取已存在的标签
+        const existingBookmark = this.getExistingBookmarks(fsPath).find((bookmark) => {
+            return bookmark.lineNumber === lineNumber && this.activeGroup.getDecoration() === bookmark.getDecoration();
+        });
+
+        if (typeof existingBookmark !== "undefined") {
+            this.deleteBookmark(existingBookmark);
+            this.saveState();
+            this.updateDecorations();
+            return;
+        }
+
+        const selectedText = textEditor.document.getText(textEditor.selection).trim();
+
+        window.showInputBox({
+            placeHolder: '请输入标签文本',
+            value: selectedText,
+            valueSelection: [0, selectedText.length],
+        }).then((label) => {
+            if (label !== '') {
+                const characterNumber = textEditor.selection.start.character;
+                const lineText = textEditor.document.lineAt(lineNumber).text.trim();
+
+                const bookmark = new Bookmark(
+                    fsPath,
+                    lineNumber,
+                    characterNumber,
+                    label,
+                    lineText,
+                    this.activeGroup
+                );
+                this.bookmarks.push(bookmark);
+                this.bookmarks.sort(Bookmark.sortByLocation);
+            }
+
+            this.saveState();
+            this.updateDecorations();
+        });
     }
 
     // 切换标签
@@ -163,6 +213,7 @@ export class Main {
         group.onGroupDecorationUpdated(this.handleGroupDecorationUpdated.bind(this));
         group.initDecorations();
         this.groups.push(group);
+        this.groups.sort(Group.sortByName);
     }
 
     // 激活分组
@@ -303,12 +354,12 @@ export class Main {
 
     // 初始化分组列表数据
     public getTreeDataProviderByGroup() {
-        return new BookmarkTreeDataProvider(this.groups, this.bookmarks, true);
+        return new BookmarkTreeDataProvider(this.groups, this.bookmarks, this.getActiveGroup.bind(this), true);
     }
 
     // 初始化文件列表数据
     public getTreeDataProviderByFile() {
-        return new BookmarkTreeDataProvider(this.groups, this.bookmarks, false);
+        return new BookmarkTreeDataProvider(this.groups, this.bookmarks, this.getActiveGroup.bind(this), false);
     }
 
     public jumpToBookmark(bookmark: Bookmark,) {

@@ -15,6 +15,12 @@ export function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(disposable);
 
+	disposable = vscode.commands.registerTextEditorCommand('book-mark-demo.toggleLabeledBookmark', (textEditor) => {
+		main.editorActionToggleLabeledBookmark(textEditor);
+	});
+
+	context.subscriptions.push(disposable);
+
 	// 添加分组的命令
 	disposable = vscode.commands.registerCommand(
 		'book-mark-demo.addGroup', () => main.actionAddGroup()

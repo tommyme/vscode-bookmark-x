@@ -9,12 +9,14 @@ export class BookmarkTreeDataProvider implements TreeDataProvider<BookmarkTreeIt
     private bookmarks: Array<Bookmark>;
     private byGroup: boolean;
     private changeEmitter = new EventEmitter<BookmarkTreeItem | undefined | null | void>();
+    private getActiveGroup: () => Group;
     readonly onDidChangeTreeData = this.changeEmitter.event;
 
-    constructor(groups: Array<Group>, bookmarks: Array<Bookmark>, byGroup: boolean) {
+    constructor(groups: Array<Group>, bookmarks: Array<Bookmark>, getActiveGroup: () => Group, byGroup: boolean) {
         this.groups = groups;
         this.bookmarks = bookmarks;
         this.byGroup = byGroup;
+        this.getActiveGroup = getActiveGroup;
     }
 
     public getTreeItem(element: BookmarkTreeItem): TreeItem {
@@ -82,7 +84,10 @@ export class BookmarkTreeDataProvider implements TreeDataProvider<BookmarkTreeIt
 
     // 渲染所有的分组
     private renderGroupViewRoot() {
-        const root = this.groups.map(group => BookmarkTreeItem.fromGroup(group));
+        const root = this.groups.map(group => {
+            const isActiveGroup = this.getActiveGroup().name === group.name;
+            return BookmarkTreeItem.fromGroup(group, isActiveGroup);
+        });
         return Promise.resolve(root);
     }
 
