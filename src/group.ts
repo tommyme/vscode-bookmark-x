@@ -1,11 +1,12 @@
 import {DecorationFactory} from './decoration_factory';
-import {TextEditorDecorationType} from 'vscode';
+import {TextEditorDecorationType, Uri} from 'vscode';
 import {SerializableGroup} from './serializable_group';
 
 export class Group {
     name: string;
     color: string;
     decoration: TextEditorDecorationType | null;
+    decorationSvg: Uri;
     groupDecorationUpdatedHandler: (group: Group) => void;
     
     constructor(
@@ -15,6 +16,7 @@ export class Group {
         this.name = name;
         this.color = color;
         this.decoration = null;
+        this.decorationSvg = DecorationFactory.decorationUri;
         this.groupDecorationUpdatedHandler = () => {};
     }
 
@@ -30,7 +32,7 @@ export class Group {
     }
 
     public async initDecorations() {
-        [this.decoration] = await DecorationFactory.create(this.color);
+        [this.decoration, this.decorationSvg] = await DecorationFactory.create(this.color);
         this.groupDecorationUpdatedHandler(this);
     }
 

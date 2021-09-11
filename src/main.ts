@@ -11,6 +11,7 @@ import {DecorationFactory} from './decoration_factory';
 import {SerializableBookmark} from './serializable_bookmark';
 import {SerializableGroup} from './serializable_group';
 import {randomColor} from './util';
+import {BookmarkTreeDataProvider} from './bookmark_tree_data_provider';
 
 export class Main {
     public readonly savedBookmarksKey = 'bookmarkDemo.bookmarks'; // 缓存标签的key
@@ -192,6 +193,10 @@ export class Main {
         return this.groups.find((group) => group.name === groupName) ?? this.activeGroup;
     }
 
+    public getActiveGroup() {
+        return this.activeGroup;
+    }
+
     // 监听标签更新的时机
     private handleGroupDecorationUpdated() {
         this.updateDecorations();
@@ -284,5 +289,15 @@ export class Main {
         return this.bookmarks.filter((bookmark) => {
             return bookmark.fsPath === fsPath;
         });
+    }
+
+    // 初始化分组列表数据
+    public getTreeDataProviderByGroup() {
+        return new BookmarkTreeDataProvider(this.groups, this.bookmarks, true);
+    }
+
+    // 初始化文件列表数据
+    public getTreeDataProviderByFile() {
+        return new BookmarkTreeDataProvider(this.groups, this.bookmarks, false);
     }
 }

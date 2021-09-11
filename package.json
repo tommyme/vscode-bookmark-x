@@ -23,7 +23,27 @@
 				"command": "book-mark-demo.addGroup",
 				"title": "book-mark-demo: add group"
 			}
-		]
+		],
+		"viewsContainers": {
+			"activitybar": [{
+				"id": "bookmarks",
+				"title": "Bookmarks",
+				"icon": "$(bookmark)"
+			}]
+		},
+		"views": {
+			"bookmarks": [{
+					"id": "bookmarksByFile",
+					"name": "By File",
+					"icon": "$(bookmark)"
+				},
+				{
+					"id": "bookmarksByGroup",
+					"name": "By Group",
+					"icon": "$(bookmark)"
+				}
+			]
+		}
 	},
 	"scripts": {
 		"vscode:prepublish": "yarn run compile",

@@ -1,7 +1,9 @@
 import * as vscode from 'vscode';
 import {Main} from './main';
+import {BookmarkTreeView} from './bookmark_tree_view';
 
 export function activate(context: vscode.ExtensionContext) {
+	let treeView: BookmarkTreeView = new BookmarkTreeView();
 	let main: Main = new Main(context);
 
 	// 切换标签的命令
@@ -16,6 +18,8 @@ export function activate(context: vscode.ExtensionContext) {
 		'book-mark-demo.addGroup', () => main.actionAddGroup()
 	);
 	context.subscriptions.push(disposable);
+
+	treeView.init(main);
 }
 
 export function deactivate() {}
