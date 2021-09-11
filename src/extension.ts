@@ -4,7 +4,7 @@ import {BookmarkTreeView} from './bookmark_tree_view';
 
 export function activate(context: vscode.ExtensionContext) {
 	let treeView: BookmarkTreeView = new BookmarkTreeView();
-	let main: Main = new Main(context);
+	let main: Main = new Main(context, treeView.refreshCallback.bind(treeView));
 
 	// 切换标签的命令
 	let disposable: vscode.Disposable = vscode.commands.registerTextEditorCommand('book-mark-demo.toggleBookmark', (textEditor) => {

@@ -20,14 +20,17 @@ export class Main {
     public readonly defaultGroupName: string;
     public readonly defaultColor: string = "#F5DC31";
 
+    private treeViewRefreshCallback = () => {};
+
     private ctx: ExtensionContext;
     private bookmarks: Array<Bookmark>;
     private groups: Array<Group>;
     private activeGroup: Group;
     private removedDecorations: Map<TextEditorDecorationType, boolean>;
 
-    constructor(ctx: ExtensionContext) {
+    constructor(ctx: ExtensionContext, treeViewRefreshCallback: () => void) {
         this.ctx = ctx;
+        this.treeViewRefreshCallback = treeViewRefreshCallback;
         this.bookmarks = new Array<Bookmark>(); // 当前所有的标签
         this.groups = new Array<Group>();
 
@@ -207,6 +210,7 @@ export class Main {
         for (let editor of window.visibleTextEditors) {
             this.updateEditorDecorations(editor);
         }
+        this.treeViewRefreshCallback();
     }
 
     // 绘制标签

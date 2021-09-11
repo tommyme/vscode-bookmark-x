@@ -8,6 +8,15 @@ export class BookmarkTreeView {
     private treeDataProviderByGroup: any = null;
     private treeDataProviderByFile: any = null;
 
+    public refreshCallback() {
+        if (this.treeDataProviderByGroup !== null) {
+            this.treeDataProviderByGroup.refresh();
+        }
+        if (this.treeDataProviderByFile !== null) {
+            this.treeDataProviderByFile.refresh();
+        }
+    }
+
     public async init(main: Main) {
         this.main = main;
 
