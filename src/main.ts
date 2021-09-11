@@ -172,7 +172,7 @@ export class Main {
 
         // 如果已存在标签，就删除
         if (existingBookmark) {
-            this.deleteBookmark(existingBookmark);
+            this.removeBookmark(existingBookmark);
         } else {
             let bookmark = new Bookmark(fsPath, lineNumber, characterNumber, undefined, lineText, group);
             this.bookmarks.push(bookmark);
@@ -183,7 +183,7 @@ export class Main {
     }
 
     // 删除标签
-    private deleteBookmark(bookmark: Bookmark) {
+    private removeBookmark(bookmark: Bookmark) {
         let index = this.bookmarks.indexOf(bookmark);
         if (index < 0) {
             return;
@@ -191,6 +191,13 @@ export class Main {
 
         this.bookmarks.splice(index, 1);
         this.handleDecorationRemoved(bookmark.getDecoration()!);
+    }
+
+    // 提供给treeView，删除标签
+    public deleteBookmark(bookmark: Bookmark) {
+        this.removeBookmark(bookmark);
+        this.updateDecorations();
+        this.saveState();
     }
 
     // 添加新分组
@@ -207,6 +214,30 @@ export class Main {
             this.activateGroup(groupName);
             this.saveState();
         });
+    }
+
+    // 提供给treeView，删除分组
+    public deleteGroups(group: Group) {
+        const wasActiveGroupDeleted = group === this.activeGroup;
+
+        this.bookmarks.filter((bookmark) => bookmark.group === group)
+            .forEach((bookmark) => {
+                this.deleteBookmark(bookmark);
+            });
+
+        let index = this.groups.indexOf(group);
+        if (index >= 0) {
+            this.groups.splice(index, 1);
+        }
+
+        if (this.groups.length === 0) {
+            this.activateGroup(this.defaultGroupName);
+        } else if (wasActiveGroupDeleted) {
+            this.activateGroup(this.groups[0].name);
+        }
+
+        this.updateDecorations();
+        this.saveState();
     }
 
     private addNewGroup(group: Group) {

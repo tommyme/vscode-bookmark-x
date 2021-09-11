@@ -37,8 +37,18 @@
 				"icon": "$(eye)"
 			},
 			{
+				"command": "book-mark-demo.deleteGroup",
+				"title": "Delete bookmark group",
+				"icon": "$(close)"
+			},
+			{
 				"command": "book-mark-demo.jumpToBookmark",
 				"title": "Jump to book mark"
+			},
+			{
+				"command": "book-mark-demo.deleteBookmark",
+				"title": "Delete bookmark",
+				"icon": "$(close)"
 			}
 		],
 		"viewsContainers": {
@@ -66,6 +76,16 @@
 			  {
 				"command": "book-mark-demo.activateGroup",
 				"when": "view == bookmarksByGroup && viewItem == group",
+				"group": "inline"
+			  },
+			  {
+				"command": "book-mark-demo.deleteGroup",
+				"when": "view == bookmarksByGroup && viewItem == group",
+				"group": "inline"
+			  },
+			  {
+				"command": "book-mark-demo.deleteBookmark",
+				"when": "viewItem == bookmark",
 				"group": "inline"
 			  }
 			],

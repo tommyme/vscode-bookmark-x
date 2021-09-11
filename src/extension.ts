@@ -32,6 +32,18 @@ export function activate(context: vscode.ExtensionContext) {
 	);
 	context.subscriptions.push(disposable);
 
+	// 通过面板-删除分组
+	disposable = vscode.commands.registerCommand(
+		'book-mark-demo.deleteGroup', (item: BookmarkTreeItem) => treeView.deleteGroup(item)
+	);
+	context.subscriptions.push(disposable);
+
+	// 通过面板-删除标签
+	disposable = vscode.commands.registerCommand(
+		'book-mark-demo.deleteBookmark', (item: BookmarkTreeItem) => treeView.deleteBookmark(item)
+	);
+	context.subscriptions.push(disposable);
+
 	disposable = vscode.commands.registerCommand(
 		'book-mark-demo.jumpToBookmark', (bookmark: Bookmark) => main.jumpToBookmark(bookmark)
 	);

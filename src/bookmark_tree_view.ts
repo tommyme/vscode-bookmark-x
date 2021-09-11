@@ -42,4 +42,15 @@ export class BookmarkTreeView {
         vscode.window.showInformationMessage(`切换至${group.name}`);
         this.main!.setActiveGroup(group.name);
     }
+
+    public deleteGroup(treeItem: BookmarkTreeItem) {
+        const group = treeItem.getBaseGroup();
+        this.main!.deleteGroups(group!);
+        vscode.window.showInformationMessage(`删除${group!.name}成功`);
+    }
+
+    public deleteBookmark(treeItem: BookmarkTreeItem) {
+        const bookmark = treeItem.getBaseBookmark();
+        this.main!.deleteBookmark(bookmark!);
+    }
 }
