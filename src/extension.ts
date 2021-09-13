@@ -9,13 +9,13 @@ export function activate(context: vscode.ExtensionContext) {
 	let main: Main = new Main(context, treeView.refreshCallback.bind(treeView));
 
 	// 切换标签的命令
-	let disposable: vscode.Disposable = vscode.commands.registerTextEditorCommand('book-mark-demo.toggleBookmark', (textEditor) => {
+	let disposable: vscode.Disposable = vscode.commands.registerTextEditorCommand('bookmark-plugin.toggleBookmark', (textEditor) => {
 		main.editorActionToggleBookmark(textEditor);
 	});
 
 	context.subscriptions.push(disposable);
 
-	disposable = vscode.commands.registerTextEditorCommand('book-mark-demo.toggleLabeledBookmark', (textEditor) => {
+	disposable = vscode.commands.registerTextEditorCommand('bookmark-plugin.toggleLabeledBookmark', (textEditor) => {
 		main.editorActionToggleLabeledBookmark(textEditor);
 	});
 
@@ -23,29 +23,29 @@ export function activate(context: vscode.ExtensionContext) {
 
 	// 添加分组的命令
 	disposable = vscode.commands.registerCommand(
-		'book-mark-demo.addGroup', () => main.actionAddGroup()
+		'bookmark-plugin.addGroup', () => main.actionAddGroup()
 	);
 	context.subscriptions.push(disposable);
 
 	disposable = vscode.commands.registerCommand(
-		'book-mark-demo.activateGroup', (item: BookmarkTreeItem) => treeView.activateGroup(item)
+		'bookmark-plugin.activateGroup', (item: BookmarkTreeItem) => treeView.activateGroup(item)
 	);
 	context.subscriptions.push(disposable);
 
 	// 通过面板-删除分组
 	disposable = vscode.commands.registerCommand(
-		'book-mark-demo.deleteGroup', (item: BookmarkTreeItem) => treeView.deleteGroup(item)
+		'bookmark-plugin.deleteGroup', (item: BookmarkTreeItem) => treeView.deleteGroup(item)
 	);
 	context.subscriptions.push(disposable);
 
 	// 通过面板-删除标签
 	disposable = vscode.commands.registerCommand(
-		'book-mark-demo.deleteBookmark', (item: BookmarkTreeItem) => treeView.deleteBookmark(item)
+		'bookmark-plugin.deleteBookmark', (item: BookmarkTreeItem) => treeView.deleteBookmark(item)
 	);
 	context.subscriptions.push(disposable);
 
 	disposable = vscode.commands.registerCommand(
-		'book-mark-demo.jumpToBookmark', (bookmark: Bookmark) => main.jumpToBookmark(bookmark)
+		'bookmark-plugin.jumpToBookmark', (bookmark: Bookmark) => main.jumpToBookmark(bookmark)
 	);
 
 	context.subscriptions.push(disposable);

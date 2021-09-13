@@ -1,8 +1,14 @@
 {
-  "name": "book-mark-demo",
-	"displayName": "book-mark-demo",
-	"description": "",
+  "name": "bookmarks-plugin",
+	"displayName": "bookmarks-plugin",
+	"description": "Bookmark plugin with grouping support",
 	"version": "0.0.1",
+	"publisher": "silentsvv",
+	"icon": "resources/bookmark.png",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/silentsvv/book_mark_plugin"
+	},
 	"engines": {
 		"vscode": "^1.59.0"
 	},
@@ -16,37 +22,37 @@
 	"contributes": {
 		"commands": [
 			{
-				"command": "book-mark-demo.toggleBookmark",
-				"title": "book-mark-demo: toggle bookmark"
+				"command": "bookmark-plugin.toggleBookmark",
+				"title": "bookmark-plugin: toggle bookmark"
 			},
 			{
-				"command": "book-mark-demo.toggleLabeledBookmark",
-				"title": "book-mark-demo: toggle label bookmark"
+				"command": "bookmark-plugin.toggleLabeledBookmark",
+				"title": "bookmark-plugin: toggle label bookmark"
 			},
 			{
-				"command": "book-mark-demo.addGroup",
-				"title": "book-mark-demo: add group"
+				"command": "bookmark-plugin.addGroup",
+				"title": "bookmark-plugin: add group"
 			},
 			{
-				"command": "book-mark-demo.clearData",
-				"title": "book-mark-demo: clear data"
+				"command": "bookmark-plugin.clearData",
+				"title": "bookmark-plugin: clear data"
 			},
 			{
-				"command": "book-mark-demo.activateGroup",
+				"command": "bookmark-plugin.activateGroup",
 				"title": "Activate bookmark group",
 				"icon": "$(eye)"
 			},
 			{
-				"command": "book-mark-demo.deleteGroup",
+				"command": "bookmark-plugin.deleteGroup",
 				"title": "Delete bookmark group",
 				"icon": "$(close)"
 			},
 			{
-				"command": "book-mark-demo.jumpToBookmark",
+				"command": "bookmark-plugin.jumpToBookmark",
 				"title": "Jump to book mark"
 			},
 			{
-				"command": "book-mark-demo.deleteBookmark",
+				"command": "bookmark-plugin.deleteBookmark",
 				"title": "Delete bookmark",
 				"icon": "$(close)"
 			}
@@ -74,28 +80,28 @@
 		"menus": {
 			"view/item/context": [
 			  {
-				"command": "book-mark-demo.activateGroup",
+				"command": "bookmark-plugin.activateGroup",
 				"when": "view == bookmarksByGroup && viewItem == group",
 				"group": "inline"
 			  },
 			  {
-				"command": "book-mark-demo.deleteGroup",
+				"command": "bookmark-plugin.deleteGroup",
 				"when": "view == bookmarksByGroup && viewItem == group",
 				"group": "inline"
 			  },
 			  {
-				"command": "book-mark-demo.deleteBookmark",
+				"command": "bookmark-plugin.deleteBookmark",
 				"when": "viewItem == bookmark",
 				"group": "inline"
 			  }
 			],
 			"commandPalette": [
 				{
-					"command": "book-mark-demo.jumpToBookmark",
+					"command": "bookmark-plugin.jumpToBookmark",
 					"when": "false"
 				},
 				{
-					"command": "book-mark-demo.activateGroup",
+					"command": "bookmark-plugin.activateGroup",
 					"when": "false"
 				}
 			]

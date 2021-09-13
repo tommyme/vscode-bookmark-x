@@ -26,7 +26,7 @@ export class BookmarkTreeItem extends TreeItem {
         result.tooltip = workspace.asRelativePath(bookmark.fsPath) + ': ' + label;
         result.command = {
             "title": "jump to bookmark",
-            "command": "book-mark-demo.jumpToBookmark",
+            "command": "bookmark-plugin.jumpToBookmark",
             "arguments": [bookmark]
         };
         return result;
