@@ -1,12 +1,12 @@
 import * as vscode from 'vscode';
-import {Main} from './main';
+import {Controller} from './main';
 import {BookmarkTreeView} from './bookmark_tree_view';
 import {BookmarkTreeItem} from './bookmark_tree_item';
 import {Bookmark} from './bookmark';
 
 export function activate(context: vscode.ExtensionContext) {
 	let treeView: BookmarkTreeView = new BookmarkTreeView();
-	let main: Main = new Main(context, treeView.refreshCallback.bind(treeView));
+	let main: Controller = new Controller(context, treeView.refreshCallback.bind(treeView));
 
 	// 切换标签的命令
 	let disposable: vscode.Disposable = vscode.commands.registerTextEditorCommand('bookmark-plugin.toggleBookmark', (textEditor) => {
@@ -47,10 +47,25 @@ export function activate(context: vscode.ExtensionContext) {
 	disposable = vscode.commands.registerCommand(
 		'bookmark-plugin.jumpToBookmark', (bookmark: Bookmark) => main.jumpToBookmark(bookmark)
 	);
+	context.subscriptions.push(disposable);
 
+	disposable = vscode.commands.registerCommand(
+		'bookmark-plugin.editBookmarkName', (item: BookmarkTreeItem) => treeView.editBookmarkLabel(item)
+	);
 	context.subscriptions.push(disposable);
 
 	treeView.init(main);
+	let activeEditor = vscode.window.activeTextEditor;
+
+	if (activeEditor) {
+		main.updateDecorations();
+	}
+	vscode.window.onDidChangeActiveTextEditor(editor => {
+		activeEditor = editor;
+		if (activeEditor) {
+			main.updateDecorations();
+		}
+	}, null, context.subscriptions);
 }
 
 export function deactivate() {}

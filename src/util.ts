@@ -1,4 +1,6 @@
-// 返回随机颜色
+/**
+ * 返回随机颜色
+ */
 function randomColor() {
     const letters = '0123456789ABCDEF';
     let color = '#';

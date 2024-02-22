@@ -10,3 +10,8 @@ Bookmark plugin with grouping support
 * bookmark-plugin: toggle bookmark
 * bookmark-plugin: toggle label bookmark
 * bookmark-plugin: add group
+
+
+- [ ] activate group 添加显示效果
+- [ ] 切换文件的时候没有渲染, 添加了新的书签之后才渲染
+- [ ] 

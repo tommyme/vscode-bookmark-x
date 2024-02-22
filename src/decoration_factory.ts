@@ -3,7 +3,7 @@
  */
 
 import * as path from 'path';
-import {Uri, TextEditorDecorationType, window, workspace} from 'vscode';
+import {Uri, TextEditorDecorationType, window, workspace, DecorationRenderOptions} from 'vscode';
 
 const svgBookmark = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32">
 <path d="M7 30 L7 8 Q7 2 13 2 L19 2 Q25 2 25 8 L25 30 L16 23 Z" fill="#888888ff" />
@@ -28,7 +28,7 @@ export class DecorationFactory {
 
         svg = svg.replace('#888888ff', color);
 
-        let fileName = `shape_${color}_.svg`;
+        let fileName = `shape_${color.slice(1)}_.svg`;
         let bytes = Uint8Array.from(svg.split('').map(c => c.charCodeAt(0)));
         let svgUri = Uri.joinPath(DecorationFactory.svgDir, fileName);
 
@@ -41,10 +41,10 @@ export class DecorationFactory {
             await workspace.fs.writeFile(svgUri, bytes);
         }
 
-        const decorationOptions = {
-            gutterIconPath: svgUri,
+        const decorationOptions: DecorationRenderOptions = {
+            gutterIconPath: svgUri.path,
             gutterIconSize: 'contain',
-            overviewRulerColor: '#' + color,
+            overviewRulerColor: color.toLowerCase(),
             isWholeLine: true,
         };
 

@@ -21,7 +21,7 @@ export class BookmarkTreeItem extends TreeItem {
         const result = new BookmarkTreeItem(label, TreeItemCollapsibleState.None);
         result.contextValue = 'bookmark';
         result.description = bookmark.lineText;
-        result.iconPath = bookmark.group.decorationSvg;
+        result.iconPath = bookmark.group.decorationSvg.path;
         result.base = bookmark;
         result.tooltip = workspace.asRelativePath(bookmark.fsPath) + ': ' + label;
         result.command = {
@@ -36,7 +36,7 @@ export class BookmarkTreeItem extends TreeItem {
         const label = group.name;
         const result = new BookmarkTreeItem(label, isActiveGroup ?TreeItemCollapsibleState.Expanded : TreeItemCollapsibleState.Collapsed);
         result.contextValue = 'group';
-        result.iconPath = group.decorationSvg;
+        result.iconPath = ThemeIcon.Folder;
         result.base = group;
         result.filterGroup = group;
         result.tooltip = group.name;

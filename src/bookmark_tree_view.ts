@@ -1,10 +1,10 @@
 import * as vscode from 'vscode';
-import {Main} from './main';
+import {Controller} from './main';
 import {BookmarkTreeItem} from './bookmark_tree_item';
 
 export class BookmarkTreeView {
 
-    private main: Main | null = null;
+    private controller: Controller | null = null;
 
     private treeDataProviderByGroup: any = null;
     private treeDataProviderByFile: any = null;
@@ -18,11 +18,11 @@ export class BookmarkTreeView {
         }
     }
 
-    public async init(main: Main) {
-        this.main = main;
+    public async init(controller: Controller) {
+        this.controller = controller;
 
-        this.treeDataProviderByGroup = this.main.getTreeDataProviderByGroup();
-        this.treeDataProviderByFile = this.main.getTreeDataProviderByFile();
+        this.treeDataProviderByGroup = this.controller.getTreeDataProviderByGroup();
+        this.treeDataProviderByFile = this.controller.getTreeDataProviderByFile();
 
         vscode.window.createTreeView('bookmarksByGroup', {
             treeDataProvider: this.treeDataProviderByGroup
@@ -35,22 +35,34 @@ export class BookmarkTreeView {
 
     public activateGroup(treeItem: BookmarkTreeItem) {
         const group = treeItem.getBaseGroup();
-        const activeGroup = this.main!.getActiveGroup();
+        const activeGroup = this.controller!.getActiveGroup();
         if (group === null || activeGroup.name === group.name) {
             return;
         }
         vscode.window.showInformationMessage(`切换至${group.name}`);
-        this.main!.setActiveGroup(group.name);
+        this.controller!.setActiveGroup(group.name);
     }
 
     public deleteGroup(treeItem: BookmarkTreeItem) {
         const group = treeItem.getBaseGroup();
-        this.main!.deleteGroups(group!);
+        this.controller!.deleteGroups(group!);
         vscode.window.showInformationMessage(`删除${group!.name}成功`);
     }
 
     public deleteBookmark(treeItem: BookmarkTreeItem) {
         const bookmark = treeItem.getBaseBookmark();
-        this.main!.deleteBookmark(bookmark!);
+        this.controller!.deleteBookmark(bookmark!);
+    }
+
+    public editBookmarkLabel(treeItem: BookmarkTreeItem) {
+        const bookmark = treeItem.getBaseBookmark();
+        vscode.window.showInputBox({
+            placeHolder: '请输入标签文本',
+        }).then((label) => {
+            if (label !== '') {
+                this.controller!.editBookmarkLabel(bookmark!, label!)
+            }
+            this.controller!.updateDecorations();
+        });        
     }
 }

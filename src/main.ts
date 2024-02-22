@@ -14,7 +14,7 @@ import {SerializableGroup} from './serializable_group';
 import {randomColor} from './util';
 import {BookmarkTreeDataProvider} from './bookmark_tree_data_provider';
 
-export class Main {
+export class Controller {
     public readonly savedBookmarksKey = 'bookmarkDemo.bookmarks'; // 缓存标签的key
     public readonly savedGroupsKey = "bookmarkDemo.groups";
     public readonly savedActiveGroupKey = "bookmarkDemo.activeGroup";
@@ -193,6 +193,19 @@ export class Main {
         this.handleDecorationRemoved(bookmark.getDecoration()!);
     }
 
+    // 编辑label
+    private _editBookmarkLabel(bookmark: Bookmark, val: string) {
+        let index = this.bookmarks.indexOf(bookmark);
+        if (index < 0) {
+            return;
+        }
+        this.bookmarks[index].label = val;
+    }
+    public editBookmarkLabel(bookmark: Bookmark, val: string) {
+        this._editBookmarkLabel(bookmark, val)
+        this.saveState()
+    }
+
     // 提供给treeView，删除标签
     public deleteBookmark(bookmark: Bookmark) {
         this.removeBookmark(bookmark);
@@ -294,7 +307,7 @@ export class Main {
     }
 
     // 更新每个页面的标签
-    private updateDecorations() {
+    public updateDecorations() {
         for (let editor of window.visibleTextEditors) {
             this.updateEditorDecorations(editor);
         }

@@ -43,6 +43,11 @@
 				"icon": "$(eye)"
 			},
 			{
+				"command": "bookmark-plugin.addSubGroup",
+				"title": "add sub group",
+				"icon": "$(add)"
+			},
+			{
 				"command": "bookmark-plugin.deleteGroup",
 				"title": "Delete bookmark group",
 				"icon": "$(close)"
@@ -52,6 +57,11 @@
 				"title": "Jump to book mark"
 			},
 			{
+				"command": "bookmark-plugin.editBookmarkName",
+				"title": "edit bookmark name",
+				"icon": "$(edit)"
+			},
+			{
 				"command": "bookmark-plugin.deleteBookmark",
 				"title": "Delete bookmark",
 				"icon": "$(close)"
@@ -59,13 +69,13 @@
 		],
 		"viewsContainers": {
 			"activitybar": [{
-				"id": "bookmarks",
-				"title": "Bookmarks",
+				"id": "bookmarks_X",
+				"title": "Bookmarks X",
 				"icon": "$(bookmark)"
 			}]
 		},
 		"views": {
-			"bookmarks": [{
+			"bookmarks_X": [{
 					"id": "bookmarksByFile",
 					"name": "By File",
 					"icon": "$(bookmark)"
@@ -85,10 +95,20 @@
 				"group": "inline"
 			  },
 			  {
+				"command": "bookmark-plugin.addSubGroup",
+				"when": "view == bookmarksByGroup && viewItem == group",
+				"group": "inline"
+			  },
+			  {
 				"command": "bookmark-plugin.deleteGroup",
 				"when": "view == bookmarksByGroup && viewItem == group",
 				"group": "inline"
 			  },
+				{
+				"command": "bookmark-plugin.editBookmarkName",
+				"when": "viewItem == bookmark",
+				"group": "inline"
+				},
 			  {
 				"command": "bookmark-plugin.deleteBookmark",
 				"when": "viewItem == bookmark",
