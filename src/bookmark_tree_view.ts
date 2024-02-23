@@ -25,11 +25,15 @@ export class BookmarkTreeView {
         this.treeDataProviderByFile = this.controller.getTreeDataProviderByFile();
 
         vscode.window.createTreeView('bookmarksByGroup', {
-            treeDataProvider: this.treeDataProviderByGroup
+            treeDataProvider: this.treeDataProviderByGroup, 
+            dragAndDropController: this.treeDataProviderByGroup,
+            showCollapseAll: true, canSelectMany: true
         });
 
         vscode.window.createTreeView('bookmarksByFile', {
-            treeDataProvider: this.treeDataProviderByFile
+            treeDataProvider: this.treeDataProviderByFile,
+            dragAndDropController: this.treeDataProviderByFile,
+            showCollapseAll: true, canSelectMany: true
         });
     }
 

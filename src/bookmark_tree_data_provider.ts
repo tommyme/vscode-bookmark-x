@@ -2,9 +2,12 @@ import {EventEmitter, TreeDataProvider, TreeItem} from 'vscode';
 import {Bookmark} from './bookmark';
 import {BookmarkTreeItem} from './bookmark_tree_item';
 import {Group} from './group';
+import * as vscode from 'vscode';
 
-export class BookmarkTreeDataProvider implements TreeDataProvider<BookmarkTreeItem> {
 
+export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<BookmarkTreeItem>, vscode.TreeDragAndDropController<BookmarkTreeItem>  {
+	dropMimeTypes = ['application/vnd.code.tree.testViewDragAndDrop'];
+	dragMimeTypes = ['text/uri-list'];
     private groups: Array<Group>;
     private bookmarks: Array<Bookmark>;
     private byGroup: boolean;
@@ -68,15 +71,18 @@ export class BookmarkTreeDataProvider implements TreeDataProvider<BookmarkTreeIt
 
     // 渲染一个分组里的所有标签
     private renderGroupViewItem(element: BookmarkTreeItem, filterGroup: Group | null) {
-        const files = this.getFiles(this.bookmarks.filter(bookmark => bookmark.group === filterGroup));
+        const bookmarksInGroup = this.bookmarks.filter(bookmark => bookmark.group === filterGroup)
+        // const files = this.getFiles();
 
         let children: Array<BookmarkTreeItem>;
 
-        if (files.length === 0) {
-            children = [BookmarkTreeItem.fromNone()];
-        } else {
-            children = files.map(fsPath => BookmarkTreeItem.fromFSPath(fsPath, filterGroup));
-        }
+        // if (files.length === 0) {
+        //     children = [BookmarkTreeItem.fromNone()];
+        // } else {
+        //     children = files.map(fsPath => BookmarkTreeItem.fromFSPath(fsPath, filterGroup));
+        // }
+
+        children = bookmarksInGroup.map(item => BookmarkTreeItem.fromBookmark(item))
 
         children.forEach(child => child.setParent(element));
         return Promise.resolve(children);
@@ -112,4 +118,13 @@ export class BookmarkTreeDataProvider implements TreeDataProvider<BookmarkTreeIt
     public refresh() {
         this.changeEmitter.fire();
     }
+    public async handleDrag(source: BookmarkTreeItem[], treeDataTransfer: vscode.DataTransfer, token: vscode.CancellationToken): Promise<void> {
+		treeDataTransfer.set('application/vnd.code.tree.testViewDragAndDrop', new vscode.DataTransferItem(source));
+	}
+    public async handleDrop(target: BookmarkTreeItem | undefined, sources: vscode.DataTransfer, token: vscode.CancellationToken): Promise<void> {
+		const transferItem = sources.get('application/vnd.code.tree.testViewDragAndDrop');
+		if (!transferItem) {
+			return;
+		}
+	}
 }

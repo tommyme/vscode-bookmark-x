@@ -9,7 +9,7 @@ export class Bookmark {
     fsPath: string;
     lineNumber: number;
     characterNumber: number;
-    label?: string;
+    label: string;
     lineText: string;
     failedJump: boolean;
     isLineNumberChanged: boolean;
@@ -19,7 +19,7 @@ export class Bookmark {
         fsPath: string,
         lineNumber: number,
         characterNumber: number,
-        label: string | undefined,
+        label: string="",
         lineText: string,
         group: Group,
     ) {
@@ -55,5 +55,16 @@ export class Bookmark {
         return a.fsPath.localeCompare(b.fsPath)
             || (a.lineNumber - b.lineNumber)
             || (a.characterNumber - b.characterNumber);
+    }
+
+    // 根据label排序
+    public static sortByName(a: Bookmark, b: Bookmark): number {
+        if (a.label > b.label) {
+            return 1
+        } else if (a.label < b.label) {
+            return -1
+        } else {
+            return 0
+        }
     }
 }

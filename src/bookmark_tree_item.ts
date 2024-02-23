@@ -17,7 +17,7 @@ export class BookmarkTreeItem extends TreeItem {
     }
 
     static fromBookmark(bookmark: Bookmark): BookmarkTreeItem {
-        const label = (bookmark.lineNumber + 1) + (typeof bookmark.label !== 'undefined' ? ': ' + bookmark.label : '');
+        const label = (typeof bookmark.label !== 'undefined' ? bookmark.label : '');
         const result = new BookmarkTreeItem(label, TreeItemCollapsibleState.None);
         result.contextValue = 'bookmark';
         result.description = bookmark.lineText;

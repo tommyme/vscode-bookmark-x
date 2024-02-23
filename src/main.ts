@@ -46,7 +46,7 @@ export class Controller {
         this.updateDecorations(); // 更新界面的标签
     }
 
-    // 保存状态
+    // 保存状态 保存三种(group bookmark active-group)
     private saveState() {
         const serializedGroups = this.groups.map(group => SerializableGroup.fromGroup(group));
         this.ctx.workspaceState.update(this.savedGroupsKey, serializedGroups);
@@ -78,8 +78,8 @@ export class Controller {
             for (let i = 0; i < serializedBookmarks.length; i++) {
                 const serializedBookmark = Bookmark.fromSerializableBookMark(serializedBookmarks[i], this.getGroupByName.bind(this)); // 反序列化数据
                 this.bookmarks.push(serializedBookmark);
-                this.bookmarks.sort(Bookmark.sortByLocation);
             }
+            this.bookmarks.sort(Bookmark.sortByName);
         }
 
         // 激活分组
@@ -203,7 +203,9 @@ export class Controller {
     }
     public editBookmarkLabel(bookmark: Bookmark, val: string) {
         this._editBookmarkLabel(bookmark, val)
+        this.bookmarks.sort(Bookmark.sortByName);
         this.saveState()
+        this.updateDecorations()
     }
 
     // 提供给treeView，删除标签
