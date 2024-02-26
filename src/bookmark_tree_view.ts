@@ -21,8 +21,8 @@ export class BookmarkTreeView {
     public async init(controller: Controller) {
         this.controller = controller;
 
-        this.treeDataProviderByGroup = this.controller.getTreeDataProviderByGroup();
-        this.treeDataProviderByFile = this.controller.getTreeDataProviderByFile();
+        this.treeDataProviderByGroup = this.controller.tprovider;
+        // this.treeDataProviderByFile = this.controller.getTreeDataProviderByFile();
 
         vscode.window.createTreeView('bookmarksByGroup', {
             treeDataProvider: this.treeDataProviderByGroup, 
@@ -30,27 +30,30 @@ export class BookmarkTreeView {
             showCollapseAll: true, canSelectMany: true
         });
 
-        vscode.window.createTreeView('bookmarksByFile', {
-            treeDataProvider: this.treeDataProviderByFile,
-            dragAndDropController: this.treeDataProviderByFile,
-            showCollapseAll: true, canSelectMany: true
-        });
+        // vscode.window.createTreeView('bookmarksByFile', {
+        //     treeDataProvider: this.treeDataProviderByFile,
+        //     dragAndDropController: this.treeDataProviderByFile,
+        //     showCollapseAll: true, canSelectMany: true
+        // });
     }
 
     public activateGroup(treeItem: BookmarkTreeItem) {
         const group = treeItem.getBaseGroup();
-        const activeGroup = this.controller!.getActiveGroup();
-        if (group === null || activeGroup.name === group.name) {
+        const activeGroup = this.controller!.activeGroup;
+        if (group === null || activeGroup.get_full_uri() === group.get_full_uri()) {
+            // switch to root group
+            this.controller!.activateGroup("")
+            vscode.window.showInformationMessage(`切换至root group`);
             return;
         }
-        vscode.window.showInformationMessage(`切换至${group.name}`);
-        this.controller!.setActiveGroup(group.name);
+        vscode.window.showInformationMessage(`切换至${group.get_full_uri()}`);
+        this.controller!.activateGroup(group.get_full_uri());
     }
 
     public deleteGroup(treeItem: BookmarkTreeItem) {
         const group = treeItem.getBaseGroup();
         this.controller!.deleteGroups(group!);
-        vscode.window.showInformationMessage(`删除${group!.name}成功`);
+        vscode.window.showInformationMessage(`删除${group!.get_full_uri()}成功`);
     }
 
     public deleteBookmark(treeItem: BookmarkTreeItem) {
@@ -63,7 +66,7 @@ export class BookmarkTreeView {
         vscode.window.showInputBox({
             placeHolder: '请输入标签文本',
         }).then((label) => {
-            if (label !== '') {
+            if (label) {
                 this.controller!.editBookmarkLabel(bookmark!, label!)
             }
             this.controller!.updateDecorations();

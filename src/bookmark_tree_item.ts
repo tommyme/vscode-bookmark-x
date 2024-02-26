@@ -1,27 +1,17 @@
-import {ThemeIcon, TreeItem, TreeItemCollapsibleState, Uri as string, workspace} from 'vscode';
-import {Bookmark} from './bookmark';
-import {Group} from './group';
+import {ThemeColor, ThemeIcon, TreeItem, TreeItemCollapsibleState, Uri as string, workspace} from 'vscode';
+import { Bookmark } from "./functional_types";
+import {Group} from './functional_types';
 
 export class BookmarkTreeItem extends TreeItem {
-    private base: Bookmark | Group | string | null = null;
-    private parent: BookmarkTreeItem | null = null;
-    private filterGroup: Group | null = null;
-
-    static fromNone(): BookmarkTreeItem {
-        const result = new BookmarkTreeItem(' ', TreeItemCollapsibleState.None);
-        result.contextValue = 'none';
-        result.description = 'none';
-        result.tooltip = 'none';
-        result.base = null;
-        return result;
-    }
+    public base: Bookmark | Group | null = null;
 
     static fromBookmark(bookmark: Bookmark): BookmarkTreeItem {
-        const label = (typeof bookmark.label !== 'undefined' ? bookmark.label : '');
+        const label = (typeof bookmark.name !== 'undefined' ? bookmark.name : '');
         const result = new BookmarkTreeItem(label, TreeItemCollapsibleState.None);
         result.contextValue = 'bookmark';
         result.description = bookmark.lineText;
-        result.iconPath = bookmark.group.decorationSvg.path;
+        // result.iconPath = bookmark.group!.decorationSvg.path;
+        result.iconPath = new ThemeIcon("bookmark");
         result.base = bookmark;
         result.tooltip = workspace.asRelativePath(bookmark.fsPath) + ': ' + label;
         result.command = {
@@ -38,27 +28,8 @@ export class BookmarkTreeItem extends TreeItem {
         result.contextValue = 'group';
         result.iconPath = ThemeIcon.Folder;
         result.base = group;
-        result.filterGroup = group;
         result.tooltip = group.name;
         return result;
-    }
-
-    static fromFSPath(fsPath: string, filterGroup: Group | null): BookmarkTreeItem {
-        const result = new BookmarkTreeItem(string.file(fsPath), TreeItemCollapsibleState.Expanded);
-        result.contextValue = 'file';
-        result.iconPath = ThemeIcon.File;
-        result.base = fsPath;
-        result.filterGroup = filterGroup;
-        result.tooltip = workspace.asRelativePath(fsPath);
-        return result;
-    }
-
-    public setParent(parent: BookmarkTreeItem | null) {
-        this.parent = parent;
-    }
-
-    public getParent(): BookmarkTreeItem | null {
-        return this.parent;
     }
 
     public getBaseBookmark(): Bookmark | null {
@@ -80,9 +51,5 @@ export class BookmarkTreeItem extends TreeItem {
             return this.base;
         }
         return null;
-    }
-
-    public getFilterGroup(): Group | null {
-        return this.filterGroup;
     }
 }

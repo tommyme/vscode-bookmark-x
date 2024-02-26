@@ -6,88 +6,80 @@ import {
     window,
     Uri
 } from 'vscode';
-import {Bookmark} from './bookmark';
-import {Group} from './group';
-import {DecorationFactory} from './decoration_factory';
-import {SerializableBookmark} from './serializable_bookmark';
-import {SerializableGroup} from './serializable_group';
-import {randomColor} from './util';
+import { Bookmark, RootGroup } from "./functional_types";
+import {Group} from './functional_types';
+import {SerializableGroup} from './serializable_type';
+import * as util from './util';
 import {BookmarkTreeDataProvider} from './bookmark_tree_data_provider';
 
 export class Controller {
     public readonly savedBookmarksKey = 'bookmarkDemo.bookmarks'; // 缓存标签的key
-    public readonly savedGroupsKey = "bookmarkDemo.groups";
+    public readonly savedRootNodeKey = "bookmarkDemo.root_Node";
     public readonly savedActiveGroupKey = "bookmarkDemo.activeGroup";
-    public readonly defaultGroupName: string;
-    public readonly defaultColor: string = "#F5DC31";
+    public readonly defaultGroupName = "";
 
     private treeViewRefreshCallback = () => {};
 
     private ctx: ExtensionContext;
-    private bookmarks: Array<Bookmark>;
-    private groups: Array<Group>;
-    private activeGroup: Group;
-    private removedDecorations: Map<TextEditorDecorationType, boolean>;
+    public activeGroup!: Group;
+    private decos2remove: Array<TextEditorDecorationType>=[];
+    private fake_root_group!: RootGroup;
+    public tprovider: BookmarkTreeDataProvider;
 
     constructor(ctx: ExtensionContext, treeViewRefreshCallback: () => void) {
-        this.ctx = ctx;
+        this.ctx = ctx
         this.treeViewRefreshCallback = treeViewRefreshCallback;
-        this.bookmarks = new Array<Bookmark>(); // 当前所有的标签
-        this.groups = new Array<Group>();
-
-
-        this.defaultGroupName = 'default';
-        this.activeGroup = new Group(this.defaultGroupName, this.defaultColor);
-        this.removedDecorations = new Map<TextEditorDecorationType, boolean>();
-
-        DecorationFactory.svgDir = this.ctx.globalStorageUri; // 缓存地址
-
-        this.restoreSavedState(); // 读取上一次记录的状态
-        this.updateDecorations(); // 更新界面的标签
+        // DecorationFactory.svgDir = this.ctx.globalStorageUri; // 缓存地址
+        this.restoreSavedState(); // 读取上一次记录的状态 初始化fake root group
+        this.tprovider = new BookmarkTreeDataProvider(this.fake_root_group, this)
     }
 
-    // 保存状态 保存三种(group bookmark active-group)
-    private saveState() {
-        const serializedGroups = this.groups.map(group => SerializableGroup.fromGroup(group));
-        this.ctx.workspaceState.update(this.savedGroupsKey, serializedGroups);
-        const serializedBookmarks: SerializableBookmark[] = [];
-        for (let i = 0; i < this.bookmarks.length; i++) {
-            const bookmark = SerializableBookmark.fromBookmark(this.bookmarks[i]);
-            serializedBookmarks.push(bookmark);
-        }
-        this.ctx.workspaceState.update(this.savedBookmarksKey, serializedBookmarks);
-        this.ctx.workspaceState.update(this.savedActiveGroupKey, this.activeGroup.name);
+    // 保存状态 activeGroupName and fake_root_group(serialized)
+    public saveState() {
+        const content = this.fake_root_group.serialize();
+        this.ctx.workspaceState.update(this.savedRootNodeKey, content);
+        this.ctx.workspaceState.update(this.savedActiveGroupKey, this.activeGroup.get_full_uri());
     }
 
-    // 读取上一次记录的状态
+    /**
+     * restore fake_root_group; set ActivateGroup
+     * @param {type} param1 - param1 desc
+     * @returns {type} - return value desc
+     */
     private restoreSavedState() {
-        const activeGroupName: string = this.ctx.workspaceState.get(this.savedActiveGroupKey) ?? this.defaultGroupName; // 不存在的情况，使用默认分组
-        const serializedGroups: Array<SerializableGroup> | undefined = this.ctx.workspaceState.get(this.savedGroupsKey);
-        const serializedBookmarks: SerializableBookmark[] | undefined = this.ctx.workspaceState.get(this.savedBookmarksKey);
-
-        // 初始化分组
-        if (serializedGroups !== undefined) {
-            for (let i = 0; i < serializedGroups.length; i++) {
-                this.addNewGroup(Group.fromSerializableGroup(serializedGroups[i]));
-            }
-            this.groups.sort(Group.sortByName);
+        const activeGroupUri: string = this.ctx.workspaceState.get(this.savedActiveGroupKey) ?? this.defaultGroupName; // 不存在的情况，使用默认分组
+        let rootNodeSerialized: SerializableGroup | undefined = this.ctx.workspaceState.get(this.savedRootNodeKey);
+        // rootNodeSerialized = undefined
+        if (rootNodeSerialized) {
+            this.fake_root_group = SerializableGroup.build_root(rootNodeSerialized) as RootGroup
+        } else {
+            this.fake_root_group = new RootGroup("", "", "", [])
         }
-
-        // 初始化标签
-        if (serializedBookmarks !== undefined) {
-            for (let i = 0; i < serializedBookmarks.length; i++) {
-                const serializedBookmark = Bookmark.fromSerializableBookMark(serializedBookmarks[i], this.getGroupByName.bind(this)); // 反序列化数据
-                this.bookmarks.push(serializedBookmark);
-            }
-            this.bookmarks.sort(Bookmark.sortByName);
+        this.activeGroup = this.fake_root_group.get_node(activeGroupUri, 'group') as Group
+        this.fake_root_group.cache_build()
+    }
+    /**
+     * 装饰器 执行完动作之后update和save一下
+     * @param {type} param1 - param1 desc
+     * @returns {type} - return value desc
+     */
+    public static DecoUpdateSaveAfter(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+        const fn = descriptor.value
+        descriptor.value = function(...rest: any) {
+            fn.apply(this, rest)
+            let x: any = this
+            x.updateDecorations(); // 更新界面
+            x.saveState(); // 保存最新状态
         }
-
-        // 激活分组
-        this.activateGroup(activeGroupName);
     }
 
-    // 激活or取消标签
-    public editorActionToggleBookmark(textEditor: TextEditor) {
+
+    /**
+     * command palette触发的toggleBookmark
+     * @param {type} param1 - param1 desc
+     * @returns {type} - return value desc
+     */
+    public actionToggleBookmark(textEditor: TextEditor) {
         if (textEditor.selections.length === 0) {
             return;
         }
@@ -109,7 +101,12 @@ export class Controller {
         }
     }
 
-    public editorActionToggleLabeledBookmark(textEditor: TextEditor) {
+    /**
+     * command palette 触发的toggle labeled bookmark
+     * @param {type} param1 - param1 desc
+     * @returns {type} - return value desc
+     */
+    public actionToggleLabeledBookmark(textEditor: TextEditor) {
         if (textEditor.selections.length === 0) {
             return;
         }
@@ -118,14 +115,12 @@ export class Controller {
         const lineNumber = textEditor.selection.start.line;
 
         // 获取已存在的标签
-        const existingBookmark = this.getExistingBookmarks(fsPath).find((bookmark) => {
+        const existingBookmark = this.getBookmarksInFile(fsPath).find((bookmark) => {
             return bookmark.lineNumber === lineNumber && this.activeGroup.getDecoration() === bookmark.getDecoration();
         });
 
         if (typeof existingBookmark !== "undefined") {
             this.deleteBookmark(existingBookmark);
-            this.saveState();
-            this.updateDecorations();
             return;
         }
 
@@ -146,75 +141,15 @@ export class Controller {
                     characterNumber,
                     label,
                     lineText,
-                    this.activeGroup
+                    this.activeGroup.uri
                 );
-                this.bookmarks.push(bookmark);
-                this.bookmarks.sort(Bookmark.sortByLocation);
+                this.addBookmark(bookmark)
+            } else {
+                window.showInformationMessage(`输入的label为空!`);
+                return
             }
-
-            this.saveState();
-            this.updateDecorations();
         });
     }
-
-    // 切换标签
-    private toggleBookmark(
-        fsPath: string,
-        lineNumber: number,
-        characterNumber: number,
-        lineText: string,
-        group: Group,
-    ) {
-        // 获取已存在的标签
-        const existingBookmark = this.getExistingBookmarks(fsPath).find((bookmark) => {
-            return bookmark.lineNumber === lineNumber && this.activeGroup.getDecoration() === bookmark.getDecoration();
-        });
-
-        // 如果已存在标签，就删除
-        if (existingBookmark) {
-            this.removeBookmark(existingBookmark);
-        } else {
-            let bookmark = new Bookmark(fsPath, lineNumber, characterNumber, undefined, lineText, group);
-            this.bookmarks.push(bookmark);
-        }
-
-        this.updateDecorations(); // 更新界面
-        this.saveState(); // 保存最新状态
-    }
-
-    // 删除标签
-    private removeBookmark(bookmark: Bookmark) {
-        let index = this.bookmarks.indexOf(bookmark);
-        if (index < 0) {
-            return;
-        }
-
-        this.bookmarks.splice(index, 1);
-        this.handleDecorationRemoved(bookmark.getDecoration()!);
-    }
-
-    // 编辑label
-    private _editBookmarkLabel(bookmark: Bookmark, val: string) {
-        let index = this.bookmarks.indexOf(bookmark);
-        if (index < 0) {
-            return;
-        }
-        this.bookmarks[index].label = val;
-    }
-    public editBookmarkLabel(bookmark: Bookmark, val: string) {
-        this._editBookmarkLabel(bookmark, val)
-        this.bookmarks.sort(Bookmark.sortByName);
-        this.saveState()
-        this.updateDecorations()
-    }
-
-    // 提供给treeView，删除标签
-    public deleteBookmark(bookmark: Bookmark) {
-        this.removeBookmark(bookmark);
-        this.updateDecorations();
-        this.saveState();
-    }
-
     // 添加新分组
     public actionAddGroup() {
         window.showInputBox({
@@ -225,154 +160,198 @@ export class Controller {
             if (!groupName) {
                 return;
             }
-
-            this.activateGroup(groupName);
-            this.saveState();
+            let new_group = this.createGroupWithUri(groupName)
+            this.addGroup2Root(new_group)
         });
     }
+    // 切换标签
+    private toggleBookmark(
+        fsPath: string,
+        lineNumber: number,
+        characterNumber: number,
+        lineText: string,
+        group: Group,
+    ) {
+        // 获取已存在的标签
+        const existingBookmark = this.getBookmarksInFile(fsPath).find((bookmark) => {
+            return bookmark.lineNumber === lineNumber && this.activeGroup.getDecoration() === bookmark.getDecoration();
+        });
 
-    // 提供给treeView，删除分组
-    public deleteGroups(group: Group) {
-        const wasActiveGroupDeleted = group === this.activeGroup;
-
-        this.bookmarks.filter((bookmark) => bookmark.group === group)
-            .forEach((bookmark) => {
-                this.deleteBookmark(bookmark);
-            });
-
-        let index = this.groups.indexOf(group);
-        if (index >= 0) {
-            this.groups.splice(index, 1);
+        // 如果已存在标签，就删除
+        if (existingBookmark) {
+            this.deleteBookmark(existingBookmark)
+        } else {
+            let bookmark = new Bookmark(fsPath, lineNumber, characterNumber, util.randomName(), lineText, group.get_full_uri());
+            this.addBookmark(bookmark)
         }
-
-        if (this.groups.length === 0) {
-            this.activateGroup(this.defaultGroupName);
-        } else if (wasActiveGroupDeleted) {
-            this.activateGroup(this.groups[0].name);
-        }
-
-        this.updateDecorations();
-        this.saveState();
     }
 
-    private addNewGroup(group: Group) {
-        group.onGroupDecorationUpdated(this.handleGroupDecorationUpdated.bind(this));
-        group.initDecorations();
-        this.groups.push(group);
-        this.groups.sort(Group.sortByName);
-    }
-
-    // 激活分组
-    private activateGroup(name: string) {
-        let newActiveGroup = this.ensureGroup(name);
-        if (newActiveGroup === this.activeGroup) {
+    // 提供给treeView，删除标签
+    public deleteBookmark(bookmark: Bookmark) {
+        let group = this.fake_root_group.get_node(bookmark.uri, 'group') as Group
+        let index = group.children.indexOf(bookmark);
+        if (index < 0) {
             return;
         }
 
-        this.activeGroup = newActiveGroup;
-    }
+        group.children.splice(index, 1);
+        this.decos2remove.push(bookmark.getDecoration()!);
 
-    // 返回已存在分组or创建分组
-    private ensureGroup(name: string): Group {
-        let group = this.groups.find((group) => {
-            return group.name === name;
-        });
-
-        if (typeof group !== 'undefined') {
-            return group;
-        }
-
-        // 初始化的情况
-        group = new Group(name, name === this.defaultGroupName ? this.defaultColor : randomColor());
-        this.addNewGroup(group);
-
-        return group;
-    }
-
-    // 通过分组名返回分组
-    private getGroupByName(groupName: string): Group {
-        return this.groups.find((group) => group.name === groupName) ?? this.activeGroup;
-    }
-
-    public getActiveGroup() {
-        return this.activeGroup;
-    }
-
-    public setActiveGroup(groupName: string) {
-        this.activateGroup(groupName);
+        this.updateDecorations();
+        this.fake_root_group.cache_del_bm(bookmark)
         this.saveState();
     }
 
-    // 监听标签更新的时机
-    private handleGroupDecorationUpdated() {
-        this.updateDecorations();
+    // 编辑label
+    private _editBookmarkLabel(bookmark: Bookmark, val: string) {
+        let group = this.fake_root_group.get_node(bookmark.uri, "group") as Group
+
+        let index = group.children.indexOf(bookmark);
+        if (index < 0) {
+            // TODO tip
+            return;
+        }
+
+        group.children[index].name = val;
+    }
+    public editBookmarkLabel(bookmark: Bookmark, val: string) {
+        // TODO sort
+        this._editBookmarkLabel(bookmark, val)
+        this.saveState()
+        this.updateDecorations()
     }
 
-    // 更新每个页面的标签
+    /**
+     * 提供给treeView，删除分组
+     * @param {type} param1 - param1 desc
+     * @returns {type} - return value desc
+     */
+    public deleteGroups(group: Group) {
+        const wasActiveGroupDeleted = group === this.activeGroup;
+        let father_group = this.fake_root_group.get_node(group.uri, "group") as Group
+        let idx = father_group.children.indexOf(group)
+        if (idx < 0) {
+            // TODO tip
+            return
+        }
+        father_group.children.splice(idx, 1)
+
+        if (wasActiveGroupDeleted) {
+            // 如果激活组被删除了, 就换一个组设置激活
+            this.activateGroup(this.fake_root_group.get_full_uri());
+        }
+
+        this.updateDecorations();
+        this.saveState();
+    }
+
+    private addGroup2Root(group: Group) {
+        this.fake_root_group.add_group(group)
+        this.updateDecorations()
+        this.saveState()
+    }
+
+    public addBookmark(bm: Bookmark) {
+        this.fake_root_group.add_bookmark_recache(bm)
+        this.updateDecorations()
+        this.saveState()
+    }
+
+    /**
+     * 激活分组 'test/main' -> 激活test下面的main 分组
+     * @param {type} param1 - param1 desc
+     * @returns {type} - return value desc
+     */
+    public activateGroup(uri: string) {
+        let group = this.fake_root_group.get_node(uri, "group") as Group
+        if (group === this.activeGroup) {
+            return;
+        }
+        this.activeGroup = group;
+        this.saveState()
+    }
+
+    /**
+     * 通过uri创建分组
+     * @param {type} full_uri - group uri
+     * @returns {type} - Group
+     */
+    private createGroupWithUri(full_uri: string): Group {
+        let [group_uri, group_name] = util.splitString(full_uri)
+        let group = new Group(group_name, util.randomColor(), group_uri);
+        return group
+    }
+
+    /**
+     * 更新每个页面的标签
+     * @param {type} param1 - param1 desc
+     * @returns {type} - return value desc
+     */
     public updateDecorations() {
         for (let editor of window.visibleTextEditors) {
-            this.updateEditorDecorations(editor);
+            if (typeof editor === 'undefined') {
+                return;
+            }
+    
+            let fsPath = editor.document.uri.fsPath;
+            let editorDecos = this.getDecoListInFile(fsPath);
+    
+            // remove decos in this.decos2remove
+            this.decos2remove.forEach(deco2rm => {
+                if (editorDecos.has(deco2rm)) {
+                    editorDecos.set(deco2rm, [])    // 设置空的range参数, 后面调用setDecorations的时候就会删除
+                }
+            })
+            
+            // set decos, remove decos
+            for (let [decoration, ranges] of editorDecos) {
+                editor.setDecorations(decoration, ranges);
+            }
+
+            this.decos2remove = []
         }
         this.treeViewRefreshCallback();
     }
 
-    // 绘制标签
-    private updateEditorDecorations(textEditor: TextEditor) {
-        if (typeof textEditor === 'undefined') {
-            return;
-        }
-
-        let fsPath = textEditor.document.uri.fsPath;
-        let editorDecorations = this.getDecorationsList(fsPath);
-
-        // 清除无用、重叠的标签
-        for (let [removedDecoration] of this.removedDecorations) {
-            if (editorDecorations.has(removedDecoration)) {
-                continue;
-            }
-
-            editorDecorations.set(removedDecoration, []);
-        }
-
-        for (let [decoration, ranges] of editorDecorations) {
-            textEditor.setDecorations(decoration, ranges);
-        }
-    }
-
-    // 获取标签ranges
-    private getDecorationsList(fsPath: string): Map<TextEditorDecorationType, Range[]> {
+    /**
+     * 返回editorDecorations
+     * @param {type} param1 - param1 desc
+     * @returns {type} - return value desc
+     */
+    private getDecoListInFile(fsPath: string): Map<TextEditorDecorationType, Range[]> {
         const editorDecorations = new Map<TextEditorDecorationType, Range[]>();
         const lineDecorations = new Map<number, TextEditorDecorationType>();
 
         // 筛选当前页面的标签
-        let fileBookmarks = this.bookmarks.filter((bookmark) => {
-            return bookmark.fsPath === fsPath;
-        });
+        let fileBookmarks = this.getBookmarksInFile(fsPath)
 
-        // 筛选当前激活分组的标签
-        fileBookmarks.filter(bookmark => bookmark.group === this.activeGroup)
+        // 在当前group
+        fileBookmarks.filter(bookmark => bookmark.group == this.activeGroup)
             .forEach(bookmark => {
                 let decoration = bookmark.getDecoration();
                 if (decoration !== null) {
                     lineDecorations.set(bookmark.lineNumber, decoration);
+                } else {
+                    let a=1
                 }
             });
 
-        // 筛选非激活的标签
-        fileBookmarks.filter(bookmark => bookmark.group !== this.activeGroup)
+        // 不在当前group
+        fileBookmarks.filter(bookmark => bookmark.group != this.activeGroup)
             .forEach(bookmark => {
                 let decoration = bookmark.getDecoration();
                 if (decoration !== null) {
                     if (!lineDecorations.has(bookmark.lineNumber)) {
+                        // 其他组里面的, 和当前组里面的没有冲突
                         lineDecorations.set(bookmark.lineNumber, decoration);
                     } else {
-                        // 重叠的标签，需要放入清除列表里面
-                        this.handleDecorationRemoved(decoration);
+                        // 其他组里面的, 和当前组里面有冲突
+                        this.decos2remove.push(decoration);
                     }
                 }
             });
 
-        // 遍历需要绘制的图标
+        // 基于lineDeco 创建 editorDeco
         for (let [lineNumber, decoration] of lineDecorations) {
             let ranges = editorDecorations.get(decoration);
             if (typeof ranges === 'undefined') {
@@ -386,26 +365,14 @@ export class Controller {
         return editorDecorations;
     }
 
-    // 记录需要移除的图标
-    private handleDecorationRemoved(decoration: TextEditorDecorationType) {
-        this.removedDecorations.set(decoration, true);
-    }
-
     // 获取已存在的标签
-    private getExistingBookmarks(fsPath: string): Array<Bookmark> {
-        return this.bookmarks.filter((bookmark) => {
-            return bookmark.fsPath === fsPath;
-        });
-    }
-
-    // 初始化分组列表数据
-    public getTreeDataProviderByGroup() {
-        return new BookmarkTreeDataProvider(this.groups, this.bookmarks, this.getActiveGroup.bind(this), true);
-    }
-
-    // 初始化文件列表数据
-    public getTreeDataProviderByFile() {
-        return new BookmarkTreeDataProvider(this.groups, this.bookmarks, this.getActiveGroup.bind(this), false);
+    private getBookmarksInFile(fsPath: string): Array<Bookmark> {
+        let fileBookmarks: Array<Bookmark> = []
+        for (let full_uri in this.fake_root_group.cache) {
+            let item = this.fake_root_group.cache[full_uri]
+            if (item.type === "bookmark" && (((item as Bookmark).fsPath || null) === fsPath)) { fileBookmarks.push(item) }
+        };
+        return fileBookmarks
     }
 
     public jumpToBookmark(bookmark: Bookmark,) {

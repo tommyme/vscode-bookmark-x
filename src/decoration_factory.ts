@@ -10,14 +10,14 @@ const svgBookmark = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="
 </svg>`;
 
 export class DecorationFactory {
-    public static svgDir: Uri;
-    public static readonly decorationUri = Uri.file(
+    public static svgDir: Uri;  // 用于在workspace里面创建svg文件, 需要在controller里面进行初始化
+    public static readonly defaultDecorationUri = Uri.file(
         path.join(__dirname, '..', 'resources', 'gutter_icon_bm.svg')
     );
 
-    public static readonly decoration = window.createTextEditorDecorationType(
+    public static readonly defaultDecoration = window.createTextEditorDecorationType(
         {
-            gutterIconPath: DecorationFactory.decorationUri.fsPath,
+            gutterIconPath: DecorationFactory.defaultDecorationUri.fsPath,
             gutterIconSize: 'contain',
         }
     );

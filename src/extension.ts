@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import {Controller} from './main';
 import {BookmarkTreeView} from './bookmark_tree_view';
 import {BookmarkTreeItem} from './bookmark_tree_item';
-import {Bookmark} from './bookmark';
+import { Bookmark } from "./functional_types";
 
 export function activate(context: vscode.ExtensionContext) {
 	let treeView: BookmarkTreeView = new BookmarkTreeView();
@@ -10,13 +10,13 @@ export function activate(context: vscode.ExtensionContext) {
 
 	// 切换标签的命令
 	let disposable: vscode.Disposable = vscode.commands.registerTextEditorCommand('bookmark-plugin.toggleBookmark', (textEditor) => {
-		main.editorActionToggleBookmark(textEditor);
+		main.actionToggleBookmark(textEditor);
 	});
 
 	context.subscriptions.push(disposable);
 
 	disposable = vscode.commands.registerTextEditorCommand('bookmark-plugin.toggleLabeledBookmark', (textEditor) => {
-		main.editorActionToggleLabeledBookmark(textEditor);
+		main.actionToggleLabeledBookmark(textEditor);
 	});
 
 	context.subscriptions.push(disposable);

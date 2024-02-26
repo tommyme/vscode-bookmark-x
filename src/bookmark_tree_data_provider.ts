@@ -1,25 +1,23 @@
 import {EventEmitter, TreeDataProvider, TreeItem} from 'vscode';
-import {Bookmark} from './bookmark';
+import { Bookmark } from "./functional_types";
 import {BookmarkTreeItem} from './bookmark_tree_item';
-import {Group} from './group';
+import {Group, RootGroup} from './functional_types';
 import * as vscode from 'vscode';
+import { Controller } from './main';
 
 
 export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<BookmarkTreeItem>, vscode.TreeDragAndDropController<BookmarkTreeItem>  {
-	dropMimeTypes = ['application/vnd.code.tree.testViewDragAndDrop'];
-	dragMimeTypes = ['text/uri-list'];
-    private groups: Array<Group>;
-    private bookmarks: Array<Bookmark>;
-    private byGroup: boolean;
+	dropMimeTypes = ['application/vnd.code.tree.bookmarkitem'];
+	dragMimeTypes = ['application/vnd.code.tree.bookmarkitem'];
+    private root_group: RootGroup;
     private changeEmitter = new EventEmitter<BookmarkTreeItem | undefined | null | void>();
-    private getActiveGroup: () => Group;
+    private controller: Controller
+
     readonly onDidChangeTreeData = this.changeEmitter.event;
 
-    constructor(groups: Array<Group>, bookmarks: Array<Bookmark>, getActiveGroup: () => Group, byGroup: boolean) {
-        this.groups = groups;
-        this.bookmarks = bookmarks;
-        this.byGroup = byGroup;
-        this.getActiveGroup = getActiveGroup;
+    constructor(root_group: RootGroup, controller: Controller) {
+        this.root_group = root_group
+        this.controller = controller
     }
 
     public getTreeItem(element: BookmarkTreeItem): TreeItem {
@@ -28,81 +26,29 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
 
     // 初始化tree item
     public getChildren(element?: BookmarkTreeItem | undefined): Thenable<any> {
+        let el;
         if (!element) {
-            // 渲染根节点
-            return this.byGroup ? this.renderGroupViewRoot() : this.renderFileViewRoot();
-        }
-
-        const filterGroup = element.getFilterGroup();
-        const baseFSPath = element.getBaseFSPath();
-
-        if (baseFSPath !== null) {
-            // 渲染一个文件里的所有标签
-            return this.renderFileViewItem(element, baseFSPath, filterGroup);
-        }
-
-        const baseGroup = element.getBaseGroup();
-        if (baseGroup !== null) {
-            // 渲染一个分组里的所有标签
-            return this.renderGroupViewItem(element, filterGroup);
-        }
-
-        return Promise.resolve([]);
-    }
-
-    // 渲染一个文件里的所有标签
-    private renderFileViewItem(element: BookmarkTreeItem, baseFSPath: string, filterGroup: Group | null) {
-        let bookmarks = this.bookmarks.filter(bookmark => bookmark.fsPath === baseFSPath);
-        if (filterGroup !== null) {
-            bookmarks = bookmarks.filter(bookmark => bookmark.group === filterGroup);
-        }
-
-        let children: Array<BookmarkTreeItem>;
-
-        if (bookmarks.length === 0) {
-            children = [BookmarkTreeItem.fromNone()];
+            el = BookmarkTreeItem.fromGroup(this.root_group as Group, false)
         } else {
-            children = bookmarks.map(bookmark => BookmarkTreeItem.fromBookmark(bookmark));
+            el = element;
         }
-
-        children.forEach(child => child.setParent(element));
-        return Promise.resolve(children);
+        return this.renderNode(el);
     }
 
-    // 渲染一个分组里的所有标签
-    private renderGroupViewItem(element: BookmarkTreeItem, filterGroup: Group | null) {
-        const bookmarksInGroup = this.bookmarks.filter(bookmark => bookmark.group === filterGroup)
-        // const files = this.getFiles();
-
-        let children: Array<BookmarkTreeItem>;
-
-        // if (files.length === 0) {
-        //     children = [BookmarkTreeItem.fromNone()];
-        // } else {
-        //     children = files.map(fsPath => BookmarkTreeItem.fromFSPath(fsPath, filterGroup));
-        // }
-
-        children = bookmarksInGroup.map(item => BookmarkTreeItem.fromBookmark(item))
-
-        children.forEach(child => child.setParent(element));
-        return Promise.resolve(children);
+    /**
+     * render all types of nodes
+     * @param {type} el - some TreeItem
+     * @returns {type} - Promise.resolve(...)
+     */
+    private renderNode(el: BookmarkTreeItem) {
+        // if no children in base, resolve []
+        const res = el.base!.children?.map(item => {
+            if (item.type === 'group') { return BookmarkTreeItem.fromGroup(item as Group, false) } 
+            else if (item.type === 'bookmark') { return BookmarkTreeItem.fromBookmark(item as Bookmark) }
+        }) || []
+        return Promise.resolve(res)
     }
 
-    // 渲染所有的分组
-    private renderGroupViewRoot() {
-        const root = this.groups.map(group => {
-            const isActiveGroup = this.getActiveGroup().name === group.name;
-            return BookmarkTreeItem.fromGroup(group, isActiveGroup);
-        });
-        return Promise.resolve(root);
-    }
-
-    // 渲染所有的文件列表
-    private renderFileViewRoot() {
-        const root = this.getFiles(this.bookmarks)
-            .map(fsPath => BookmarkTreeItem.fromFSPath(fsPath, null));
-        return Promise.resolve(root);
-    }
 
     private getFiles(bookmarks: Array<Bookmark>): Array<string> {
         const files = new Array<string>();
@@ -119,12 +65,91 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
         this.changeEmitter.fire();
     }
     public async handleDrag(source: BookmarkTreeItem[], treeDataTransfer: vscode.DataTransfer, token: vscode.CancellationToken): Promise<void> {
-		treeDataTransfer.set('application/vnd.code.tree.testViewDragAndDrop', new vscode.DataTransferItem(source));
+        let uris2trans = source.map(x => x.base!.get_full_uri())
+		treeDataTransfer.set('application/vnd.code.tree.bookmarkitem', new vscode.DataTransferItem(uris2trans));
+        console.log("handleDrag", source)
 	}
+    
     public async handleDrop(target: BookmarkTreeItem | undefined, sources: vscode.DataTransfer, token: vscode.CancellationToken): Promise<void> {
-		const transferItem = sources.get('application/vnd.code.tree.testViewDragAndDrop');
-		if (!transferItem) {
-			return;
-		}
+        console.log("handleDrop", target)
+        let x = [target, sources, token]
+        const obj = sources.get('application/vnd.code.tree.bookmarkitem')
+		const droppingItems: Array<string> = obj?.value;
+        let changed_flag = false;
+
+        if (droppingItems.length === 1) {
+            let full_uri = droppingItems[0]
+            let item = this.root_group.get_node(full_uri)
+            if (item == target!.base) {
+                vscode.window.showInformationMessage("[x] 源 目标 相同");
+                return
+            }
+            // group -> root
+            if ( item instanceof Group && typeof target === 'undefined') {
+                if (item.uri === '') {
+                    vscode.window.showInformationMessage("已经在root group里了");
+                    return
+                }
+                this.root_group.cut_node(item)
+                item.uri = ''
+                this.root_group.children.push(item)
+                RootGroup.refresh_uri(this.root_group)
+                this.root_group.cache_build()
+                changed_flag = true
+            }
+            // group -> group
+            else if ( item instanceof Group && target!.base instanceof Group ) {
+                if (item.uri === target!.base.get_full_uri()) {
+                    vscode.window.showInformationMessage("已经在目标group里了");
+                    return
+                }
+                // 源group断链
+                this.root_group.cut_node(item)
+                item.uri = target!.base.get_full_uri()
+                // 给目标group添加链接
+                target!.base.children.push(item)
+                RootGroup.refresh_uri(target!.base)
+                this.root_group.cache_build()
+                changed_flag = true
+            }
+            // bookmark -> root
+            else if ( item instanceof Bookmark && typeof target === 'undefined') {
+                if (item.uri === '') {
+                    vscode.window.showInformationMessage("已经在目标root里了");
+                    return
+                }
+                this.root_group.cut_node_recache(item)
+                item.uri = ''
+                item.group = this.root_group
+                this.root_group.add_bookmark_recache(item)
+                changed_flag = true
+            }
+            // bookmark -> group
+            else if ( item instanceof Bookmark && target!.base instanceof Group) {
+                if (item.uri === target!.base.get_full_uri()) {
+                    vscode.window.showInformationMessage("已经在目标group里了");
+                    return
+                }
+                this.root_group.cut_node_recache(item)
+                item.uri = target!.base.get_full_uri()
+                item.group = target!.base
+                this.root_group.add_bookmark_recache(item)
+                changed_flag = true
+            }
+            // ? case not cover
+            else { 
+                vscode.window.showInformationMessage("该情形暂不支持");
+                return
+            }
+        } else if (droppingItems.length === 0) {
+            return
+        } else {
+            return
+        }
+
+        if (changed_flag) {
+            this.controller.updateDecorations()
+            this.controller.saveState()
+        }
 	}
 }
