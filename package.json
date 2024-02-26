@@ -1,13 +1,13 @@
 {
-  "name": "bookmarks-plugin",
-	"displayName": "bookmarks-plugin",
+  "name": "bookmark_x",
+	"displayName": "bookmark X",
 	"description": "Bookmark plugin with grouping support",
 	"version": "0.0.1",
-	"publisher": "silentsvv",
+	"publisher": "tommyme",
 	"icon": "resources/bookmark.png",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/silentsvv/book_mark_plugin"
+		"url": "https://github.com/tommyme/book_mark_plugin"
 	},
 	"engines": {
 		"vscode": "^1.59.0"
@@ -22,64 +22,60 @@
 	"contributes": {
 		"commands": [
 			{
-				"command": "bookmark-plugin.toggleBookmark",
-				"title": "bookmark-plugin: toggle bookmark"
+				"command": "bookmark_x.toggleBookmark",
+				"title": "bookmark_x: toggle bookmark"
 			},
 			{
-				"command": "bookmark-plugin.toggleLabeledBookmark",
-				"title": "bookmark-plugin: toggle label bookmark"
+				"command": "bookmark_x.toggleLabeledBookmark",
+				"title": "bookmark_x: toggle label bookmark"
 			},
 			{
-				"command": "bookmark-plugin.addGroup",
-				"title": "bookmark-plugin: add group"
+				"command": "bookmark_x.addGroup",
+				"title": "bookmark_x: add group"
 			},
 			{
-				"command": "bookmark-plugin.clearData",
-				"title": "bookmark-plugin: clear data"
+				"command": "bookmark_x.clearData",
+				"title": "bookmark_x: clear data"
 			},
 			{
-				"command": "bookmark-plugin.activateGroup",
+				"command": "bookmark_x.activateGroup",
 				"title": "Activate bookmark group",
 				"icon": "$(eye)"
 			},
 			{
-				"command": "bookmark-plugin.addSubGroup",
+				"command": "bookmark_x.addSubGroup",
 				"title": "add sub group",
 				"icon": "$(add)"
 			},
 			{
-				"command": "bookmark-plugin.deleteGroup",
+				"command": "bookmark_x.deleteGroup",
 				"title": "Delete bookmark group",
 				"icon": "$(close)"
 			},
 			{
-				"command": "bookmark-plugin.jumpToBookmark",
+				"command": "bookmark_x.jumpToBookmark",
 				"title": "Jump to book mark"
 			},
 			{
-				"command": "bookmark-plugin.editBookmarkName",
+				"command": "bookmark_x.editBookmarkName",
 				"title": "edit bookmark name",
 				"icon": "$(edit)"
 			},
 			{
-				"command": "bookmark-plugin.deleteBookmark",
+				"command": "bookmark_x.deleteBookmark",
 				"title": "Delete bookmark",
 				"icon": "$(close)"
 			}
 		],
 		"viewsContainers": {
 			"activitybar": [{
-				"id": "bookmarks_X",
+				"id": "bookmark_x",
 				"title": "Bookmarks X",
 				"icon": "$(bookmark)"
 			}]
 		},
 		"views": {
-			"bookmarks_X": [{
-					"id": "bookmarksByFile",
-					"name": "By File",
-					"icon": "$(bookmark)"
-				},
+			"bookmark_x": [
 				{
 					"id": "bookmarksByGroup",
 					"name": "By Group",
@@ -90,38 +86,38 @@
 		"menus": {
 			"view/item/context": [
 			  {
-				"command": "bookmark-plugin.activateGroup",
+				"command": "bookmark_x.activateGroup",
 				"when": "view == bookmarksByGroup && viewItem == group",
 				"group": "inline"
 			  },
 			  {
-				"command": "bookmark-plugin.addSubGroup",
+				"command": "bookmark_x.addSubGroup",
 				"when": "view == bookmarksByGroup && viewItem == group",
 				"group": "inline"
 			  },
 			  {
-				"command": "bookmark-plugin.deleteGroup",
+				"command": "bookmark_x.deleteGroup",
 				"when": "view == bookmarksByGroup && viewItem == group",
 				"group": "inline"
 			  },
 				{
-				"command": "bookmark-plugin.editBookmarkName",
+				"command": "bookmark_x.editBookmarkName",
 				"when": "viewItem == bookmark",
 				"group": "inline"
 				},
 			  {
-				"command": "bookmark-plugin.deleteBookmark",
+				"command": "bookmark_x.deleteBookmark",
 				"when": "viewItem == bookmark",
 				"group": "inline"
 			  }
 			],
 			"commandPalette": [
 				{
-					"command": "bookmark-plugin.jumpToBookmark",
+					"command": "bookmark_x.jumpToBookmark",
 					"when": "false"
 				},
 				{
-					"command": "bookmark-plugin.activateGroup",
+					"command": "bookmark_x.activateGroup",
 					"when": "false"
 				}
 			]

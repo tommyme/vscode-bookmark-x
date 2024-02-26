@@ -9,48 +9,47 @@ export function activate(context: vscode.ExtensionContext) {
 	let main: Controller = new Controller(context, treeView.refreshCallback.bind(treeView));
 
 	// 切换标签的命令
-	let disposable: vscode.Disposable = vscode.commands.registerTextEditorCommand('bookmark-plugin.toggleBookmark', (textEditor) => {
+	let disposable;
+	disposable = vscode.commands.registerTextEditorCommand('bookmark_x.toggleBookmark', (textEditor) => {
 		main.actionToggleBookmark(textEditor);
 	});
-
 	context.subscriptions.push(disposable);
 
-	disposable = vscode.commands.registerTextEditorCommand('bookmark-plugin.toggleLabeledBookmark', (textEditor) => {
+	disposable = vscode.commands.registerTextEditorCommand('bookmark_x.toggleLabeledBookmark', (textEditor) => {
 		main.actionToggleLabeledBookmark(textEditor);
 	});
-
 	context.subscriptions.push(disposable);
 
 	// 添加分组的命令
 	disposable = vscode.commands.registerCommand(
-		'bookmark-plugin.addGroup', () => main.actionAddGroup()
+		'bookmark_x.addGroup', () => main.actionAddGroup()
 	);
 	context.subscriptions.push(disposable);
 
 	disposable = vscode.commands.registerCommand(
-		'bookmark-plugin.activateGroup', (item: BookmarkTreeItem) => treeView.activateGroup(item)
+		'bookmark_x.activateGroup', (item: BookmarkTreeItem) => treeView.activateGroup(item)
 	);
 	context.subscriptions.push(disposable);
 
 	// 通过面板-删除分组
 	disposable = vscode.commands.registerCommand(
-		'bookmark-plugin.deleteGroup', (item: BookmarkTreeItem) => treeView.deleteGroup(item)
+		'bookmark_x.deleteGroup', (item: BookmarkTreeItem) => treeView.deleteGroup(item)
 	);
 	context.subscriptions.push(disposable);
 
 	// 通过面板-删除标签
 	disposable = vscode.commands.registerCommand(
-		'bookmark-plugin.deleteBookmark', (item: BookmarkTreeItem) => treeView.deleteBookmark(item)
+		'bookmark_x.deleteBookmark', (item: BookmarkTreeItem) => treeView.deleteBookmark(item)
 	);
 	context.subscriptions.push(disposable);
 
 	disposable = vscode.commands.registerCommand(
-		'bookmark-plugin.jumpToBookmark', (bookmark: Bookmark) => main.jumpToBookmark(bookmark)
+		'bookmark_x.jumpToBookmark', (bookmark: Bookmark) => main.jumpToBookmark(bookmark)
 	);
 	context.subscriptions.push(disposable);
 
 	disposable = vscode.commands.registerCommand(
-		'bookmark-plugin.editBookmarkName', (item: BookmarkTreeItem) => treeView.editBookmarkLabel(item)
+		'bookmark_x.editBookmarkName', (item: BookmarkTreeItem) => treeView.editBookmarkLabel(item)
 	);
 	context.subscriptions.push(disposable);
 
