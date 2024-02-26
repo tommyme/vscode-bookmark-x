@@ -1,3 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32">
-    <path d="M7 30 L7 8 Q7 2 13 2 L19 2 Q25 2 25 8 L25 30 L16 23 Z" fill="#706fd3" />
-</svg>
+<svg id="layer1" data-name="layer 1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 32 32"><defs><style>.cls-1{fill:url(#v);}</style><linearGradient id="v" x1="-3.34" y1="16.24" x2="37.41" y2="15.73" gradientUnits="userSpaceOnUse"><stop offset="0.19" stop-color="#00d39c"/><stop offset="0.75" stop-color="#008c86"/></linearGradient></defs><title>bookmark x logo</title><path class="cls-1" d="M25.8,2.5H9.1A3.55,3.55,0,0,0,5.55,6h0V29.5H22.26V6H15V16.15l-2.66-1.28L9.72,16.15V6H6.84A2.26,2.26,0,0,1,9.1,3.79H25.16V26.6a.65.65,0,1,0,1.29,0V3.15A.65.65,0,0,0,25.8,2.5Z"/></svg>

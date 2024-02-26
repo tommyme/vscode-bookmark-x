@@ -59,7 +59,9 @@ export class BookmarkTreeView {
             placeHolder: '请输入标签文本',
         }).then((label) => {
             if (label) {
-                this.controller!.editBookmarkLabel(bookmark!, label!)
+                if (!this.controller!.editBookmarkLabel(bookmark!, label!)) {
+                    vscode.window.showInformationMessage("edit fail: label exists!")
+                }
             }
             this.controller!.updateDecorations();
         });        

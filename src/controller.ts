@@ -145,7 +145,10 @@ export class Controller {
                     lineText,
                     this.activeGroup.uri
                 );
-                this.addBookmark(bookmark)
+                if (!this.addBookmark(bookmark)) {
+                    window.showInformationMessage(`label与存在的bookmark冲突`);
+                    return
+                }
             } else {
                 window.showInformationMessage(`输入的label为空!`);
                 return
@@ -201,6 +204,11 @@ export class Controller {
     public actionClearData() {
         this.ctx.workspaceState.update(this.savedRootNodeKey, "");
         this.ctx.workspaceState.update(this.savedActiveGroupKey, "");
+        this.restoreSavedState()
+        this.tprovider.root_group = this.fake_root_group
+        this.tprovider.treeview?.init(this)
+        this.updateDecorations()
+        this.saveState()
     }
 
     // 切换标签
@@ -221,6 +229,7 @@ export class Controller {
             this.deleteBookmark(existingBookmark)
         } else {
             let bookmark = new Bookmark(fsPath, lineNumber, characterNumber, util.randomName(), lineText, group.get_full_uri());
+            // TODO 需要应对小概率的随机串碰撞
             this.addBookmark(bookmark)
         }
     }
@@ -253,11 +262,18 @@ export class Controller {
 
         group.children[index].name = val;
     }
-    public editBookmarkLabel(bookmark: Bookmark, val: string) {
+    public editBookmarkLabel(bookmark: Bookmark, val: string): boolean {
+        // 命名冲突
+        if ( this.fake_root_group.cache.check_uri_exists(util.joinTreeUri([bookmark.uri, val])) ) {
+            return false
+        }
         // TODO sort
+        this.fake_root_group.cache.del(bookmark.get_full_uri())
         this._editBookmarkLabel(bookmark, val)
+        this.fake_root_group.cache_add_bm(bookmark)
         this.saveState()
         this.updateDecorations()
+        return true
     }
 
     /**
@@ -284,18 +300,28 @@ export class Controller {
         this.saveState();
     }
 
-    private addGroup2Root(group: Group) {
+    private addGroup2Root(group: Group): boolean {
+        
+        if ( this.fake_root_group.cache.check_uri_exists(group.get_full_uri()) ) {
+            return false
+        }
         let father = this.fake_root_group.add_group(group)
         father.sortGroupBookmark()
         this.updateDecorations()
         this.saveState()
+        return true
     }
 
-    public addBookmark(bm: Bookmark) {
+    public addBookmark(bm: Bookmark): boolean {
+        // uri confliction
+        if (this.fake_root_group.cache.check_uri_exists(bm.get_full_uri())) {
+            return false
+        }
         let group = this.fake_root_group.add_bookmark_recache(bm)
         group.sortGroupBookmark()
         this.updateDecorations()
         this.saveState()
+        return true
     }
 
     /**
@@ -409,10 +435,10 @@ export class Controller {
     // 获取已存在的标签
     private getBookmarksInFile(fsPath: string): Array<Bookmark> {
         let fileBookmarks: Array<Bookmark> = []
-        for (let full_uri in this.fake_root_group.cache) {
-            let item = this.fake_root_group.cache[full_uri]
-            if (item.type === "bookmark" && (((item as Bookmark).fsPath || null) === fsPath)) { fileBookmarks.push(item) }
-        };
+        this.fake_root_group.cache.keys().forEach(full_uri => {
+           let item = this.fake_root_group.cache.get(full_uri) as Bookmark
+           if (item.type === "bookmark" && ((item.fsPath || null) === fsPath)) { fileBookmarks.push(item) }
+        })
         return fileBookmarks
     }
 

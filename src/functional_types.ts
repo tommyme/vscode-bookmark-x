@@ -91,30 +91,17 @@ export class Group extends BaseFunctional {
 
         for (let part of parts) {
             // find 找不到会返回undefined
-            current = (current.children?.find(
-                child => {
-                    // 首先看uri相同不
-                    if (child.name === part) {
-                        // 再看type相同不
-                        if (child.type === type) {
-                            return true
-                        } else if (type === null) {
-                            // type不同, 但是没指定类型也可以
-                            return true
-                        } else {
-                            // 都不满足, 不行
-                            return false
-                        }
-                    } else {
-                        return false
-                    }
-                }
-            ) || undefined) as (Group | Bookmark | undefined);
-
+            current = (current.children?.find(child => child.name === part) || undefined) as (Group | Bookmark | undefined);
             if (!current) { break; } // 当前层级找不到了
         }
 
-        return current;
+        // 再看type相同不
+        if (current && (current.type === type || type === null)) {
+            return current
+        } else {
+            // 都不满足, 不行
+            return undefined
+        }
     }
 
     public add_group(group: Group) {
@@ -209,9 +196,44 @@ export class Bookmark extends BaseFunctional {
         );
     }
 }
-type Cache = { [key: string]: any }
+
+export class Cache extends Object {
+    private map: { [key: string]: BaseFunctional } = {}
+    public check_uri_exists(uri: string) {
+        let same = this.keys().filter(key => key === uri)
+        if (same.length > 0) {
+            return true
+        } else {
+            return false
+        }
+    }
+
+    public set(key: string, value: BaseFunctional) {
+        this.map[key] = value
+    }
+    public get(key: string): BaseFunctional {
+        return this.map[key]
+    }
+    public del(key: string) {
+        delete this.map[key]
+    }
+    public keys(): Array<string> {
+        return Object.keys(this.map)
+    }
+}
+
 export class RootGroup extends Group {
-    cache: Cache={};
+    cache: Cache;
+
+    constructor(
+        name: string,
+        color: string,
+        uri: string,
+        children: (Group|Bookmark)[]=[]
+    ) {
+        super(name, color, uri, children)
+        this.cache = new Cache()
+    }
     /**
      * rootnode add bookmark and return bookmark's father group
      * it'll refresh the cache
@@ -252,7 +274,7 @@ export class RootGroup extends Group {
     public cut_node_recache(node: Bookmark | Group) {
         this.cut_node(node)
         if (node instanceof Bookmark) {
-            delete this.cache[node.get_full_uri()]
+            this.cache.del(node.get_full_uri())
         } else if (node instanceof Group) {
             // 由于group可能有很多级, 所以直接重新bfs一遍, 构建cache
             this.cache_build()
@@ -275,9 +297,9 @@ export class RootGroup extends Group {
      * @returns {type} - return value desc
      */
     public bfs_get_nodes(): Cache {
-        let res: Cache = {};
+        let res = new Cache();
         function bfs(node: BaseFunctional) {
-            res[node.get_full_uri()] = node
+            res.set(node.get_full_uri(), node)
             if (node.children.length === 0) {
                 return;
             } else {
@@ -298,10 +320,10 @@ export class RootGroup extends Group {
      * @returns {type} - return value desc
      */
     public cache_add_bm(bm: Bookmark) {
-        this.cache[bm.get_full_uri()] = bm
+        this.cache.set(bm.get_full_uri(), bm)
     }
     public cache_del_bm(bm: Bookmark) {
-        delete this.cache[bm.get_full_uri()]
+        this.cache.del(bm.get_full_uri())
     }
 
     /**
