@@ -1,5 +1,5 @@
 {
-  "name": "bookmark_x",
+  "name": "bookmarkx",
 	"displayName": "bookmark X",
 	"description": "Bookmark plugin with grouping support",
 	"version": "0.0.1",
@@ -10,7 +10,7 @@
 		"url": "https://github.com/tommyme/book_mark_plugin"
 	},
 	"engines": {
-		"vscode": "^1.59.0"
+		"vscode": "^1.73.0"
 	},
 	"categories": [
 		"Other"
