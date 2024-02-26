@@ -1,28 +1,28 @@
 import * as vscode from 'vscode';
-import {Controller} from './main';
+import {Controller} from './controller';
 import {BookmarkTreeView} from './bookmark_tree_view';
 import {BookmarkTreeItem} from './bookmark_tree_item';
 import { Bookmark } from "./functional_types";
 
 export function activate(context: vscode.ExtensionContext) {
 	let treeView: BookmarkTreeView = new BookmarkTreeView();
-	let main: Controller = new Controller(context, treeView.refreshCallback.bind(treeView));
+	let controller: Controller = new Controller(context, treeView.refreshCallback.bind(treeView));
 
 	// 切换标签的命令
 	let disposable;
 	disposable = vscode.commands.registerTextEditorCommand('bookmark_x.toggleBookmark', (textEditor) => {
-		main.actionToggleBookmark(textEditor);
+		controller.actionToggleBookmark(textEditor);
 	});
 	context.subscriptions.push(disposable);
 
 	disposable = vscode.commands.registerTextEditorCommand('bookmark_x.toggleLabeledBookmark', (textEditor) => {
-		main.actionToggleLabeledBookmark(textEditor);
+		controller.actionToggleLabeledBookmark(textEditor);
 	});
 	context.subscriptions.push(disposable);
 
 	// 添加分组的命令
 	disposable = vscode.commands.registerCommand(
-		'bookmark_x.addGroup', () => main.actionAddGroup()
+		'bookmark_x.addGroup', () => controller.actionAddGroup()
 	);
 	context.subscriptions.push(disposable);
 
@@ -43,8 +43,9 @@ export function activate(context: vscode.ExtensionContext) {
 	);
 	context.subscriptions.push(disposable);
 
+	// triggered by clicking bookmark treeitem, jump to bookmark
 	disposable = vscode.commands.registerCommand(
-		'bookmark_x.jumpToBookmark', (bookmark: Bookmark) => main.jumpToBookmark(bookmark)
+		'bookmark_x.jumpToBookmark', (bookmark_uri: string) => controller.jumpToBookmark(bookmark_uri)
 	);
 	context.subscriptions.push(disposable);
 
@@ -52,17 +53,33 @@ export function activate(context: vscode.ExtensionContext) {
 		'bookmark_x.editBookmarkName', (item: BookmarkTreeItem) => treeView.editBookmarkLabel(item)
 	);
 	context.subscriptions.push(disposable);
+	
+	disposable = vscode.commands.registerCommand(
+		'bookmark_x.saveBookmarksInWorkspace', () => controller.actionSaveSerializedRoot()
+	);
+	context.subscriptions.push(disposable);
+	
+	disposable = vscode.commands.registerCommand(
+		'bookmark_x.clearData', () => controller.actionClearData()
+	);
+	context.subscriptions.push(disposable);
 
-	treeView.init(main);
+	disposable = vscode.commands.registerCommand(
+		'bookmark_x.loadBookmarksInWorkSpace', () => controller.actionLoadSerializedRoot()
+	);
+	context.subscriptions.push(disposable);
+
+
+	treeView.init(controller);
 	let activeEditor = vscode.window.activeTextEditor;
 
 	if (activeEditor) {
-		main.updateDecorations();
+		controller.updateDecorations();
 	}
 	vscode.window.onDidChangeActiveTextEditor(editor => {
 		activeEditor = editor;
 		if (activeEditor) {
-			main.updateDecorations();
+			controller.updateDecorations();
 		}
 	}, null, context.subscriptions);
 }

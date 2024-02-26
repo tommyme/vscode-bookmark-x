@@ -4,8 +4,10 @@ import {
     TextEditor,
     TextEditorDecorationType,
     window,
-    Uri
+    Uri,
+    workspace
 } from 'vscode';
+import * as path from 'path'
 import { Bookmark, RootGroup } from "./functional_types";
 import {Group} from './functional_types';
 import {SerializableGroup} from './serializable_type';
@@ -87,14 +89,14 @@ export class Controller {
         let documentFsPath = textEditor.document.uri.fsPath;
         // 可能存在着多个光标
         for (let selection of textEditor.selections) {
-            let lineNumber = selection.start.line;
-            let characterNumber = selection.start.character;
-            let lineText = textEditor.document.lineAt(lineNumber).text.trim();
+            let line = selection.start.line;
+            let col = selection.start.character;
+            let lineText = textEditor.document.lineAt(line).text.trim();
 
             this.toggleBookmark(
                 documentFsPath,
-                lineNumber,
-                characterNumber,
+                line,
+                col,
                 lineText,
                 this.activeGroup,
             );
@@ -116,7 +118,7 @@ export class Controller {
 
         // 获取已存在的标签
         const existingBookmark = this.getBookmarksInFile(fsPath).find((bookmark) => {
-            return bookmark.lineNumber === lineNumber && this.activeGroup.getDecoration() === bookmark.getDecoration();
+            return bookmark.line === lineNumber && this.activeGroup.getDecoration() === bookmark.getDecoration();
         });
 
         if (typeof existingBookmark !== "undefined") {
@@ -164,6 +166,43 @@ export class Controller {
             this.addGroup2Root(new_group)
         });
     }
+
+    public async actionSaveSerializedRoot() {
+        let content: string = JSON.stringify(this.fake_root_group.serialize(), undefined, 2)
+        let proj_folder = workspace.workspaceFolders![0].uri.path
+        let uri = Uri.file(
+            path.join(proj_folder, '.vscode', 'bookmark_x.json')
+        );
+        let bytes = Uint8Array.from(content.split('').map(c => c.charCodeAt(0)));
+        await workspace.fs.writeFile(uri, bytes)
+        window.showInformationMessage("保存完毕")
+    }
+    public async actionLoadSerializedRoot() {
+        let proj_folder = workspace.workspaceFolders![0].uri.path
+        let uri = Uri.file(
+            path.join(proj_folder, '.vscode', 'bookmark_x.json')
+        );
+        await workspace.fs.readFile(uri).then(
+            content => {
+                let obj = JSON.parse(content.toString())
+                // let pre_root_group = this.fake_root_group
+                this.fake_root_group = SerializableGroup.build_root(obj)
+                this.fake_root_group.cache_build()
+                // TODO 内存优化 delete this.fake_root_group
+                this.tprovider.root_group = this.fake_root_group
+                this.tprovider.treeview?.init(this)
+                this.updateDecorations()
+                this.saveState()
+            }
+        )
+
+    }
+
+    public actionClearData() {
+        this.ctx.workspaceState.update(this.savedRootNodeKey, "");
+        this.ctx.workspaceState.update(this.savedActiveGroupKey, "");
+    }
+
     // 切换标签
     private toggleBookmark(
         fsPath: string,
@@ -174,7 +213,7 @@ export class Controller {
     ) {
         // 获取已存在的标签
         const existingBookmark = this.getBookmarksInFile(fsPath).find((bookmark) => {
-            return bookmark.lineNumber === lineNumber && this.activeGroup.getDecoration() === bookmark.getDecoration();
+            return bookmark.line === lineNumber && this.activeGroup.getDecoration() === bookmark.getDecoration();
         });
 
         // 如果已存在标签，就删除
@@ -246,13 +285,15 @@ export class Controller {
     }
 
     private addGroup2Root(group: Group) {
-        this.fake_root_group.add_group(group)
+        let father = this.fake_root_group.add_group(group)
+        father.sortGroupBookmark()
         this.updateDecorations()
         this.saveState()
     }
 
     public addBookmark(bm: Bookmark) {
-        this.fake_root_group.add_bookmark_recache(bm)
+        let group = this.fake_root_group.add_bookmark_recache(bm)
+        group.sortGroupBookmark()
         this.updateDecorations()
         this.saveState()
     }
@@ -330,7 +371,7 @@ export class Controller {
             .forEach(bookmark => {
                 let decoration = bookmark.getDecoration();
                 if (decoration !== null) {
-                    lineDecorations.set(bookmark.lineNumber, decoration);
+                    lineDecorations.set(bookmark.line, decoration);
                 } else {
                     let a=1
                 }
@@ -341,9 +382,9 @@ export class Controller {
             .forEach(bookmark => {
                 let decoration = bookmark.getDecoration();
                 if (decoration !== null) {
-                    if (!lineDecorations.has(bookmark.lineNumber)) {
+                    if (!lineDecorations.has(bookmark.line)) {
                         // 其他组里面的, 和当前组里面的没有冲突
-                        lineDecorations.set(bookmark.lineNumber, decoration);
+                        lineDecorations.set(bookmark.line, decoration);
                     } else {
                         // 其他组里面的, 和当前组里面有冲突
                         this.decos2remove.push(decoration);
@@ -375,14 +416,30 @@ export class Controller {
         return fileBookmarks
     }
 
-    public jumpToBookmark(bookmark: Bookmark,) {
+    /**
+     * need to refresh linetext
+     * @param {type} param1 - param1 desc
+     * @returns {type} - return value desc
+     */
+    public jumpToBookmark(bookmark_uri: string) {
+        let bookmark = this.fake_root_group.get_node(bookmark_uri, "bookmark") as Bookmark
         window.showTextDocument(Uri.file(bookmark.fsPath), {
             selection: new Range(
-                bookmark.lineNumber,
-                bookmark.characterNumber,
-                bookmark.lineNumber,
-                bookmark.characterNumber
+                bookmark.line,
+                bookmark.col,
+                bookmark.line,
+                bookmark.col
             )
-        });
+        }).then(
+            editor => {
+                // 更新lineText
+                let lineText = editor.document.lineAt(bookmark.line).text.trim()
+                if (lineText != bookmark.lineText) {
+                    bookmark.lineText = lineText
+                    this.treeViewRefreshCallback()
+                    this.saveState()
+                }
+            }
+        )
     }
 }

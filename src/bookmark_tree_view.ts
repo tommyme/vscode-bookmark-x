@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import {Controller} from './main';
+import {Controller} from './controller';
 import {BookmarkTreeItem} from './bookmark_tree_item';
 
 export class BookmarkTreeView {
@@ -13,15 +13,13 @@ export class BookmarkTreeView {
         if (this.treeDataProviderByGroup !== null) {
             this.treeDataProviderByGroup.refresh();
         }
-        if (this.treeDataProviderByFile !== null) {
-            this.treeDataProviderByFile.refresh();
-        }
     }
 
     public async init(controller: Controller) {
         this.controller = controller;
 
         this.treeDataProviderByGroup = this.controller.tprovider;
+        this.controller.tprovider.treeview = this
         // this.treeDataProviderByFile = this.controller.getTreeDataProviderByFile();
 
         vscode.window.createTreeView('bookmarksByGroup', {
@@ -29,12 +27,6 @@ export class BookmarkTreeView {
             dragAndDropController: this.treeDataProviderByGroup,
             showCollapseAll: true, canSelectMany: true
         });
-
-        // vscode.window.createTreeView('bookmarksByFile', {
-        //     treeDataProvider: this.treeDataProviderByFile,
-        //     dragAndDropController: this.treeDataProviderByFile,
-        //     showCollapseAll: true, canSelectMany: true
-        // });
     }
 
     public activateGroup(treeItem: BookmarkTreeItem) {

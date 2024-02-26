@@ -49,34 +49,32 @@ export class SerializableGroup implements BaseSerializable {
 
 export class SerializableBookmark implements BaseSerializable {
     fsPath: string;
-    lineNumber: number;
-    characterNumber: number;
+    line: number;
+    col: number;
     name: string;
     type: string="bookmark";
     lineText: string;
-    isLineNumberChanged: boolean;
     uri: string;
 
     constructor(
         fsPath: string,
-        lineNumber: number,
-        characterNumber: number,
+        line: number,
+        col: number,
         name: string,
         lineText: string,
         uri: string
     ) {
         this.fsPath = fsPath;
-        this.lineNumber = lineNumber;
-        this.characterNumber = characterNumber;
+        this.line = line;
+        this.col = col;
         this.name = name;
         this.lineText = lineText;
-        this.isLineNumberChanged = false;
         this.uri = uri;
     }
 
     public static build(obj: any): Bookmark {
         return new Bookmark(
-            obj.fsPath, obj.lineNumber, obj.characterNumber, 
+            obj.fsPath, obj.line, obj.col, 
             obj.name, obj.lineText, obj.uri
         )
     }

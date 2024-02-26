@@ -120,17 +120,44 @@ export class Group extends BaseFunctional {
     public add_group(group: Group) {
         let father_group = this.get_node(group.uri, 'group') as Group
         father_group.children.push(group)
+        return father_group
     }
 
     public sortChildrenBookmarks(fn: Function) {
         // this.children.sort(fn);
     }
+
+    public sortGroupBookmark() {
+        this.children.sort((a, b) => {
+            if (a.type === 'group' && b.type === 'bookmark') {
+                return -1; // 'group' 排在 'bookmark' 前面
+            } else if (a.type === 'bookmark' && b.type === 'group') {
+                return 1; // 'bookmark' 排在 'group' 后面
+            } else if (a.type === b.type) {
+                return a.name.localeCompare(b.name); // 相同 type 按照 name 排序
+            } else {
+                return 0; // 保持原有顺序
+            }
+        })
+    }
+
+    /**
+     * 查看孩子里面有没有名称冲突
+     * @param {type} param1 - param1 desc
+     * @returns {type} - return value desc
+     */
+    public checkConflictName(node: BaseFunctional) {
+        this.children.forEach(child => {
+            if (child.name === node.name) { return true }
+        })
+        return false
+    }
 }
 
 export class Bookmark extends BaseFunctional {
     fsPath: string;
-    lineNumber: number;
-    characterNumber: number;
+    line: number;
+    col: number;
     lineText: string;
     failedJump: boolean;
     isLineNumberChanged: boolean;
@@ -138,32 +165,20 @@ export class Bookmark extends BaseFunctional {
 
     constructor(
         fsPath: string,
-        lineNumber: number,
-        characterNumber: number,
+        line: number,
+        col: number,
         name: string = "",
         lineText: string,
         uri: string
     ) {
         super(name, uri, "bookmark", [])
         this.fsPath = fsPath;
-        this.lineNumber = lineNumber;
-        this.characterNumber = characterNumber;
+        this.line = line;
+        this.col = col;
         this.lineText = lineText;
+        // not used
         this.failedJump = false;
         this.isLineNumberChanged = false;
-    }
-
-    public static fromSerialized(
-        serialized: SerializableBookmark,
-    ): Bookmark {
-        return new Bookmark(
-            serialized.fsPath,
-            serialized.lineNumber,
-            serialized.characterNumber,
-            serialized.name,
-            serialized.lineText,
-            serialized.uri
-        );
     }
 
     public getDecoration() {
@@ -172,8 +187,8 @@ export class Bookmark extends BaseFunctional {
 
     public static sortByLocation(a: Bookmark, b: Bookmark): number {
         return a.fsPath.localeCompare(b.fsPath)
-            || (a.lineNumber - b.lineNumber)
-            || (a.characterNumber - b.characterNumber);
+            || (a.line - b.line)
+            || (a.col - b.col);
     }
 
     // 根据label排序
@@ -189,7 +204,7 @@ export class Bookmark extends BaseFunctional {
 
     public serialize(): SerializableBookmark {
         return new SerializableBookmark(
-            this.fsPath, this.lineNumber, this.characterNumber,
+            this.fsPath, this.line, this.col,
             this.name, this.lineText, this.uri
         );
     }

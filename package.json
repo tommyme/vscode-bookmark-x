@@ -4,7 +4,7 @@
 	"description": "Bookmark plugin with grouping support",
 	"version": "0.0.1",
 	"publisher": "tommyme",
-	"icon": "resources/bookmark.png",
+	"icon": "resources/icon.jpg",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/tommyme/book_mark_plugin"
@@ -36,6 +36,14 @@
 			{
 				"command": "bookmark_x.clearData",
 				"title": "bookmark_x: clear data"
+			},
+			{
+				"command": "bookmark_x.saveBookmarksInWorkspace",
+				"title": "bookmark_x: save bookmarks in workspace"
+			},
+			{
+				"command": "bookmark_x.loadBookmarksInWorkSpace",
+				"title": "bookmark_x: load bookmarks in workspace"
 			},
 			{
 				"command": "bookmark_x.activateGroup",

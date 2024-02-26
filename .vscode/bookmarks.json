@@ -1,10 +1,15 @@
 {
 	"files": [
 		{
-			"path": "src/main.ts",
+			"path": "src/controller.ts",
 			"bookmarks": [
 				{
-					"line": 220,
+					"line": 35,
+					"column": 47,
+					"label": ""
+				},
+				{
+					"line": 259,
 					"column": 32,
 					"label": "编辑标签后更新"
 				}

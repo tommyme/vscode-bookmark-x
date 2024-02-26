@@ -3,15 +3,17 @@ import { Bookmark } from "./functional_types";
 import {BookmarkTreeItem} from './bookmark_tree_item';
 import {Group, RootGroup} from './functional_types';
 import * as vscode from 'vscode';
-import { Controller } from './main';
+import { Controller } from './controller';
+import { BookmarkTreeView } from './bookmark_tree_view';
 
 
 export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<BookmarkTreeItem>, vscode.TreeDragAndDropController<BookmarkTreeItem>  {
 	dropMimeTypes = ['application/vnd.code.tree.bookmarkitem'];
 	dragMimeTypes = ['application/vnd.code.tree.bookmarkitem'];
-    private root_group: RootGroup;
+    public root_group: RootGroup;
     private changeEmitter = new EventEmitter<BookmarkTreeItem | undefined | null | void>();
     private controller: Controller
+    public treeview?: BookmarkTreeView
 
     readonly onDidChangeTreeData = this.changeEmitter.event;
 

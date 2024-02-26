@@ -16,15 +16,22 @@ export class BookmarkTreeItem extends TreeItem {
         result.tooltip = workspace.asRelativePath(bookmark.fsPath) + ': ' + label;
         result.command = {
             "title": "jump to bookmark",
-            "command": "bookmark-plugin.jumpToBookmark",
-            "arguments": [bookmark]
+            "command": "bookmark_x.jumpToBookmark",
+            "arguments": [bookmark.get_full_uri()]
         };
         return result;
     }
 
     static fromGroup(group: Group, isActiveGroup: boolean): BookmarkTreeItem {
         const label = group.name;
-        const result = new BookmarkTreeItem(label, isActiveGroup ?TreeItemCollapsibleState.Expanded : TreeItemCollapsibleState.Collapsed);
+        const get_collapse_state = () => {
+            if (group.children.length > 0) {
+                return isActiveGroup ? TreeItemCollapsibleState.Expanded : TreeItemCollapsibleState.Collapsed
+            } else {
+                return TreeItemCollapsibleState.None
+            }
+        }
+        const result = new BookmarkTreeItem(label, get_collapse_state());
         result.contextValue = 'group';
         result.iconPath = ThemeIcon.Folder;
         result.base = group;

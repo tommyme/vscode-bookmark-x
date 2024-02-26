@@ -34,6 +34,9 @@ export class DecorationFactory {
 
         try {
             let stat = await workspace.fs.stat(svgUri);
+            Uri.file(
+                path.join(__dirname, '..', 'resources', 'gutter_icon_bm.svg')
+            );
             if (stat.size < 1) {
                 await workspace.fs.writeFile(svgUri, bytes);
             }
