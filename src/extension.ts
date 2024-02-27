@@ -37,6 +37,11 @@ export function activate(context: vscode.ExtensionContext) {
 	);
 	context.subscriptions.push(disposable);
 
+	disposable = vscode.commands.registerCommand(
+		'bookmark_x.editGroupName', (item: BookmarkTreeItem) => treeView.editNodeLabel(item)
+	);
+	context.subscriptions.push(disposable);
+
 	// 通过面板-删除标签
 	disposable = vscode.commands.registerCommand(
 		'bookmark_x.deleteBookmark', (item: BookmarkTreeItem) => treeView.deleteBookmark(item)
@@ -50,7 +55,7 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(disposable);
 
 	disposable = vscode.commands.registerCommand(
-		'bookmark_x.editBookmarkName', (item: BookmarkTreeItem) => treeView.editBookmarkLabel(item)
+		'bookmark_x.editBookmarkName', (item: BookmarkTreeItem) => treeView.editNodeLabel(item)
 	);
 	context.subscriptions.push(disposable);
 	

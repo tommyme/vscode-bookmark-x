@@ -114,6 +114,11 @@ export class Group extends BaseFunctional {
         // this.children.sort(fn);
     }
 
+    /**
+     * sort (group and bookmarks) in self
+     * @param {type} param1 - param1 desc
+     * @returns {type} - return value desc
+     */
     public sortGroupBookmark() {
         this.children.sort((a, b) => {
             if (a.type === 'group' && b.type === 'bookmark') {
@@ -121,7 +126,7 @@ export class Group extends BaseFunctional {
             } else if (a.type === 'bookmark' && b.type === 'group') {
                 return 1; // 'bookmark' 排在 'group' 后面
             } else if (a.type === b.type) {
-                return a.name.localeCompare(b.name); // 相同 type 按照 name 排序
+                return a.name.localeCompare(b.name, "zh-Hant"); // 相同 type 按照 name 排序
             } else {
                 return 0; // 保持原有顺序
             }
@@ -248,7 +253,7 @@ export class RootGroup extends Group {
         } else {
             throw new Error("add bookmark 时 对应的group没找到!")
         }
-        this.cache_add_bm(bookmark)
+        this.cache_add_node(bookmark)
         return group
     }
 
@@ -319,11 +324,11 @@ export class RootGroup extends Group {
      * @param {type} param1 - param1 desc
      * @returns {type} - return value desc
      */
-    public cache_add_bm(bm: Bookmark) {
-        this.cache.set(bm.get_full_uri(), bm)
+    public cache_add_node(node: Bookmark|Group) {
+        this.cache.set(node.get_full_uri(), node)
     }
-    public cache_del_bm(bm: Bookmark) {
-        this.cache.del(bm.get_full_uri())
+    public cache_del_node(node: Bookmark|Group) {
+        this.cache.del(node.get_full_uri())
     }
 
     /**

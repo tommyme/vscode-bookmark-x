@@ -51,9 +51,9 @@
 				"icon": "$(eye)"
 			},
 			{
-				"command": "bookmark_x.addSubGroup",
-				"title": "add sub group",
-				"icon": "$(add)"
+				"command": "bookmark_x.editGroupName",
+				"title": "edit group name",
+				"icon": "$(edit)"
 			},
 			{
 				"command": "bookmark_x.deleteGroup",
@@ -99,7 +99,7 @@
 				"group": "inline"
 			  },
 			  {
-				"command": "bookmark_x.addSubGroup",
+				"command": "bookmark_x.editGroupName",
 				"when": "view == bookmarksByGroup && viewItem == group",
 				"group": "inline"
 			  },

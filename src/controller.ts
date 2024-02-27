@@ -13,6 +13,7 @@ import {Group} from './functional_types';
 import {SerializableGroup} from './serializable_type';
 import * as util from './util';
 import {BookmarkTreeDataProvider} from './bookmark_tree_data_provider';
+import { TextEncoder } from 'util';
 
 export class Controller {
     public readonly savedBookmarksKey = 'bookmarkDemo.bookmarks'; // 缓存标签的key
@@ -24,7 +25,7 @@ export class Controller {
 
     private ctx: ExtensionContext;
     public activeGroup!: Group;
-    private decos2remove: Array<TextEditorDecorationType>=[];
+    private decos2remove = new Map<TextEditorDecorationType, number>();
     private fake_root_group!: RootGroup;
     public tprovider: BookmarkTreeDataProvider;
 
@@ -176,7 +177,8 @@ export class Controller {
         let uri = Uri.file(
             path.join(proj_folder, '.vscode', 'bookmark_x.json')
         );
-        let bytes = Uint8Array.from(content.split('').map(c => c.charCodeAt(0)));
+        const encoder = new TextEncoder();
+        let bytes = encoder.encode(content)
         await workspace.fs.writeFile(uri, bytes)
         window.showInformationMessage("保存完毕")
     }
@@ -243,37 +245,41 @@ export class Controller {
         }
 
         group.children.splice(index, 1);
-        this.decos2remove.push(bookmark.getDecoration()!);
+        this.decos2remove.set(bookmark.getDecoration()!, bookmark.line);
 
         this.updateDecorations();
-        this.fake_root_group.cache_del_bm(bookmark)
+        this.fake_root_group.cache_del_node(bookmark)
         this.saveState();
     }
 
     // 编辑label
-    private _editBookmarkLabel(bookmark: Bookmark, val: string) {
-        let group = this.fake_root_group.get_node(bookmark.uri, "group") as Group
+    private _editNodeLabel(node: Bookmark|Group, val: string): Group|undefined {
+        let group = this.fake_root_group.get_node(node.uri, "group") as Group
 
-        let index = group.children.indexOf(bookmark);
+        let index = group.children.indexOf(node);
         if (index < 0) {
-            // TODO tip
-            return;
+            return undefined;
         }
 
         group.children[index].name = val;
+        return group
     }
-    public editBookmarkLabel(bookmark: Bookmark, val: string): boolean {
+    public editNodeLabel(node: Bookmark|Group, val: string): boolean {
         // 命名冲突
-        if ( this.fake_root_group.cache.check_uri_exists(util.joinTreeUri([bookmark.uri, val])) ) {
+        if ( this.fake_root_group.cache.check_uri_exists(util.joinTreeUri([node.uri, val])) ) {
             return false
         }
-        // TODO sort
-        this.fake_root_group.cache.del(bookmark.get_full_uri())
-        this._editBookmarkLabel(bookmark, val)
-        this.fake_root_group.cache_add_bm(bookmark)
-        this.saveState()
-        this.updateDecorations()
-        return true
+        this.fake_root_group.cache.del(node.get_full_uri())
+        let father = this._editNodeLabel(node, val)
+        if (father) {
+            father.sortGroupBookmark()
+            this.fake_root_group.cache_add_node(node)
+            this.saveState()
+            this.updateDecorations()
+            return true
+        } else {
+            return false
+        }
     }
 
     /**
@@ -364,18 +370,21 @@ export class Controller {
             let editorDecos = this.getDecoListInFile(fsPath);
     
             // remove decos in this.decos2remove
-            this.decos2remove.forEach(deco2rm => {
-                if (editorDecos.has(deco2rm)) {
-                    editorDecos.set(deco2rm, [])    // 设置空的range参数, 后面调用setDecorations的时候就会删除
+            for (let [deco, line] of this.decos2remove) {
+                if (editorDecos.has(deco)) {
+                    let ranges = editorDecos.get(deco)
+                    let idx = ranges?.findIndex(item => item.start.line == line)
+                    ranges?.splice(idx!, 1)
+                    // editorDecos.set(deco, [])    // 设置空的range参数, 后面调用setDecorations的时候就会删除
                 }
-            })
+            }
             
             // set decos, remove decos
             for (let [decoration, ranges] of editorDecos) {
                 editor.setDecorations(decoration, ranges);
             }
 
-            this.decos2remove = []
+            this.decos2remove.clear()
         }
         this.treeViewRefreshCallback();
     }
@@ -393,30 +402,12 @@ export class Controller {
         let fileBookmarks = this.getBookmarksInFile(fsPath)
 
         // 在当前group
-        fileBookmarks.filter(bookmark => bookmark.group == this.activeGroup)
-            .forEach(bookmark => {
-                let decoration = bookmark.getDecoration();
-                if (decoration !== null) {
-                    lineDecorations.set(bookmark.line, decoration);
-                } else {
-                    let a=1
-                }
-            });
-
-        // 不在当前group
-        fileBookmarks.filter(bookmark => bookmark.group != this.activeGroup)
-            .forEach(bookmark => {
-                let decoration = bookmark.getDecoration();
-                if (decoration !== null) {
-                    if (!lineDecorations.has(bookmark.line)) {
-                        // 其他组里面的, 和当前组里面的没有冲突
-                        lineDecorations.set(bookmark.line, decoration);
-                    } else {
-                        // 其他组里面的, 和当前组里面有冲突
-                        this.decos2remove.push(decoration);
-                    }
-                }
-            });
+        fileBookmarks.forEach(bookmark => {
+            let decoration = bookmark.getDecoration();
+            if (decoration !== null) {
+                lineDecorations.set(bookmark.line, decoration);
+            }
+        });
 
         // 基于lineDeco 创建 editorDeco
         for (let [lineNumber, decoration] of lineDecorations) {

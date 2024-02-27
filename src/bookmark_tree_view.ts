@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import {Controller} from './controller';
 import {BookmarkTreeItem} from './bookmark_tree_item';
+import { Bookmark, Group } from './functional_types';
 
 export class BookmarkTreeView {
 
@@ -53,17 +54,21 @@ export class BookmarkTreeView {
         this.controller!.deleteBookmark(bookmark!);
     }
 
-    public editBookmarkLabel(treeItem: BookmarkTreeItem) {
-        const bookmark = treeItem.getBaseBookmark();
-        vscode.window.showInputBox({
-            placeHolder: '请输入标签文本',
-        }).then((label) => {
-            if (label) {
-                if (!this.controller!.editBookmarkLabel(bookmark!, label!)) {
-                    vscode.window.showInformationMessage("edit fail: label exists!")
+    public editNodeLabel(treeItem: BookmarkTreeItem) {
+        const node = treeItem.base
+        if (node) {
+            vscode.window.showInputBox({
+                placeHolder: '请输入标签文本',
+            }).then((label) => {
+                if (label) {
+                    if (!this.controller!.editNodeLabel(node, label)) {
+                        vscode.window.showInformationMessage("edit fail: label exists!")
+                    }
                 }
-            }
-            this.controller!.updateDecorations();
-        });        
+                this.controller!.updateDecorations();
+            });        
+        } else {
+            vscode.window.showInformationMessage("node is null")
+        }
     }
 }

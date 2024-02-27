@@ -82,7 +82,7 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
         if (droppingItems.length === 1) {
             let full_uri = droppingItems[0]
             let item = this.root_group.get_node(full_uri)
-            if (item == target!.base) {
+            if (target && item == target!.base) {
                 vscode.window.showInformationMessage("[x] 源 目标 相同");
                 return
             }
