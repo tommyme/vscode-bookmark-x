@@ -5,7 +5,8 @@ import {
     TextEditorDecorationType,
     window,
     Uri,
-    workspace
+    workspace,
+    TextDocumentChangeEvent
 } from 'vscode';
 import * as path from 'path'
 import { Bookmark, RootGroup } from "./functional_types";
@@ -28,6 +29,7 @@ export class Controller {
     private decos2remove = new Map<TextEditorDecorationType, number>();
     private fake_root_group!: RootGroup;
     public tprovider: BookmarkTreeDataProvider;
+    public _range?: Range;
 
     constructor(ctx: ExtensionContext, treeViewRefreshCallback: () => void) {
         this.ctx = ctx
@@ -416,8 +418,9 @@ export class Controller {
                 ranges = new Array<Range>();
                 editorDecorations.set(decoration, ranges);
             }
-
-            ranges.push(new Range(lineNumber, 0, lineNumber, 0));
+            let myrange = new Range(lineNumber, 0, lineNumber, 0)
+            this._range = myrange
+            ranges.push(myrange);
         }
 
         return editorDecorations;
@@ -458,5 +461,55 @@ export class Controller {
                 }
             }
         )
+    }
+
+    public documentChangeHandle(event: TextDocumentChangeEvent) {
+        let changes = event.contentChanges
+        if (changes.length === 0) { return }
+        let fsPath = event.document.uri.fsPath
+        // 针对常见场景优化
+        let file_bm = this.getBookmarksInFile(fsPath)
+
+        changes.forEach(change => {
+            let txt = change.text
+            let range = change.range
+            let num_enter = (txt.match(/\n/g) || []).length
+            
+            let st_line_text = event.document.lineAt(range.start.line).text
+            let st_line_chars = st_line_text.length
+            let st_from_start = st_line_text.slice(0, range.start.character+1).trim() === ''
+            let st_to_end = range.start.character === st_line_chars
+            let st_line_empty = st_line_text.trim() === ''
+
+            let ed_line_text = event.document.lineAt(range.end.line).text
+            let ed_line_chars = ed_line_text.length
+            let ed_from_start = ed_line_text.slice(0, range.end.character+1).trim() === ''
+            let ed_to_end = range.end.character === ed_line_chars
+
+            if (range.start.line === range.end.line) {
+                if (num_enter > 0) {
+                    file_bm.forEach(bm => {
+                        if (bm.line > range.start.line) {
+                            bm.line += num_enter
+                        } else if (bm.line == range.start.line) {
+                            // 如果from start就移动
+                            if (st_from_start) { bm.line += num_enter } 
+                        }
+                    })
+                }
+            } else {
+                if (true) {
+                    file_bm.forEach(bm => {
+                        if (bm.line>=range.start.line && bm.line<range.end.line) {
+                            this.deleteBookmark(bm)
+                        } else if (bm.line>=range.end.line) {
+                            bm.line -= range.end.line - range.start.line + num_enter
+                        }
+                    })
+                }
+            }
+        })
+        this.updateDecorations()
+        this.saveState()
     }
 }

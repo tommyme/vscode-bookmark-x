@@ -59,6 +59,7 @@ export class BookmarkTreeView {
         if (node) {
             vscode.window.showInputBox({
                 placeHolder: '请输入标签文本',
+                value: node.name
             }).then((label) => {
                 if (label) {
                     if (!this.controller!.editNodeLabel(node, label)) {

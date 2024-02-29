@@ -87,6 +87,9 @@ export function activate(context: vscode.ExtensionContext) {
 			controller.updateDecorations();
 		}
 	}, null, context.subscriptions);
+	vscode.workspace.onDidChangeTextDocument(e => {
+		controller.documentChangeHandle(e)
+	})
 }
 
 export function deactivate() {}

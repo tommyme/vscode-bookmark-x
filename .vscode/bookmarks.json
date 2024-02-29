@@ -4,12 +4,12 @@
 			"path": "src/controller.ts",
 			"bookmarks": [
 				{
-					"line": 36,
+					"line": 38,
 					"column": 47,
 					"label": ""
 				},
 				{
-					"line": 277,
+					"line": 279,
 					"column": 32,
 					"label": "编辑标签后更新"
 				}
@@ -29,7 +29,7 @@
 			"path": "src/bookmark_tree_view.ts",
 			"bookmarks": [
 				{
-					"line": 63,
+					"line": 64,
 					"column": 62,
 					"label": ""
 				}
