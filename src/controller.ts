@@ -8,7 +8,7 @@ import {
     workspace,
     TextDocumentChangeEvent
 } from 'vscode';
-import * as path from 'path'
+import * as path from 'path';
 import { Bookmark, RootGroup } from "./functional_types";
 import {Group} from './functional_types';
 import {SerializableGroup} from './serializable_type';
@@ -27,16 +27,16 @@ export class Controller {
     private ctx: ExtensionContext;
     public activeGroup!: Group;
     private decos2remove = new Map<TextEditorDecorationType, number>();
-    private fake_root_group!: RootGroup;
+    public fake_root_group!: RootGroup;
     public tprovider: BookmarkTreeDataProvider;
     public _range?: Range;
 
     constructor(ctx: ExtensionContext, treeViewRefreshCallback: () => void) {
-        this.ctx = ctx
+        this.ctx = ctx;
         this.treeViewRefreshCallback = treeViewRefreshCallback;
         // DecorationFactory.svgDir = this.ctx.globalStorageUri; // 缓存地址
         this.restoreSavedState(); // 读取上一次记录的状态 初始化fake root group
-        this.tprovider = new BookmarkTreeDataProvider(this.fake_root_group, this)
+        this.tprovider = new BookmarkTreeDataProvider(this.fake_root_group, this);
     }
 
     // 保存状态 activeGroupName and fake_root_group(serialized)
@@ -56,12 +56,13 @@ export class Controller {
         let rootNodeSerialized: SerializableGroup | undefined = this.ctx.workspaceState.get(this.savedRootNodeKey);
         // rootNodeSerialized = undefined
         if (rootNodeSerialized) {
-            this.fake_root_group = SerializableGroup.build_root(rootNodeSerialized) as RootGroup
+            // TODO 针对fspath 不存在的书签 改变其显示样式 显示提示框，是否删除这些失效书签
+            this.fake_root_group = SerializableGroup.build_root(rootNodeSerialized) as RootGroup;
         } else {
-            this.fake_root_group = new RootGroup("", "", "", [])
+            this.fake_root_group = new RootGroup("", "", "", []);
         }
-        this.activeGroup = this.fake_root_group.get_node(activeGroupUri, 'group') as Group
-        this.fake_root_group.cache_build()
+        this.activeGroup = this.fake_root_group.get_node(activeGroupUri, 'group') as Group;
+        this.fake_root_group.cache_build();
     }
     /**
      * 装饰器 执行完动作之后update和save一下
@@ -69,13 +70,13 @@ export class Controller {
      * @returns {type} - return value desc
      */
     public static DecoUpdateSaveAfter(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-        const fn = descriptor.value
+        const fn = descriptor.value;
         descriptor.value = function(...rest: any) {
-            fn.apply(this, rest)
-            let x: any = this
+            fn.apply(this, rest);
+            let x: any = this;
             x.updateDecorations(); // 更新界面
             x.saveState(); // 保存最新状态
-        }
+        };
     }
 
 
@@ -150,11 +151,11 @@ export class Controller {
                 );
                 if (!this.addBookmark(bookmark)) {
                     window.showInformationMessage(`label与存在的bookmark冲突`);
-                    return
+                    return;
                 }
             } else {
                 window.showInformationMessage(`输入的label为空!`);
-                return
+                return;
             }
         });
     }
@@ -168,51 +169,51 @@ export class Controller {
             if (!groupName) {
                 return;
             }
-            let new_group = this.createGroupWithUri(groupName)
-            this.addGroup2Root(new_group)
+            let new_group = this.createGroupWithUri(groupName);
+            this.addGroup2Root(new_group);
         });
     }
 
     public async actionSaveSerializedRoot() {
-        let content: string = JSON.stringify(this.fake_root_group.serialize(), undefined, 2)
-        let proj_folder = workspace.workspaceFolders![0].uri.path
+        let content: string = JSON.stringify(this.fake_root_group.serialize(), undefined, 2);
+        let proj_folder = workspace.workspaceFolders![0].uri.path;
         let uri = Uri.file(
             path.join(proj_folder, '.vscode', 'bookmark_x.json')
         );
         const encoder = new TextEncoder();
-        let bytes = encoder.encode(content)
-        await workspace.fs.writeFile(uri, bytes)
-        window.showInformationMessage("保存完毕")
+        let bytes = encoder.encode(content);
+        await workspace.fs.writeFile(uri, bytes);
+        window.showInformationMessage("保存完毕");
     }
     public async actionLoadSerializedRoot() {
-        let proj_folder = workspace.workspaceFolders![0].uri.path
+        let proj_folder = workspace.workspaceFolders![0].uri.path;
         let uri = Uri.file(
             path.join(proj_folder, '.vscode', 'bookmark_x.json')
         );
         await workspace.fs.readFile(uri).then(
             content => {
-                let obj = JSON.parse(content.toString())
+                let obj = JSON.parse(content.toString());
                 // let pre_root_group = this.fake_root_group
-                this.fake_root_group = SerializableGroup.build_root(obj)
-                this.fake_root_group.cache_build()
+                this.fake_root_group = SerializableGroup.build_root(obj);
+                this.fake_root_group.cache_build();
                 // TODO 内存优化 delete this.fake_root_group
-                this.tprovider.root_group = this.fake_root_group
-                this.tprovider.treeview?.init(this)
-                this.updateDecorations()
-                this.saveState()
+                this.tprovider.root_group = this.fake_root_group;
+                this.tprovider.treeview?.init(this);
+                this.updateDecorations();
+                this.saveState();
             }
-        )
+        );
 
     }
 
     public actionClearData() {
         this.ctx.workspaceState.update(this.savedRootNodeKey, "");
         this.ctx.workspaceState.update(this.savedActiveGroupKey, "");
-        this.restoreSavedState()
-        this.tprovider.root_group = this.fake_root_group
-        this.tprovider.treeview?.init(this)
-        this.updateDecorations()
-        this.saveState()
+        this.restoreSavedState();
+        this.tprovider.root_group = this.fake_root_group;
+        this.tprovider.treeview?.init(this);
+        this.updateDecorations();
+        this.saveState();
     }
 
     // 切换标签
@@ -230,33 +231,42 @@ export class Controller {
 
         // 如果已存在标签，就删除
         if (existingBookmark) {
-            this.deleteBookmark(existingBookmark)
+            this.deleteBookmark(existingBookmark);
         } else {
             let bookmark = new Bookmark(fsPath, lineNumber, characterNumber, util.randomName(), lineText, group.get_full_uri());
             // TODO 需要应对小概率的随机串碰撞
-            this.addBookmark(bookmark)
+            this.addBookmark(bookmark);
         }
     }
 
     // 提供给treeView，删除标签
     public deleteBookmark(bookmark: Bookmark) {
-        let group = this.fake_root_group.get_node(bookmark.uri, 'group') as Group
+        let group = this.fake_root_group.get_node(bookmark.uri, 'group') as Group;
         let index = group.children.indexOf(bookmark);
         if (index < 0) {
             return;
         }
 
         group.children.splice(index, 1);
-        this.decos2remove.set(bookmark.getDecoration()!, bookmark.line);
-
+        this.fake_root_group.cache_del_node(bookmark);
         this.updateDecorations();
-        this.fake_root_group.cache_del_node(bookmark)
+        this.saveState();
+    }
+
+    public deleteBookmarks(bms: Array<Bookmark>) {
+        bms.forEach(bm => {
+            let group = this.fake_root_group.get_node(bm.uri, 'group') as Group;
+            let index = group.children.indexOf(bm);
+            group.children.splice(index, 1);
+            this.fake_root_group.cache_del_node(bm);
+        });
+        this.updateDecorations();
         this.saveState();
     }
 
     // 编辑label
     private _editNodeLabel(node: Bookmark|Group, val: string): Group|undefined {
-        let group = this.fake_root_group.get_node(node.uri, "group") as Group
+        let group = this.fake_root_group.get_node(node.uri, "group") as Group;
 
         let index = group.children.indexOf(node);
         if (index < 0) {
@@ -264,23 +274,23 @@ export class Controller {
         }
 
         group.children[index].name = val;
-        return group
+        return group;
     }
     public editNodeLabel(node: Bookmark|Group, val: string): boolean {
         // 命名冲突
         if ( this.fake_root_group.cache.check_uri_exists(util.joinTreeUri([node.uri, val])) ) {
-            return false
+            return false;
         }
-        this.fake_root_group.cache.del(node.get_full_uri())
-        let father = this._editNodeLabel(node, val)
+        this.fake_root_group.cache.del(node.get_full_uri());
+        let father = this._editNodeLabel(node, val);
         if (father) {
-            father.sortGroupBookmark()
-            this.fake_root_group.cache_add_node(node)
-            this.saveState()
-            this.updateDecorations()
-            return true
+            father.sortGroupBookmark();
+            this.fake_root_group.cache_add_node(node);
+            this.saveState();
+            this.updateDecorations();
+            return true;
         } else {
-            return false
+            return false;
         }
     }
 
@@ -291,13 +301,13 @@ export class Controller {
      */
     public deleteGroups(group: Group) {
         const wasActiveGroupDeleted = group === this.activeGroup;
-        let father_group = this.fake_root_group.get_node(group.uri, "group") as Group
-        let idx = father_group.children.indexOf(group)
+        let father_group = this.fake_root_group.get_node(group.uri, "group") as Group;
+        let idx = father_group.children.indexOf(group);
         if (idx < 0) {
             // TODO tip
-            return
+            return;
         }
-        father_group.children.splice(idx, 1)
+        father_group.children.splice(idx, 1);
 
         if (wasActiveGroupDeleted) {
             // 如果激活组被删除了, 就换一个组设置激活
@@ -311,25 +321,25 @@ export class Controller {
     private addGroup2Root(group: Group): boolean {
         
         if ( this.fake_root_group.cache.check_uri_exists(group.get_full_uri()) ) {
-            return false
+            return false;
         }
-        let father = this.fake_root_group.add_group(group)
-        father.sortGroupBookmark()
-        this.updateDecorations()
-        this.saveState()
-        return true
+        let father = this.fake_root_group.add_group(group);
+        father.sortGroupBookmark();
+        this.updateDecorations();
+        this.saveState();
+        return true;
     }
 
     public addBookmark(bm: Bookmark): boolean {
         // uri confliction
         if (this.fake_root_group.cache.check_uri_exists(bm.get_full_uri())) {
-            return false
+            return false;
         }
-        let group = this.fake_root_group.add_bookmark_recache(bm)
-        group.sortGroupBookmark()
-        this.updateDecorations()
-        this.saveState()
-        return true
+        let group = this.fake_root_group.add_bookmark_recache(bm);
+        group.sortGroupBookmark();
+        this.updateDecorations();
+        this.saveState();
+        return true;
     }
 
     /**
@@ -338,12 +348,12 @@ export class Controller {
      * @returns {type} - return value desc
      */
     public activateGroup(uri: string) {
-        let group = this.fake_root_group.get_node(uri, "group") as Group
+        let group = this.fake_root_group.get_node(uri, "group") as Group;
         if (group === this.activeGroup) {
             return;
         }
         this.activeGroup = group;
-        this.saveState()
+        this.saveState();
     }
 
     /**
@@ -352,9 +362,9 @@ export class Controller {
      * @returns {type} - Group
      */
     private createGroupWithUri(full_uri: string): Group {
-        let [group_uri, group_name] = util.splitString(full_uri)
+        let [group_uri, group_name] = util.splitString(full_uri);
         let group = new Group(group_name, util.randomColor(), group_uri);
-        return group
+        return group;
     }
 
     /**
@@ -370,23 +380,13 @@ export class Controller {
     
             let fsPath = editor.document.uri.fsPath;
             let editorDecos = this.getDecoListInFile(fsPath);
-    
-            // remove decos in this.decos2remove
-            for (let [deco, line] of this.decos2remove) {
-                if (editorDecos.has(deco)) {
-                    let ranges = editorDecos.get(deco)
-                    let idx = ranges?.findIndex(item => item.start.line == line)
-                    ranges?.splice(idx!, 1)
-                    // editorDecos.set(deco, [])    // 设置空的range参数, 后面调用setDecorations的时候就会删除
-                }
-            }
             
             // set decos, remove decos
             for (let [decoration, ranges] of editorDecos) {
                 editor.setDecorations(decoration, ranges);
             }
 
-            this.decos2remove.clear()
+            this.decos2remove.clear();
         }
         this.treeViewRefreshCallback();
     }
@@ -401,9 +401,8 @@ export class Controller {
         const lineDecorations = new Map<number, TextEditorDecorationType>();
 
         // 筛选当前页面的标签
-        let fileBookmarks = this.getBookmarksInFile(fsPath)
+        let fileBookmarks = this.getBookmarksInFile(fsPath);
 
-        // 在当前group
         fileBookmarks.forEach(bookmark => {
             let decoration = bookmark.getDecoration();
             if (decoration !== null) {
@@ -418,8 +417,8 @@ export class Controller {
                 ranges = new Array<Range>();
                 editorDecorations.set(decoration, ranges);
             }
-            let myrange = new Range(lineNumber, 0, lineNumber, 0)
-            this._range = myrange
+            let myrange = new Range(lineNumber, 0, lineNumber, 0);
+            this._range = myrange;
             ranges.push(myrange);
         }
 
@@ -428,12 +427,12 @@ export class Controller {
 
     // 获取已存在的标签
     private getBookmarksInFile(fsPath: string): Array<Bookmark> {
-        let fileBookmarks: Array<Bookmark> = []
+        let fileBookmarks: Array<Bookmark> = [];
         this.fake_root_group.cache.keys().forEach(full_uri => {
-           let item = this.fake_root_group.cache.get(full_uri) as Bookmark
-           if (item.type === "bookmark" && ((item.fsPath || null) === fsPath)) { fileBookmarks.push(item) }
-        })
-        return fileBookmarks
+            let item = this.fake_root_group.cache.get(full_uri) as Bookmark;
+            if (item.type === "bookmark" && ((item.fsPath || null) === fsPath)) { fileBookmarks.push(item); }
+        });
+        return fileBookmarks;
     }
 
     /**
@@ -442,7 +441,7 @@ export class Controller {
      * @returns {type} - return value desc
      */
     public jumpToBookmark(bookmark_uri: string) {
-        let bookmark = this.fake_root_group.get_node(bookmark_uri, "bookmark") as Bookmark
+        let bookmark = this.fake_root_group.get_node(bookmark_uri, "bookmark") as Bookmark;
         window.showTextDocument(Uri.file(bookmark.fsPath), {
             selection: new Range(
                 bookmark.line,
@@ -453,63 +452,76 @@ export class Controller {
         }).then(
             editor => {
                 // 更新lineText
-                let lineText = editor.document.lineAt(bookmark.line).text.trim()
+                let lineText = editor.document.lineAt(bookmark.line).text.trim();
                 if (lineText != bookmark.lineText) {
-                    bookmark.lineText = lineText
-                    this.treeViewRefreshCallback()
-                    this.saveState()
+                    bookmark.lineText = lineText;
+                    this.treeViewRefreshCallback();
+                    this.saveState();
                 }
             }
-        )
+        );
     }
 
     public documentChangeHandle(event: TextDocumentChangeEvent) {
-        let changes = event.contentChanges
-        if (changes.length === 0) { return }
-        let fsPath = event.document.uri.fsPath
-        // 针对常见场景优化
-        let file_bm = this.getBookmarksInFile(fsPath)
+        let changes = event.contentChanges;
+        if (changes.length === 0) { return; }
+        let fsPath = event.document.uri.fsPath;
+        // 针对常见场景优化 如单个、多个字符(除了\n)的书写
+        let file_bm = this.getBookmarksInFile(fsPath);
 
         changes.forEach(change => {
-            let txt = change.text
-            let range = change.range
-            let num_enter = (txt.match(/\n/g) || []).length
+            let txt = change.text;
+            let range = change.range;
+            let num_enter = (txt.match(/\n/g) || []).length;
             
-            let st_line_text = event.document.lineAt(range.start.line).text
-            let st_line_chars = st_line_text.length
-            let st_from_start = st_line_text.slice(0, range.start.character+1).trim() === ''
-            let st_to_end = range.start.character === st_line_chars
-            let st_line_empty = st_line_text.trim() === ''
+            let st_line_text = event.document.lineAt(range.start.line).text;
+            let st_line_chars = st_line_text.length;
+            let st_from_start = st_line_text.slice(0, range.start.character+1).trim() === '';
+            let st_to_end = range.start.character === st_line_chars;
+            let st_line_empty = st_line_text.trim() === '';
 
-            let ed_line_text = event.document.lineAt(range.end.line).text
-            let ed_line_chars = ed_line_text.length
-            let ed_from_start = ed_line_text.slice(0, range.end.character+1).trim() === ''
-            let ed_to_end = range.end.character === ed_line_chars
+            let ed_line_text = event.document.lineAt(range.end.line).text;
+            let ed_line_chars = ed_line_text.length;
+            let ed_from_start = ed_line_text.slice(0, range.end.character+1).trim() === '';
+            let ed_to_end = range.end.character === ed_line_chars;
 
             if (range.start.line === range.end.line) {
                 if (num_enter > 0) {
                     file_bm.forEach(bm => {
                         if (bm.line > range.start.line) {
-                            bm.line += num_enter
+                            bm.line += num_enter;
                         } else if (bm.line == range.start.line) {
                             // 如果from start就移动
-                            if (st_from_start) { bm.line += num_enter } 
+                            if (st_from_start) { bm.line += num_enter; } 
                         }
-                    })
+                    });
                 }
             } else {
                 if (true) {
                     file_bm.forEach(bm => {
-                        if (bm.line>=range.start.line && bm.line<range.end.line) {
-                            this.deleteBookmark(bm)
+                        if (bm.line>range.start.line && bm.line<range.end.line) {
+                            // 我们无法判断st line ed
+                            // 如果 开头 结尾 都不删除，会怎么样？
+                            // 假如 两行之间删除，并且两行都有bookmark 那么两个bookmark重叠
+                            // 如果第一行有bookmark bm还在第一行
+                            // 如果第二行有bm bm转到了第一行
+                            // 考虑到alt换行的情况
+                            this.deleteBookmark(bm);
                         } else if (bm.line>=range.end.line) {
-                            bm.line -= range.end.line - range.start.line + num_enter
+                            bm.line -= range.end.line - range.start.line + num_enter;
                         }
-                    })
+                        // 检查重叠并且删除
+                        let overlaps = this.fake_root_group.cache.findOverlapBookmark();
+                        this.deleteBookmarks(
+                            overlaps.map(
+                                uri => this.fake_root_group.get_node(uri, "bookmark") as Bookmark
+                            )
+                        );
+                    });
                 }
             }
-        })
-        this.updateDecorations()
-        this.saveState()
+        });
+        this.updateDecorations();
+        this.saveState();
     }
 }

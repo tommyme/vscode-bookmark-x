@@ -1,3 +1,4 @@
+import * as path from 'path';
 /**
  * 返回随机颜色
  */
@@ -38,6 +39,43 @@ function joinTreeUri(input: Array<String>): string {
     }
 }
 
+function isPathAEqUnderPathB(pathA: string, pathB: string) {
+    if (pathA === pathB) {
+        return true;
+    }
+    // 将路径转换为规范化的形式
+    pathA = path.normalize(pathA);
+    pathB = path.normalize(pathB);
+
+    // 获取路径片段数组
+    const childSegments = pathA.split(path.sep);
+    const parentSegments = pathB.split(path.sep);
+
+    // 判断子路径是否在父路径下
+    if (childSegments.length >= parentSegments.length) {
+        let isSubPath = true;
+        for (let i = 0; i < parentSegments.length; i++) {
+            if (childSegments[i] !== parentSegments[i]) {
+                isSubPath = false;
+                break;
+            }
+        }
+        return isSubPath;
+    }
+
+    return false;
+}
+
+function updateChildPath(parentPath: string, childPath: string) {
+    // 获取相对路径
+    let relativePath = path.relative(parentPath, childPath);
+    let splited = relativePath.split(path.sep);
+    splited.splice(1, 1);
+    // 拼接新的孩子路径
+    let updatedChildPath = path.join(parentPath, path.basename(relativePath), splited.join(path.sep));
+    return updatedChildPath;
+}
+
 function randomName(): string {
     const chars = '0123456789abcdef';
     let result = '';
@@ -52,5 +90,7 @@ export {
     randomColor,
     splitTreeUri2parts as splitString,
     randomName,
-    joinTreeUri
+    joinTreeUri,
+    isPathAEqUnderPathB,
+    updateChildPath
 }

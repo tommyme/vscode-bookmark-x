@@ -20,7 +20,7 @@ export class BookmarkTreeView {
         this.controller = controller;
 
         this.treeDataProviderByGroup = this.controller.tprovider;
-        this.controller.tprovider.treeview = this
+        this.controller.tprovider.treeview = this;
         // this.treeDataProviderByFile = this.controller.getTreeDataProviderByFile();
 
         vscode.window.createTreeView('bookmarksByGroup', {
@@ -35,7 +35,7 @@ export class BookmarkTreeView {
         const activeGroup = this.controller!.activeGroup;
         if (group === null || activeGroup.get_full_uri() === group.get_full_uri()) {
             // switch to root group
-            this.controller!.activateGroup("")
+            this.controller!.activateGroup("");
             vscode.window.showInformationMessage(`切换至root group`);
             return;
         }
@@ -55,7 +55,7 @@ export class BookmarkTreeView {
     }
 
     public editNodeLabel(treeItem: BookmarkTreeItem) {
-        const node = treeItem.base
+        const node = treeItem.base;
         if (node) {
             vscode.window.showInputBox({
                 placeHolder: '请输入标签文本',
@@ -63,15 +63,15 @@ export class BookmarkTreeView {
             }).then((label) => {
                 if (label) {
                     if (label === node.name) {
-                        vscode.window.showInformationMessage("edit info: label unchanged")
+                        vscode.window.showInformationMessage("edit info: label unchanged");
                     } else if (!this.controller!.editNodeLabel(node, label)) {
-                        vscode.window.showInformationMessage("edit fail: label exists!")
+                        vscode.window.showInformationMessage("edit fail: label exists!");
                     }
                 }
                 this.controller!.updateDecorations();
             });        
         } else {
-            vscode.window.showInformationMessage("node is null")
+            vscode.window.showInformationMessage("node is null");
         }
     }
 }

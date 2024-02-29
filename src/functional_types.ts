@@ -1,7 +1,7 @@
 import {DecorationFactory} from './decoration_factory';
 import {TextEditorDecorationType, Uri} from 'vscode';
 import {SerializableBookmark, SerializableGroup} from './serializable_type';
-import * as util from './util'
+import * as util from './util';
 
 class BaseFunctional {
     name: string;
@@ -14,10 +14,10 @@ class BaseFunctional {
         type: string,
         children: (Group|Bookmark)[],
     ) {
-        this.name = name
-        this.uri = uri
-        this.type = type
-        this.children = children
+        this.name = name;
+        this.uri = uri;
+        this.type = type;
+        this.children = children;
     }
 
     /**
@@ -27,9 +27,9 @@ class BaseFunctional {
     public get_full_uri(): string {
         // 针对root node调用的情况 特殊处理
         if (this.uri === '') {
-            return this.name
+            return this.name;
         }
-        return [this.uri, this.name].join("/")
+        return [this.uri, this.name].join("/");
     }
 }
 
@@ -44,16 +44,16 @@ export class Group extends BaseFunctional {
         uri: string,
         children: (Group|Bookmark)[]=[]
     ) {
-        super(name, uri, "group", children)
+        super(name, uri, "group", children);
         this.color = color;
-        this.decoration = DecorationFactory.defaultDecoration
-        this.decorationSvg = DecorationFactory.defaultDecorationUri
+        this.decoration = DecorationFactory.defaultDecoration;
+        this.decorationSvg = DecorationFactory.defaultDecorationUri;
     }
 
     public static fromSerialized(group: SerializableGroup): Group {
         let children = group.children.map((child) => {
             if (child) {}
-        })
+        });
         return new Group(
             group.name,
             group.color,
@@ -70,8 +70,8 @@ export class Group extends BaseFunctional {
     }
 
     public serialize(): SerializableGroup {
-        let children = this.children.map(child => child.serialize())
-        return new SerializableGroup(this.name, this.color, this.uri, children)
+        let children = this.children.map(child => child.serialize());
+        return new SerializableGroup(this.name, this.color, this.uri, children);
     }
 
     /**
@@ -97,17 +97,17 @@ export class Group extends BaseFunctional {
 
         // 再看type相同不
         if (current && (current.type === type || type === null)) {
-            return current
+            return current;
         } else {
             // 都不满足, 不行
-            return undefined
+            return undefined;
         }
     }
 
     public add_group(group: Group) {
-        let father_group = this.get_node(group.uri, 'group') as Group
-        father_group.children.push(group)
-        return father_group
+        let father_group = this.get_node(group.uri, 'group') as Group;
+        father_group.children.push(group);
+        return father_group;
     }
 
     public sortChildrenBookmarks(fn: Function) {
@@ -130,7 +130,7 @@ export class Group extends BaseFunctional {
             } else {
                 return 0; // 保持原有顺序
             }
-        })
+        });
     }
 
     /**
@@ -140,9 +140,9 @@ export class Group extends BaseFunctional {
      */
     public checkConflictName(node: BaseFunctional) {
         this.children.forEach(child => {
-            if (child.name === node.name) { return true }
-        })
-        return false
+            if (child.name === node.name) { return true; }
+        });
+        return false;
     }
 }
 
@@ -163,7 +163,7 @@ export class Bookmark extends BaseFunctional {
         lineText: string,
         uri: string
     ) {
-        super(name, uri, "bookmark", [])
+        super(name, uri, "bookmark", []);
         this.fsPath = fsPath;
         this.line = line;
         this.col = col;
@@ -203,27 +203,44 @@ export class Bookmark extends BaseFunctional {
 }
 
 export class Cache extends Object {
-    private map: { [key: string]: BaseFunctional } = {}
+    private map: { [key: string]: BaseFunctional } = {};
     public check_uri_exists(uri: string) {
-        let same = this.keys().filter(key => key === uri)
+        let same = this.keys().filter(key => key === uri);
         if (same.length > 0) {
-            return true
+            return true;
         } else {
-            return false
+            return false;
         }
     }
 
     public set(key: string, value: BaseFunctional) {
-        this.map[key] = value
+        this.map[key] = value;
     }
     public get(key: string): BaseFunctional {
-        return this.map[key]
+        return this.map[key];
     }
     public del(key: string) {
-        delete this.map[key]
+        delete this.map[key];
     }
     public keys(): Array<string> {
-        return Object.keys(this.map)
+        return Object.keys(this.map);
+    }
+    public findOverlapBookmark() {
+        let result = [];
+        let map: { [key: number]: Bookmark} = {};
+        for (let key of this.keys()) {
+            let node = this.get(key);
+            if (node.type !== 'bookmark') {
+                continue;
+            }
+            let bm = node as Bookmark;
+            if (bm.line in map) {
+                result.push(bm.get_full_uri());
+            } else {
+                map[bm.line] = bm;
+            }
+        }
+        return result;
     }
 }
 
@@ -236,8 +253,8 @@ export class RootGroup extends Group {
         uri: string,
         children: (Group|Bookmark)[]=[]
     ) {
-        super(name, color, uri, children)
-        this.cache = new Cache()
+        super(name, color, uri, children);
+        this.cache = new Cache();
     }
     /**
      * rootnode add bookmark and return bookmark's father group
@@ -246,15 +263,15 @@ export class RootGroup extends Group {
      * @returns {type} - return value desc
      */
     public add_bookmark_recache(bookmark: Bookmark) {
-        let group = this.get_node(bookmark.uri, 'group') as Group
+        let group = this.get_node(bookmark.uri, 'group') as Group;
         if (group) {
-            group.children.push(bookmark)
-            bookmark.group = group
+            group.children.push(bookmark);
+            bookmark.group = group;
         } else {
-            throw new Error("add bookmark 时 对应的group没找到!")
+            throw new Error("add bookmark 时 对应的group没找到!");
         }
-        this.cache_add_node(bookmark)
-        return group
+        this.cache_add_node(bookmark);
+        return group;
     }
 
     /**
@@ -263,7 +280,7 @@ export class RootGroup extends Group {
      * @returns {type} - return value desc
      */
     public cut_node(node: Bookmark|Group) {
-        let group = this.get_node(node.uri, 'group') as Group
+        let group = this.get_node(node.uri, 'group') as Group;
         
         let index = group.children.indexOf(node);
         if (index < 0) {
@@ -277,23 +294,23 @@ export class RootGroup extends Group {
      * @returns {type} - return value desc
      */
     public cut_node_recache(node: Bookmark | Group) {
-        this.cut_node(node)
+        this.cut_node(node);
         if (node instanceof Bookmark) {
-            this.cache.del(node.get_full_uri())
+            this.cache.del(node.get_full_uri());
         } else if (node instanceof Group) {
             // 由于group可能有很多级, 所以直接重新bfs一遍, 构建cache
-            this.cache_build()
+            this.cache_build();
         }
     }
 
     public mv_group(group: Group, target_uri: string) {
         // 遍历组内 children, 改变其uri
         group.children.forEach(item => {
-            item.uri = util.joinTreeUri([target_uri, group.name])
-        })
+            item.uri = util.joinTreeUri([target_uri, group.name]);
+        });
         // TODO 检查一下cache里面的引用变没变
-        this.cut_node_recache(group)
-        group.uri = target_uri
+        this.cut_node_recache(group);
+        group.uri = target_uri;
         // mv 完毕
     }
     /**
@@ -304,19 +321,19 @@ export class RootGroup extends Group {
     public bfs_get_nodes(): Cache {
         let res = new Cache();
         function bfs(node: BaseFunctional) {
-            res.set(node.get_full_uri(), node)
+            res.set(node.get_full_uri(), node);
             if (node.children.length === 0) {
                 return;
             } else {
-                node.children.forEach(item => {bfs(item)})
+                node.children.forEach(item => {bfs(item);});
             }
         }
-        bfs(this)
-        return res
+        bfs(this);
+        return res;
     }
 
     public cache_build() {
-        this.cache = this.bfs_get_nodes()
+        this.cache = this.bfs_get_nodes();
     }
 
     /**
@@ -325,10 +342,10 @@ export class RootGroup extends Group {
      * @returns {type} - return value desc
      */
     public cache_add_node(node: Bookmark|Group) {
-        this.cache.set(node.get_full_uri(), node)
+        this.cache.set(node.get_full_uri(), node);
     }
     public cache_del_node(node: Bookmark|Group) {
-        this.cache.del(node.get_full_uri())
+        this.cache.del(node.get_full_uri());
     }
 
     /**
@@ -338,13 +355,29 @@ export class RootGroup extends Group {
      */
     public static refresh_uri(group: Group) {
         if (group.children.length === 0) {
-            return
+            return;
         }
         group.children.forEach((child: Group|Bookmark) => {
-            child.uri = group.get_full_uri()
+            child.uri = group.get_full_uri();
             if (child.type == "group") {
-                RootGroup.refresh_uri(child as Group)
+                RootGroup.refresh_uri(child as Group);
             }
-        }) 
+        }); 
+    }
+
+    /**
+     * bm.fspath equal or under fspath
+     * @param {type} param1 - param1 desc
+     * @returns {type} - return value desc
+     */
+    public get_bm_with_under_fspath(fspath: string): Array<Bookmark> {
+        let res: Array<Bookmark> = []
+        this.cache.keys().forEach(key => {
+            let node = this.cache.get(key);
+            if (node instanceof Bookmark && util.isPathAEqUnderPathB(node.fsPath, fspath)) {
+                res.push(node)
+            }
+        })
+        return res
     }
 }
