@@ -62,7 +62,9 @@ export class BookmarkTreeView {
                 value: node.name
             }).then((label) => {
                 if (label) {
-                    if (!this.controller!.editNodeLabel(node, label)) {
+                    if (label === node.name) {
+                        vscode.window.showInformationMessage("edit info: label unchanged")
+                    } else if (!this.controller!.editNodeLabel(node, label)) {
                         vscode.window.showInformationMessage("edit fail: label exists!")
                     }
                 }

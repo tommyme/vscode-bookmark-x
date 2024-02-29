@@ -90,6 +90,10 @@ export function activate(context: vscode.ExtensionContext) {
 	vscode.workspace.onDidChangeTextDocument(e => {
 		controller.documentChangeHandle(e)
 	})
+	// 删除文件应该删除标签
+	vscode.workspace.onDidDeleteFiles(e => {})
+	// 重命名文件应该改一下标签的fspath, 如果是文件夹, 就遍历缓存 然后判断fspath在原来的文件夹下面, 批量更改fspath
+	vscode.workspace.onDidRenameFiles(e => {})
 }
 
 export function deactivate() {}
