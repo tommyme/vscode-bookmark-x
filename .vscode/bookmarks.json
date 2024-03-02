@@ -9,7 +9,7 @@
 					"label": ""
 				},
 				{
-					"line": 289,
+					"line": 302,
 					"column": 32,
 					"label": "编辑标签后更新"
 				},
@@ -34,7 +34,7 @@
 			"path": "src/bookmark_tree_view.ts",
 			"bookmarks": [
 				{
-					"line": 66,
+					"line": 75,
 					"column": 62,
 					"label": ""
 				}

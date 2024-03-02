@@ -1,7 +1,13 @@
 import * as vscode from 'vscode';
+import { ViewBadge } from 'vscode';
 import {Controller} from './controller';
 import {BookmarkTreeItem} from './bookmark_tree_item';
 import { Bookmark, Group } from './functional_types';
+
+class MyViewBadge implements ViewBadge {
+    tooltip: string='helloMyViewBadge';
+    value: number=10;
+}
 
 export class BookmarkTreeView {
 
@@ -22,12 +28,15 @@ export class BookmarkTreeView {
         this.treeDataProviderByGroup = this.controller.tprovider;
         this.controller.tprovider.treeview = this;
         // this.treeDataProviderByFile = this.controller.getTreeDataProviderByFile();
-
-        vscode.window.createTreeView('bookmarksByGroup', {
+        // vscode.TreeViewOptions
+        let view = vscode.window.createTreeView('bookmarksByGroup', {
             treeDataProvider: this.treeDataProviderByGroup, 
             dragAndDropController: this.treeDataProviderByGroup,
             showCollapseAll: true, canSelectMany: true
         });
+        view.message = "(*´▽｀)ノノ"
+        view.description = "hello world"
+        view.badge = new MyViewBadge()
     }
 
     public activateGroup(treeItem: BookmarkTreeItem) {

@@ -169,8 +169,14 @@ export class Controller {
             if (!groupName) {
                 return;
             }
-            let new_group = this.createGroupWithUri(groupName);
-            this.addGroup2Root(new_group);
+            let uri = util.joinTreeUri([this.activeGroup.get_full_uri(), groupName])            
+            let new_group = this.createGroupWithUri(uri);
+            let res = this.addGroup2Root(new_group);
+            if (res) {
+                window.showInformationMessage('group: '+uri+' 创建成功')
+            } else {
+                window.showInformationMessage('group: '+uri+' 创建失败, exists')
+            }
         });
     }
 
@@ -224,6 +230,7 @@ export class Controller {
         lineText: string,
         group: Group,
     ) {
+        // TODO 可以添加一个异常情况处理, 处理group 为undefined的时候
         // 获取已存在的标签
         const existingBookmark = this.getBookmarksInFile(fsPath).find((bookmark) => {
             return bookmark.line === lineNumber && this.activeGroup.getDecoration() === bookmark.getDecoration();
@@ -276,6 +283,12 @@ export class Controller {
         group.children[index].name = val;
         return group;
     }
+
+    /**
+     * 触发排序
+     * @param {type} param1 - param1 desc
+     * @returns {type} - return value desc
+     */
     public editNodeLabel(node: Bookmark|Group, val: string): boolean {
         // 命名冲突
         if ( this.fake_root_group.cache.check_uri_exists(util.joinTreeUri([node.uri, val])) ) {
@@ -491,8 +504,8 @@ export class Controller {
                         if (bm.line > range.start.line) {
                             bm.line += num_enter;
                         } else if (bm.line == range.start.line) {
-                            // 如果from start就移动
-                            if (st_from_start) { bm.line += num_enter; } 
+                            // 如果from start就移动 TODO优化一下
+                            // if (st_from_start) { bm.line += num_enter; } 
                         }
                     });
                 }
@@ -500,6 +513,7 @@ export class Controller {
                 if (true) {
                     file_bm.forEach(bm => {
                         if (bm.line>range.start.line && bm.line<range.end.line) {
+                            // 处于中间的行删除书签 -- 稳妥删除
                             // 我们无法判断st line ed
                             // 如果 开头 结尾 都不删除，会怎么样？
                             // 假如 两行之间删除，并且两行都有bookmark 那么两个bookmark重叠

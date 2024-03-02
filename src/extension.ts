@@ -106,7 +106,6 @@ export function activate(context: vscode.ExtensionContext) {
 	// 重命名文件应该改一下标签的fspath, 如果是文件夹, 就遍历缓存 然后判断fspath在原来的文件夹下面, 批量更改fspath
 	vscode.workspace.onDidRenameFiles(e => {
 		e.files.forEach(file => {
-			// 目前的实现没有覆盖到文件夹的重命名
 			// 不用更新deco
 			let old_path = file.oldUri.fsPath;
 			let bms = controller.fake_root_group.get_bm_with_under_fspath(old_path);

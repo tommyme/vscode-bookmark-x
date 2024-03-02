@@ -98,6 +98,7 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
                 RootGroup.refresh_uri(this.root_group)
                 this.root_group.cache_build()
                 changed_flag = true
+                this.root_group.sortGroupBookmark()
             }
             // group -> group
             else if ( item instanceof Group && target!.base instanceof Group ) {
@@ -113,6 +114,7 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
                 RootGroup.refresh_uri(target!.base)
                 this.root_group.cache_build()
                 changed_flag = true
+                target!.base.sortGroupBookmark()
             }
             // bookmark -> root
             else if ( item instanceof Bookmark && typeof target === 'undefined') {
@@ -125,6 +127,7 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
                 item.group = this.root_group
                 this.root_group.add_bookmark_recache(item)
                 changed_flag = true
+                this.root_group.sortGroupBookmark()
             }
             // bookmark -> group
             else if ( item instanceof Bookmark && target!.base instanceof Group) {
@@ -137,6 +140,7 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
                 item.group = target!.base
                 this.root_group.add_bookmark_recache(item)
                 changed_flag = true
+                target!.base.sortGroupBookmark()
             }
             // ? case not cover
             else { 
