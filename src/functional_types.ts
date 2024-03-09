@@ -35,8 +35,7 @@ class BaseFunctional {
 
 export class Group extends BaseFunctional {
     color: string;
-    decoration: TextEditorDecorationType | null;
-    decorationSvg: Uri;
+    // decoration: TextEditorDecorationType | null;
     
     constructor(
         name: string,
@@ -46,8 +45,7 @@ export class Group extends BaseFunctional {
     ) {
         super(name, uri, "group", children);
         this.color = color;
-        this.decoration = DecorationFactory.defaultDecoration;
-        this.decorationSvg = DecorationFactory.defaultDecorationUri;
+        // this.decoration = DecorationFactory.defaultDecoration;
     }
 
     public static fromSerialized(group: SerializableGroup): Group {
@@ -61,9 +59,9 @@ export class Group extends BaseFunctional {
         );
     }
 
-    public getDecoration() {
-        return this.decoration;
-    }
+    // public getDecoration() {
+    //     return this.decoration;
+    // }
 
     public static sortByName(a: Group, b: Group): number {
         return a.name.localeCompare(b.name);
@@ -173,9 +171,9 @@ export class Bookmark extends BaseFunctional {
         this.isLineNumberChanged = false;
     }
 
-    public getDecoration() {
-        return this.group!.getDecoration();
-    }
+    // public getDecoration() {
+    //     return this.group!.getDecoration();
+    // }
 
     public static sortByLocation(a: Bookmark, b: Bookmark): number {
         return a.fsPath.localeCompare(b.fsPath)

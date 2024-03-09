@@ -73,8 +73,8 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
 	}
     
     public async handleDrop(target: BookmarkTreeItem | undefined, sources: vscode.DataTransfer, token: vscode.CancellationToken): Promise<void> {
-        console.log("handleDrop", target)
-        let x = [target, sources, token]
+        // console.log("handleDrop", target)
+        // let x = [target, sources, token]
         const obj = sources.get('application/vnd.code.tree.bookmarkitem')
 		const droppingItems: Array<string> = obj?.value;
         let changed_flag = false;

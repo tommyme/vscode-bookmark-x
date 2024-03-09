@@ -2,6 +2,7 @@
  * 图标工厂
  */
 
+import { fstat } from 'fs';
 import * as path from 'path';
 import {Uri, TextEditorDecorationType, window, workspace, DecorationRenderOptions} from 'vscode';
 
@@ -11,13 +12,12 @@ const svgBookmark = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="
 
 export class DecorationFactory {
     public static svgDir: Uri;  // 用于在workspace里面创建svg文件, 需要在controller里面进行初始化
-    public static readonly defaultDecorationUri = Uri.file(
-        path.join(__dirname, '..', 'resources', 'gutter_icon_bm.svg')
-    );
 
-    public static readonly defaultDecoration = window.createTextEditorDecorationType(
+    public static decoration = window.createTextEditorDecorationType(
         {
-            gutterIconPath: DecorationFactory.defaultDecorationUri.fsPath,
+            gutterIconPath: Uri.file(
+                path.join(__dirname, '..', 'resources', 'gutter_icon_bm.svg')
+            ).fsPath,
             gutterIconSize: 'contain',
         }
     );
@@ -54,5 +54,21 @@ export class DecorationFactory {
         const result = window.createTextEditorDecorationType(decorationOptions);
 
         return [result, svgUri];
+    }
+
+    public static async set_deco_from_settings() {
+        let config = workspace.getConfiguration('bookmarkX');
+        let decoFilePath = config.get('bookmarkSvg') as string;
+        let uri = Uri.file(decoFilePath)
+        try {
+            let stat = await workspace.fs.stat(uri)
+            // 只有文件存在的时候才会进入这里
+            console.log(stat)
+            DecorationFactory.decoration = window.createTextEditorDecorationType(
+                { gutterIconPath: decoFilePath, gutterIconSize: 'contain' }
+            )
+        } catch (err) {
+            window.showInformationMessage("svg file load error (default svg used): "+String(err))
+        }
     }
 }

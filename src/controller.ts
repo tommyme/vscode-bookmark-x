@@ -15,6 +15,7 @@ import {SerializableGroup} from './serializable_type';
 import * as util from './util';
 import {BookmarkTreeDataProvider} from './bookmark_tree_data_provider';
 import { TextEncoder } from 'util';
+import { DecorationFactory } from './decoration_factory';
 
 export class Controller {
     public readonly savedBookmarksKey = 'bookmarkDemo.bookmarks'; // 缓存标签的key
@@ -122,7 +123,7 @@ export class Controller {
 
         // 获取已存在的标签
         const existingBookmark = this.getBookmarksInFile(fsPath).find((bookmark) => {
-            return bookmark.line === lineNumber && this.activeGroup.getDecoration() === bookmark.getDecoration();
+            return bookmark.line === lineNumber;
         });
 
         if (typeof existingBookmark !== "undefined") {
@@ -233,7 +234,7 @@ export class Controller {
         // TODO 可以添加一个异常情况处理, 处理group 为undefined的时候
         // 获取已存在的标签
         const existingBookmark = this.getBookmarksInFile(fsPath).find((bookmark) => {
-            return bookmark.line === lineNumber && this.activeGroup.getDecoration() === bookmark.getDecoration();
+            return bookmark.line === lineNumber;
         });
 
         // 如果已存在标签，就删除
@@ -396,7 +397,7 @@ export class Controller {
             
             // set decos, remove decos
             for (let [decoration, ranges] of editorDecos) {
-                editor.setDecorations(decoration, ranges);
+                editor.setDecorations(DecorationFactory.decoration, ranges);
             }
 
             this.decos2remove.clear();
@@ -417,7 +418,7 @@ export class Controller {
         let fileBookmarks = this.getBookmarksInFile(fsPath);
 
         fileBookmarks.forEach(bookmark => {
-            let decoration = bookmark.getDecoration();
+            let decoration = DecorationFactory.decoration;
             if (decoration !== null) {
                 lineDecorations.set(bookmark.line, decoration);
             }

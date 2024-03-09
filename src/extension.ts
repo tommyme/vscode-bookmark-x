@@ -4,8 +4,11 @@ import {BookmarkTreeView} from './bookmark_tree_view';
 import {BookmarkTreeItem} from './bookmark_tree_item';
 import { Bookmark } from "./functional_types";
 import * as util from './util';
+import { DecorationFactory } from './decoration_factory';
 
-export function activate(context: vscode.ExtensionContext) {
+export async function activate(context: vscode.ExtensionContext) {
+	await DecorationFactory.set_deco_from_settings()
+
 	let treeView: BookmarkTreeView = new BookmarkTreeView();
 	let controller: Controller = new Controller(context, treeView.refreshCallback.bind(treeView));
 

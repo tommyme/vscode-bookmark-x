@@ -2,7 +2,7 @@
   "name": "bookmarkx",
 	"displayName": "bookmark X",
 	"description": "Bookmark plugin with grouping support",
-	"version": "0.0.1",
+	"version": "0.1.0",
 	"publisher": "tommyme",
 	"icon": "resources/icon.jpg",
 	"repository": {
@@ -129,7 +129,17 @@
 					"when": "false"
 				}
 			]
-		}
+		},
+		"configuration": {
+      "title": "BookmarkX",
+      "properties": {
+        "bookmarkX.bookmarkSvg": {
+          "type": "string",
+          "default": "",
+          "description": "Select svg for book icon show."
+        }
+      }
+    }
 	},
 	"scripts": {
 		"vscode:prepublish": "yarn run compile",
