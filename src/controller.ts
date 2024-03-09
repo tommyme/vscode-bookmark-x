@@ -274,15 +274,25 @@ export class Controller {
 
     // 编辑label
     private _editNodeLabel(node: Bookmark|Group, val: string): Group|undefined {
-        let group = this.fake_root_group.get_node(node.uri, "group") as Group;
+        let father = this.fake_root_group.get_node(node.uri, "group") as Group;
 
-        let index = group.children.indexOf(node);
+        let index = father.children.indexOf(node);
         if (index < 0) {
             return undefined;
         }
+        let original_full_uri = node.get_full_uri()
+        father.children[index].name = val;
+        let new_full_uri = node.get_full_uri()
+        if (node.type == 'group') {
+            // bfs edit uri
+            (node as Group).bfs_get_nodes().values().forEach(node => {
+                node.uri = node.uri.replace(original_full_uri, new_full_uri)    // only replace once
+            })
+        }
 
-        group.children[index].name = val;
-        return group;
+
+
+        return father;
     }
 
     /**

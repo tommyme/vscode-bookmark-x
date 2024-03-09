@@ -6,6 +6,7 @@ node_modules
 yarn-error.log
 jsdoc.*
 .DS_Store
-resources/
+resources/*
 !resources/gutter_icon_bm.svg
 !resources/icon.jpg
+!resources/readme

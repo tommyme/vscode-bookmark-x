@@ -1,17 +1,29 @@
-# bookmarks-plugin
-Bookmark plugin with grouping support
+# Bookmark X
 
-![Editor View](resources/demo.gif)
+Drag-and-drop, grouping, sorting bookmarklet plugin
 
-## Get up and running straight away
-* Run command from the command palette by pressing (`Ctrl+Shift+P` or `Cmd+Shift+P` on Mac) and typing `toggleBookmark`.
+## Quick Start
+- there is no default key map, define yourself.
+- Run command from the command palette by pressing (`Ctrl+Shift+P` or `Cmd+Shift+P` on Mac) and type `bookmark_x ...`
 
-## List of available commands
-* bookmark-plugin: toggle bookmark
-* bookmark-plugin: toggle label bookmark
-* bookmark-plugin: add group
+![](./resources/readme/example1.png)
 
+## features
+- drag and drop
+- customized bookmark svg icon(set in settings)
+- nested group
+- activate group(new bookmarks'll be added here)
+- bookmark count(shown on badge)
 
-- [ ] activate group 添加显示效果
-- [ ] 切换文件的时候没有渲染, 添加了新的书签之后才渲染
-- [ ] 
+## all avaliable commands
+- `toggle bookmark`: toggle bookmark on current line
+- `toggle lable bookmark`: toggle bookmark and input label
+- `add group`: add a group
+- `clear data`: clear all data in extension
+- `load bookmarks in workspace`: load bookmarks in `{your_workspace}/.vscode/bookmark_x.json`
+- `save bookmarks in workspace`: save bookmarks in `{your_workspace}/.vscode/bookmark_x.json`
+
+## Roadmap
+- [ ] multi drag and drop support
+- [ ] save customized svg bookmark icon in extension for select and switch
+- [ ] better performance

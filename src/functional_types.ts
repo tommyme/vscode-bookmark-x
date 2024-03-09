@@ -142,6 +142,25 @@ export class Group extends BaseFunctional {
         });
         return false;
     }
+    
+    /**
+     * bfs遍历节点, 返回full_uri为key, node为value的map
+     * @param {type} param1 - param1 desc
+     * @returns {type} - return value desc
+     */
+    public bfs_get_nodes(): Cache {
+        let res = new Cache();
+        function bfs(node: BaseFunctional) {
+            res.set(node.get_full_uri(), node);
+            if (node.children.length === 0) {
+                return;
+            } else {
+                node.children.forEach(item => {bfs(item);});
+            }
+        }
+        bfs(this);
+        return res;
+    }
 }
 
 export class Bookmark extends BaseFunctional {
@@ -247,6 +266,9 @@ export class Cache extends Object {
         }
         return result;
     }
+    public values(): Array<BaseFunctional> {
+        return Object.values(this.map)
+    }
 }
 
 export class RootGroup extends Group {
@@ -317,24 +339,6 @@ export class RootGroup extends Group {
         this.cut_node_recache(group);
         group.uri = target_uri;
         // mv 完毕
-    }
-    /**
-     * bfs遍历根节点, 返回full_uri为key, node为value的map
-     * @param {type} param1 - param1 desc
-     * @returns {type} - return value desc
-     */
-    public bfs_get_nodes(): Cache {
-        let res = new Cache();
-        function bfs(node: BaseFunctional) {
-            res.set(node.get_full_uri(), node);
-            if (node.children.length === 0) {
-                return;
-            } else {
-                node.children.forEach(item => {bfs(item);});
-            }
-        }
-        bfs(this);
-        return res;
     }
 
     public cache_build() {
