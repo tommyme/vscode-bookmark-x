@@ -1,17 +1,19 @@
 {
   "name": "bookmarkx",
 	"displayName": "bookmark X",
-	"description": "Bookmark plugin with grouping support",
+	"description": "Drag-and-drop, grouping, sorting bookmarklet plugin",
 	"version": "0.1.0",
 	"publisher": "tommyme",
 	"icon": "resources/icon.jpg",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/tommyme/book_mark_plugin"
+		"url": "https://github.com/tommyme/vscode_bookmark_x"
 	},
 	"engines": {
 		"vscode": "^1.73.0"
 	},
+	"license": "SEE LICENSE IN LICENSE",
+	"keywords": ["bookmark", "source", "productivity", "coding"],
 	"categories": [
 		"Other"
 	],
