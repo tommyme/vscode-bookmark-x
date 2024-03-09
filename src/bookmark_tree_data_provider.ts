@@ -1,4 +1,4 @@
-import {EventEmitter, TreeDataProvider, TreeItem} from 'vscode';
+import {EventEmitter, TreeDataProvider, TreeItem, TreeItemCollapsibleState} from 'vscode';
 import { Bookmark } from "./functional_types";
 import {BookmarkTreeItem} from './bookmark_tree_item';
 import {Group, RootGroup} from './functional_types';
@@ -115,6 +115,7 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
                 this.root_group.cache_build()
                 changed_flag = true
                 target!.base.sortGroupBookmark()
+                target!.collapsibleState = TreeItemCollapsibleState.Expanded
             }
             // bookmark -> root
             else if ( item instanceof Bookmark && typeof target === 'undefined') {
@@ -141,6 +142,7 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
                 this.root_group.add_bookmark_recache(item)
                 changed_flag = true
                 target!.base.sortGroupBookmark()
+                target!.collapsibleState = TreeItemCollapsibleState.Expanded
             }
             // ? case not cover
             else { 

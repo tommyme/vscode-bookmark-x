@@ -6,7 +6,10 @@ import { Bookmark, Group } from './functional_types';
 
 class MyViewBadge implements ViewBadge {
     tooltip: string='helloMyViewBadge';
-    value: number=10;
+    value: number;
+    public constructor(value: number=0) {
+        this.value = value
+    }
 }
 
 export class BookmarkTreeView {
@@ -15,16 +18,17 @@ export class BookmarkTreeView {
 
     private treeDataProviderByGroup: any = null;
     private treeDataProviderByFile: any = null;
+    public view: any = null
 
     public refreshCallback() {
         if (this.treeDataProviderByGroup !== null) {
             this.treeDataProviderByGroup.refresh();
         }
+        this.refresh_badge()
     }
 
     public async init(controller: Controller) {
         this.controller = controller;
-
         this.treeDataProviderByGroup = this.controller.tprovider;
         this.controller.tprovider.treeview = this;
         // this.treeDataProviderByFile = this.controller.getTreeDataProviderByFile();
@@ -36,7 +40,11 @@ export class BookmarkTreeView {
         });
         view.message = "(*´▽｀)ノノ"
         view.description = "hello world"
-        view.badge = new MyViewBadge()
+        this.view = view
+    }
+    public refresh_badge() {
+        let num = this.controller!.fake_root_group.cache.bookmark_num()
+        this.view.badge = new MyViewBadge(num)
     }
 
     public activateGroup(treeItem: BookmarkTreeItem) {

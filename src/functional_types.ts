@@ -242,6 +242,13 @@ export class Cache extends Object {
         }
         return result;
     }
+    public bookmark_num() {
+        let result = 0
+        for (let key of this.keys()) {
+            if (this.get(key).type == 'bookmark') { result++ }
+        }
+        return result;
+    }
 }
 
 export class RootGroup extends Group {
