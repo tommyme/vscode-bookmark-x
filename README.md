@@ -27,3 +27,16 @@ Drag-and-drop, grouping, sorting bookmarklet plugin
 - [ ] multi drag and drop support
 - [ ] save customized svg bookmark icon in extension for select and switch
 - [ ] better performance
+
+## develop
+
+Commonly used object relation figure is shown below.
+```mermaid
+graph LR
+	controller --> tree_data_provider
+	controller --> root_group
+    tree_data_provider --> controller
+    tree_data_provider --> root_group
+    treeview --> controller
+    tree_data_provider --> treeview
+```
