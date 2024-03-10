@@ -404,7 +404,9 @@ export class Controller {
     
             let fsPath = editor.document.uri.fsPath;
             let editorDecos = this.getDecoListInFile(fsPath);
-            
+            if (editorDecos.size === 0) {
+                editor.setDecorations(DecorationFactory.decoration, [])
+            }
             // set decos, remove decos
             for (let [decoration, ranges] of editorDecos) {
                 editor.setDecorations(DecorationFactory.decoration, ranges);

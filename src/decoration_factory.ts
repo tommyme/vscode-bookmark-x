@@ -2,25 +2,16 @@
  * 图标工厂
  */
 
-import { fstat } from 'fs';
+import * as fs from 'fs';
 import * as path from 'path';
 import {Uri, TextEditorDecorationType, window, workspace, DecorationRenderOptions} from 'vscode';
 
-const svgBookmark = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32">
-<path d="M7 30 L7 8 Q7 2 13 2 L19 2 Q25 2 25 8 L25 30 L16 23 Z" fill="#888888ff" />
-</svg>`;
+const svgBookmark = `<svg id="layer1" data-name="layer 1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 32 32"><defs><style>.cls-1{fill:url(#v);}</style><linearGradient id="v" x1="-3.34" y1="16.24" x2="37.41" y2="15.73" gradientUnits="userSpaceOnUse"><stop offset="0.19" stop-color="#00d39c"/><stop offset="0.75" stop-color="#008c86"/></linearGradient></defs><title>bookmark x logo</title><path class="cls-1" d="M25.8,2.5H9.1A3.55,3.55,0,0,0,5.55,6h0V29.5H22.26V6H15V16.15l-2.66-1.28L9.72,16.15V6H6.84A2.26,2.26,0,0,1,9.1,3.79H25.16V26.6a.65.65,0,1,0,1.29,0V3.15A.65.65,0,0,0,25.8,2.5Z"/></svg>`;
 
 export class DecorationFactory {
     public static svgDir: Uri;  // 用于在workspace里面创建svg文件, 需要在controller里面进行初始化
 
-    public static decoration = window.createTextEditorDecorationType(
-        {
-            gutterIconPath: Uri.file(
-                path.join(__dirname, '..', 'resources', 'gutter_icon_bm.svg')
-            ).fsPath,
-            gutterIconSize: 'contain',
-        }
-    );
+    public static decoration: TextEditorDecorationType;
 
     static async create(color: string): Promise<[TextEditorDecorationType, Uri]> {
 
@@ -59,16 +50,44 @@ export class DecorationFactory {
     public static async set_deco_from_settings() {
         let config = workspace.getConfiguration('bookmarkX');
         let decoFilePath = config.get('bookmarkSvg') as string;
-        let uri = Uri.file(decoFilePath)
-        try {
-            let stat = await workspace.fs.stat(uri)
-            // 只有文件存在的时候才会进入这里
-            console.log(stat)
+        let set_done = false
+        if (decoFilePath) {
+            let uri = Uri.file(decoFilePath)
+            try {
+                let stat = await workspace.fs.stat(uri)
+                // 只有文件存在的时候才会进入这里
+                console.log(stat)
+                DecorationFactory.decoration = window.createTextEditorDecorationType(
+                    { gutterIconPath: decoFilePath, gutterIconSize: 'contain' }
+                )
+                set_done = true
+            } catch (err) {
+                window.showInformationMessage("svg file load error (default svg used): "+String(err))
+            }
+        }
+        return set_done
+    }
+
+    public static async init_svgdir() {
+        let dir = Uri.file(
+            path.join(DecorationFactory.svgDir.fsPath, 'svg_icons')
+        )
+        await workspace.fs.createDirectory(dir)
+        let default_svg_path = path.join(dir.fsPath, "default.svg")
+        if (!fs.existsSync(default_svg_path)) {
+            try {
+                fs.writeFileSync(default_svg_path, svgBookmark)
+            } catch(err) {
+                window.showErrorMessage(String(err))
+            }
+        }
+        if (!await DecorationFactory.set_deco_from_settings()) {
             DecorationFactory.decoration = window.createTextEditorDecorationType(
-                { gutterIconPath: decoFilePath, gutterIconSize: 'contain' }
+                {
+                    gutterIconPath: default_svg_path,
+                    gutterIconSize: 'contain',
+                }
             )
-        } catch (err) {
-            window.showInformationMessage("svg file load error (default svg used): "+String(err))
         }
     }
 }

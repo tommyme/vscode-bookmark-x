@@ -7,11 +7,11 @@ import * as util from './util';
 import { DecorationFactory } from './decoration_factory';
 
 export async function activate(context: vscode.ExtensionContext) {
-	await DecorationFactory.set_deco_from_settings()
 
 	let treeView: BookmarkTreeView = new BookmarkTreeView();
+	DecorationFactory.svgDir = context.globalStorageUri
+	await DecorationFactory.init_svgdir()
 	let controller: Controller = new Controller(context, treeView.refreshCallback.bind(treeView));
-
 	// 切换标签的命令
 	let disposable;
 	disposable = vscode.commands.registerTextEditorCommand('bookmark_x.toggleBookmark', (textEditor) => {

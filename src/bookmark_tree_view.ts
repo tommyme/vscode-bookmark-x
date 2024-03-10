@@ -38,7 +38,7 @@ export class BookmarkTreeView {
             dragAndDropController: this.treeDataProviderByGroup,
             showCollapseAll: true, canSelectMany: true
         });
-        view.message = "(*´▽｀)ノノ"
+        view.message = "∠( ᐛ 」∠)_"
         view.description = "hello world"
         this.view = view
     }
