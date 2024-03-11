@@ -3,12 +3,14 @@ import { ViewBadge } from 'vscode';
 import {Controller} from './controller';
 import {BookmarkTreeItem} from './bookmark_tree_item';
 import { Bookmark, Group } from './functional_types';
+import * as util from './util'
 
 class MyViewBadge implements ViewBadge {
-    tooltip: string='helloMyViewBadge';
+    tooltip: string;
     value: number;
     public constructor(value: number=0) {
         this.value = value
+        this.tooltip = `${this.value} bookmarks`
     }
 }
 
@@ -38,8 +40,8 @@ export class BookmarkTreeView {
             dragAndDropController: this.treeDataProviderByGroup,
             showCollapseAll: true, canSelectMany: true
         });
-        view.message = "∠( ᐛ 」∠)_"
-        view.description = "hello world"
+        // view.message = "∠( ᐛ 」∠)_"  // clear message and show welcome
+        view.description = "manage your bookmarks"
         this.view = view
     }
     public refresh_badge() {
@@ -69,6 +71,14 @@ export class BookmarkTreeView {
     public deleteBookmark(treeItem: BookmarkTreeItem) {
         const bookmark = treeItem.getBaseBookmark();
         this.controller!.deleteBookmark(bookmark!);
+    }
+
+    public addSubGroup(treeItem: BookmarkTreeItem) {
+        const group = treeItem.getBaseGroup()!;
+        this.controller!.addGroupInputBox().then((name: String) => {
+            let uri = util.joinTreeUri([group.get_full_uri(), name])
+            this.controller!.addGroup(uri);
+        })
     }
 
     public editNodeLabel(treeItem: BookmarkTreeItem) {

@@ -1,8 +1,8 @@
 {
-  "name": "bookmarkx",
+	"name": "bookmarkx",
 	"displayName": "bookmark X",
 	"description": "Drag-and-drop, grouping, sorting bookmarklet plugin",
-	"version": "0.1.2",
+	"version": "0.1.3",
 	"publisher": "tommyme",
 	"icon": "resources/icon.jpg",
 	"repository": {
@@ -13,7 +13,12 @@
 		"vscode": "^1.73.0"
 	},
 	"license": "SEE LICENSE IN LICENSE",
-	"keywords": ["bookmark", "source", "productivity", "coding"],
+	"keywords": [
+		"bookmark",
+		"source",
+		"productivity",
+		"coding"
+	],
 	"categories": [
 		"Other"
 	],
@@ -71,6 +76,10 @@
 				"title": "Jump to book mark"
 			},
 			{
+				"command": "bookmark_x.addSubGroup",
+				"title": "Add subgroup here"
+			},
+			{
 				"command": "bookmark_x.editBookmarkName",
 				"title": "edit bookmark name",
 				"icon": "$(edit)"
@@ -82,48 +91,66 @@
 			}
 		],
 		"viewsContainers": {
-			"activitybar": [{
-				"id": "bookmark_x",
-				"title": "Bookmarks X",
-				"icon": "$(bookmark)"
-			}]
+			"activitybar": [
+				{
+					"id": "bookmark_x",
+					"title": "Bookmarks X",
+					"icon": "$(bookmark)"
+				}
+			]
 		},
 		"views": {
 			"bookmark_x": [
 				{
 					"id": "bookmarksByGroup",
-					"name": "By Group",
+					"name": "bookmark x",
 					"icon": "$(bookmark)"
 				}
 			]
 		},
+		"viewsWelcome": [
+			{
+				"view": "bookmarksByGroup",
+				"contents": "Welcome 👋\nStart your journey with bookmark x by using command `toggle bookmark`"
+			}
+		],
 		"menus": {
 			"view/item/context": [
-			  {
-				"command": "bookmark_x.activateGroup",
-				"when": "view == bookmarksByGroup && viewItem == group",
-				"group": "inline"
-			  },
-			  {
-				"command": "bookmark_x.editGroupName",
-				"when": "view == bookmarksByGroup && viewItem == group",
-				"group": "inline"
-			  },
-			  {
-				"command": "bookmark_x.deleteGroup",
-				"when": "view == bookmarksByGroup && viewItem == group",
-				"group": "inline"
-			  },
 				{
-				"command": "bookmark_x.editBookmarkName",
-				"when": "viewItem == bookmark",
-				"group": "inline"
+					"command": "bookmark_x.activateGroup",
+					"when": "view == bookmarksByGroup && viewItem == group",
+					"group": "inline"
 				},
-			  {
-				"command": "bookmark_x.deleteBookmark",
-				"when": "viewItem == bookmark",
-				"group": "inline"
-			  }
+				{
+					"command": "bookmark_x.editGroupName",
+					"when": "view == bookmarksByGroup && viewItem == group",
+					"group": "inline"
+				},
+				{
+					"command": "bookmark_x.deleteGroup",
+					"when": "view == bookmarksByGroup && viewItem == group",
+					"group": "inline"
+				},
+				{
+					"command": "bookmark_x.editBookmarkName",
+					"when": "viewItem == bookmark",
+					"group": "inline"
+				},
+				{
+					"command": "bookmark_x.deleteBookmark",
+					"when": "viewItem == bookmark",
+					"group": "inline"
+				},
+				{
+					"command": "bookmark_x.addSubGroup",
+					"when": "view == bookmarksByGroup && viewItem == group"
+				}
+			],
+			"view/title": [
+				{
+					"command": "bookmark_x.addGroup",
+					"when": "view == bookmarksByGroup"
+				}
 			],
 			"commandPalette": [
 				{
@@ -137,15 +164,15 @@
 			]
 		},
 		"configuration": {
-      "title": "BookmarkX",
-      "properties": {
-        "bookmarkX.bookmarkSvg": {
-          "type": "string",
-          "default": "",
-          "description": "Select svg for book icon show."
-        }
-      }
-    }
+			"title": "BookmarkX",
+			"properties": {
+				"bookmarkX.bookmarkSvg": {
+					"type": "string",
+					"default": "",
+					"description": "Select svg for book icon show."
+				}
+			}
+		}
 	},
 	"scripts": {
 		"vscode:prepublish": "yarn run compile",

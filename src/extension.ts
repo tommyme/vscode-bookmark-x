@@ -83,6 +83,11 @@ export async function activate(context: vscode.ExtensionContext) {
 	);
 	context.subscriptions.push(disposable);
 
+	disposable = vscode.commands.registerCommand(
+		'bookmark_x.addSubGroup', (item: BookmarkTreeItem) => treeView.addSubGroup(item)
+	);
+	context.subscriptions.push(disposable);
+
 	treeView.init(controller);
 	let activeEditor = vscode.window.activeTextEditor;
 

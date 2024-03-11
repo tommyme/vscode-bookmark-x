@@ -10,10 +10,10 @@ import {
 } from 'vscode';
 import * as path from 'path';
 import { Bookmark, RootGroup } from "./functional_types";
-import {Group} from './functional_types';
-import {SerializableGroup} from './serializable_type';
+import { Group } from './functional_types';
+import { SerializableGroup } from './serializable_type';
 import * as util from './util';
-import {BookmarkTreeDataProvider} from './bookmark_tree_data_provider';
+import { BookmarkTreeDataProvider } from './bookmark_tree_data_provider';
 import { TextEncoder } from 'util';
 import { DecorationFactory } from './decoration_factory';
 
@@ -23,7 +23,7 @@ export class Controller {
     public readonly savedActiveGroupKey = "bookmarkDemo.activeGroup";
     public readonly defaultGroupName = "";
 
-    private treeViewRefreshCallback = () => {};
+    private treeViewRefreshCallback = () => { };
 
     private ctx: ExtensionContext;
     public activeGroup!: Group;
@@ -72,7 +72,7 @@ export class Controller {
      */
     public static DecoUpdateSaveAfter(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
         const fn = descriptor.value;
-        descriptor.value = function(...rest: any) {
+        descriptor.value = function (...rest: any) {
             fn.apply(this, rest);
             let x: any = this;
             x.updateDecorations(); // 更新界面
@@ -117,7 +117,7 @@ export class Controller {
         if (textEditor.selections.length === 0) {
             return;
         }
-        
+
         const fsPath = textEditor.document.uri.fsPath;
         const lineNumber = textEditor.selection.start.line;
 
@@ -160,24 +160,36 @@ export class Controller {
             }
         });
     }
-    // 添加新分组
-    public actionAddGroup() {
-        window.showInputBox({
+
+    public addGroupInputBox() {
+        return window.showInputBox({
             placeHolder: "分组名",
             prompt: "请输入新的分组名",
         }).then((groupName) => {
             groupName = groupName?.trim();
             if (!groupName) {
-                return;
-            }
-            let uri = util.joinTreeUri([this.activeGroup.get_full_uri(), groupName])            
-            let new_group = this.createGroupWithUri(uri);
-            let res = this.addGroup2Root(new_group);
-            if (res) {
-                window.showInformationMessage('group: '+uri+' 创建成功')
+                let err_msg = "empty group name not allowed."
+                window.showInformationMessage(err_msg)
+                throw new Error(err_msg)
             } else {
-                window.showInformationMessage('group: '+uri+' 创建失败, exists')
+                return groupName
             }
+        })
+    }
+    public addGroup(uri: string) {
+        let new_group = this.createGroupWithUri(uri);
+        let res = this.addGroup2Root(new_group);
+        if (res) {
+            window.showInformationMessage('group: ' + uri + ' 创建成功')
+        } else {
+            window.showInformationMessage('group: ' + uri + ' 创建失败, exists')
+        }
+    }
+    // 添加新分组
+    public actionAddGroup() {
+        this.addGroupInputBox().then((groupName: String) => {
+            let uri = util.joinTreeUri([this.activeGroup.get_full_uri(), groupName])
+            this.addGroup(uri)
         });
     }
 
@@ -273,7 +285,7 @@ export class Controller {
     }
 
     // 编辑label
-    private _editNodeLabel(node: Bookmark|Group, val: string): Group|undefined {
+    private _editNodeLabel(node: Bookmark | Group, val: string): Group | undefined {
         let father = this.fake_root_group.get_node(node.uri, "group") as Group;
 
         let index = father.children.indexOf(node);
@@ -300,9 +312,9 @@ export class Controller {
      * @param {type} param1 - param1 desc
      * @returns {type} - return value desc
      */
-    public editNodeLabel(node: Bookmark|Group, val: string): boolean {
+    public editNodeLabel(node: Bookmark | Group, val: string): boolean {
         // 命名冲突
-        if ( this.fake_root_group.cache.check_uri_exists(util.joinTreeUri([node.uri, val])) ) {
+        if (this.fake_root_group.cache.check_uri_exists(util.joinTreeUri([node.uri, val]))) {
             return false;
         }
         this.fake_root_group.cache.del(node.get_full_uri());
@@ -342,9 +354,9 @@ export class Controller {
         this.saveState();
     }
 
-    private addGroup2Root(group: Group): boolean {
-        
-        if ( this.fake_root_group.cache.check_uri_exists(group.get_full_uri()) ) {
+    public addGroup2Root(group: Group): boolean {
+
+        if (this.fake_root_group.cache.check_uri_exists(group.get_full_uri())) {
             return false;
         }
         let father = this.fake_root_group.add_group(group);
@@ -386,7 +398,7 @@ export class Controller {
      * @param {type} full_uri - group uri
      * @returns {type} - Group
      */
-    private createGroupWithUri(full_uri: string): Group {
+    public createGroupWithUri(full_uri: string): Group {
         let [group_uri, group_name] = util.splitString(full_uri);
         let group = new Group(group_name, util.randomColor(), group_uri);
         return group;
@@ -402,7 +414,7 @@ export class Controller {
             if (typeof editor === 'undefined') {
                 return;
             }
-    
+
             let fsPath = editor.document.uri.fsPath;
             let editorDecos = this.getDecoListInFile(fsPath);
             if (editorDecos.size === 0) {
@@ -500,16 +512,16 @@ export class Controller {
             let txt = change.text;
             let range = change.range;
             let num_enter = (txt.match(/\n/g) || []).length;
-            
+
             let st_line_text = event.document.lineAt(range.start.line).text;
             let st_line_chars = st_line_text.length;
-            let st_from_start = st_line_text.slice(0, range.start.character+1).trim() === '';
+            let st_from_start = st_line_text.slice(0, range.start.character + 1).trim() === '';
             let st_to_end = range.start.character === st_line_chars;
             let st_line_empty = st_line_text.trim() === '';
 
             let ed_line_text = event.document.lineAt(range.end.line).text;
             let ed_line_chars = ed_line_text.length;
-            let ed_from_start = ed_line_text.slice(0, range.end.character+1).trim() === '';
+            let ed_from_start = ed_line_text.slice(0, range.end.character + 1).trim() === '';
             let ed_to_end = range.end.character === ed_line_chars;
 
             if (range.start.line === range.end.line) {
@@ -526,7 +538,7 @@ export class Controller {
             } else {
                 if (true) {
                     file_bm.forEach(bm => {
-                        if (bm.line>range.start.line && bm.line<range.end.line) {
+                        if (bm.line > range.start.line && bm.line < range.end.line) {
                             // 处于中间的行删除书签 -- 稳妥删除
                             // 我们无法判断st line ed
                             // 如果 开头 结尾 都不删除，会怎么样？
@@ -535,7 +547,7 @@ export class Controller {
                             // 如果第二行有bm bm转到了第一行
                             // 考虑到alt换行的情况
                             this.deleteBookmark(bm);
-                        } else if (bm.line>=range.end.line) {
+                        } else if (bm.line >= range.end.line) {
                             bm.line -= range.end.line - range.start.line + num_enter;
                         }
                         // 检查重叠并且删除

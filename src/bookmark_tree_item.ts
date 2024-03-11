@@ -1,4 +1,4 @@
-import {ThemeColor, ThemeIcon, TreeItem, TreeItemCollapsibleState, Uri as string, workspace} from 'vscode';
+import {ThemeColor, ThemeIcon, TreeItem, TreeItemCheckboxState, TreeItemCollapsibleState, Uri as string, workspace} from 'vscode';
 import { Bookmark } from "./functional_types";
 import {Group} from './functional_types';
 
@@ -19,6 +19,7 @@ export class BookmarkTreeItem extends TreeItem {
             "command": "bookmark_x.jumpToBookmark",
             "arguments": [bookmark.get_full_uri()]
         };
+        result.checkboxState = TreeItemCheckboxState.Unchecked
         return result;
     }
 
@@ -34,12 +35,13 @@ export class BookmarkTreeItem extends TreeItem {
         const result = new BookmarkTreeItem(label, get_collapse_state());
         result.contextValue = 'group';
         if (currActiveGroup.startsWith(group.get_full_uri())) {
-            result.iconPath = new ThemeIcon("folder-opened", new ThemeColor("textLink.activeForeground"));
+            result.iconPath = new ThemeIcon("folder-opened", new ThemeColor("statusBarItem.remoteBackground"));
         } else {
             result.iconPath = new ThemeIcon("folder");
         }
         result.base = group;
         result.tooltip = group.name;
+        result.checkboxState = TreeItemCheckboxState.Unchecked
         return result;
     }
 
