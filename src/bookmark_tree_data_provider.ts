@@ -30,7 +30,7 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
     public getChildren(element?: BookmarkTreeItem | undefined): Thenable<any> {
         let el;
         if (!element) {
-            el = BookmarkTreeItem.fromGroup(this.root_group as Group, false)
+            el = BookmarkTreeItem.fromGroup(this.root_group as Group, this.controller.activeGroup.get_full_uri())
         } else {
             el = element;
         }
@@ -45,7 +45,7 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
     private renderNode(el: BookmarkTreeItem) {
         // if no children in base, resolve []
         const res = el.base!.children?.map(item => {
-            if (item.type === 'group') { return BookmarkTreeItem.fromGroup(item as Group, false) } 
+            if (item.type === 'group') { return BookmarkTreeItem.fromGroup(item as Group, this.controller.activeGroup.get_full_uri()) } 
             else if (item.type === 'bookmark') { return BookmarkTreeItem.fromBookmark(item as Bookmark) }
         }) || []
         return Promise.resolve(res)

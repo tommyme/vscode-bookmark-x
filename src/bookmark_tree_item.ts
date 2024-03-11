@@ -22,18 +22,22 @@ export class BookmarkTreeItem extends TreeItem {
         return result;
     }
 
-    static fromGroup(group: Group, isActiveGroup: boolean): BookmarkTreeItem {
+    static fromGroup(group: Group, currActiveGroup: string): BookmarkTreeItem {
         const label = group.name;
         const get_collapse_state = () => {
             if (group.children.length > 0) {
-                return isActiveGroup ? TreeItemCollapsibleState.Expanded : TreeItemCollapsibleState.Collapsed
+                return currActiveGroup ? TreeItemCollapsibleState.Expanded : TreeItemCollapsibleState.Collapsed
             } else {
                 return TreeItemCollapsibleState.None
             }
         }
         const result = new BookmarkTreeItem(label, get_collapse_state());
         result.contextValue = 'group';
-        result.iconPath = ThemeIcon.Folder;
+        if (currActiveGroup.startsWith(group.get_full_uri())) {
+            result.iconPath = new ThemeIcon("folder-opened", new ThemeColor("textLink.activeForeground"));
+        } else {
+            result.iconPath = new ThemeIcon("folder");
+        }
         result.base = group;
         result.tooltip = group.name;
         return result;

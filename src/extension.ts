@@ -78,6 +78,10 @@ export async function activate(context: vscode.ExtensionContext) {
 	);
 	context.subscriptions.push(disposable);
 
+	disposable = vscode.commands.registerTextEditorCommand(
+		'bookmark_x.revealBookmark', (textEditor) => controller.revealBookmark(textEditor)
+	);
+	context.subscriptions.push(disposable);
 
 	treeView.init(controller);
 	let activeEditor = vscode.window.activeTextEditor;

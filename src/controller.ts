@@ -377,6 +377,7 @@ export class Controller {
             return;
         }
         this.activeGroup = group;
+        this.updateDecorations();
         this.saveState();
     }
 
@@ -550,5 +551,18 @@ export class Controller {
         });
         this.updateDecorations();
         this.saveState();
+    }
+
+    public revealBookmark(textEditor: TextEditor) {
+        let fspath = textEditor.document.uri.fsPath
+        if (textEditor.selections.length == 1) {
+            let selection = textEditor.selections[0]
+            let line = selection.start.line
+            this.getBookmarksInFile(fspath).forEach(item => {
+                if (item.line == line) {
+                    window.showInformationMessage("current bookmark: " + item.get_full_uri())
+                }
+            })
+        }
     }
 }

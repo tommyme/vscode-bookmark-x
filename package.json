@@ -48,6 +48,10 @@
 				"title": "bookmark_x: load bookmarks in workspace"
 			},
 			{
+				"command": "bookmark_x.revealBookmark",
+				"title": "bookmark_x: reveal bookmark in current line"
+			},
+			{
 				"command": "bookmark_x.activateGroup",
 				"title": "Activate bookmark group",
 				"icon": "$(eye)"
