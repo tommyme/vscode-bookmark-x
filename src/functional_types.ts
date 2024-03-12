@@ -2,6 +2,7 @@ import {DecorationFactory} from './decoration_factory';
 import {TextEditorDecorationType, Uri} from 'vscode';
 import {SerializableBookmark, SerializableGroup} from './serializable_type';
 import * as util from './util';
+import { BookmarkTreeItem } from './bookmark_tree_item';
 
 class BaseFunctional {
     name: string;
@@ -219,8 +220,8 @@ export class Bookmark extends BaseFunctional {
     }
 }
 
-export class Cache extends Object {
-    private map: { [key: string]: BaseFunctional } = {};
+class UriMap<T> extends Object {
+    protected map: { [key: string]: T } = {};
     public check_uri_exists(uri: string) {
         let same = this.keys().filter(key => key === uri);
         if (same.length > 0) {
@@ -229,11 +230,10 @@ export class Cache extends Object {
             return false;
         }
     }
-
-    public set(key: string, value: BaseFunctional) {
+    public set(key: string, value: T) {
         this.map[key] = value;
     }
-    public get(key: string): BaseFunctional {
+    public get(key: string): T {
         return this.map[key];
     }
     public del(key: string) {
@@ -242,6 +242,11 @@ export class Cache extends Object {
     public keys(): Array<string> {
         return Object.keys(this.map);
     }
+    public values(): Array<T> {
+        return Object.values(this.map)
+    }
+}
+export class Cache extends UriMap<BaseFunctional> {
     public findOverlapBookmark() {
         let result = [];
         let map: { [key: number]: Bookmark} = {};
@@ -266,9 +271,10 @@ export class Cache extends Object {
         }
         return result;
     }
-    public values(): Array<BaseFunctional> {
-        return Object.values(this.map)
-    }
+}
+
+export class ViewItemUriMap extends UriMap<BookmarkTreeItem> {
+    protected map: { [key: string]: BookmarkTreeItem } = {};
 }
 
 export class RootGroup extends Group {

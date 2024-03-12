@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import {Controller} from './controller';
-import {BookmarkTreeView} from './bookmark_tree_view';
+import {BookmarkTreeViewManager} from './bookmark_tree_view';
 import {BookmarkTreeItem} from './bookmark_tree_item';
 import { Bookmark } from "./functional_types";
 import * as util from './util';
@@ -8,10 +8,10 @@ import { DecorationFactory } from './decoration_factory';
 
 export async function activate(context: vscode.ExtensionContext) {
 
-	let treeView: BookmarkTreeView = new BookmarkTreeView();
+	let treeViewManager: BookmarkTreeViewManager = new BookmarkTreeViewManager();
 	DecorationFactory.svgDir = context.globalStorageUri
 	await DecorationFactory.init_svgdir()
-	let controller: Controller = new Controller(context, treeView.refreshCallback.bind(treeView));
+	let controller: Controller = new Controller(context, treeViewManager.refreshCallback.bind(treeViewManager));
 	// 切换标签的命令
 	let disposable;
 	disposable = vscode.commands.registerTextEditorCommand('bookmark_x.toggleBookmark', (textEditor) => {
@@ -31,24 +31,24 @@ export async function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(disposable);
 
 	disposable = vscode.commands.registerCommand(
-		'bookmark_x.activateGroup', (item: BookmarkTreeItem) => treeView.activateGroup(item)
+		'bookmark_x.activateGroup', (item: BookmarkTreeItem) => treeViewManager.activateGroup(item)
 	);
 	context.subscriptions.push(disposable);
 
 	// 通过面板-删除分组
 	disposable = vscode.commands.registerCommand(
-		'bookmark_x.deleteGroup', (item: BookmarkTreeItem) => treeView.deleteGroup(item)
+		'bookmark_x.deleteGroup', (item: BookmarkTreeItem) => treeViewManager.deleteGroup(item)
 	);
 	context.subscriptions.push(disposable);
 
 	disposable = vscode.commands.registerCommand(
-		'bookmark_x.editGroupName', (item: BookmarkTreeItem) => treeView.editNodeLabel(item)
+		'bookmark_x.editGroupName', (item: BookmarkTreeItem) => treeViewManager.editNodeLabel(item)
 	);
 	context.subscriptions.push(disposable);
 
 	// 通过面板-删除标签
 	disposable = vscode.commands.registerCommand(
-		'bookmark_x.deleteBookmark', (item: BookmarkTreeItem) => treeView.deleteBookmark(item)
+		'bookmark_x.deleteBookmark', (item: BookmarkTreeItem) => treeViewManager.deleteBookmark(item)
 	);
 	context.subscriptions.push(disposable);
 
@@ -59,7 +59,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(disposable);
 
 	disposable = vscode.commands.registerCommand(
-		'bookmark_x.editBookmarkName', (item: BookmarkTreeItem) => treeView.editNodeLabel(item)
+		'bookmark_x.editBookmarkName', (item: BookmarkTreeItem) => treeViewManager.editNodeLabel(item)
 	);
 	context.subscriptions.push(disposable);
 	
@@ -84,11 +84,11 @@ export async function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(disposable);
 
 	disposable = vscode.commands.registerCommand(
-		'bookmark_x.addSubGroup', (item: BookmarkTreeItem) => treeView.addSubGroup(item)
+		'bookmark_x.addSubGroup', (item: BookmarkTreeItem) => treeViewManager.addSubGroup(item)
 	);
 	context.subscriptions.push(disposable);
 
-	treeView.init(controller);
+	treeViewManager.init(controller);
 	let activeEditor = vscode.window.activeTextEditor;
 
 	if (activeEditor) {

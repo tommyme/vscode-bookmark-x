@@ -14,7 +14,7 @@ class MyViewBadge implements ViewBadge {
     }
 }
 
-export class BookmarkTreeView {
+export class BookmarkTreeViewManager {
 
     private controller: Controller | null = null;
 

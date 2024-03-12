@@ -1,10 +1,10 @@
 import {EventEmitter, TreeDataProvider, TreeItem, TreeItemCollapsibleState} from 'vscode';
 import { Bookmark } from "./functional_types";
-import {BookmarkTreeItem} from './bookmark_tree_item';
+import {BookmarkTreeItem, BookmarkTreeItemFactory} from './bookmark_tree_item';
 import {Group, RootGroup} from './functional_types';
 import * as vscode from 'vscode';
 import { Controller } from './controller';
-import { BookmarkTreeView } from './bookmark_tree_view';
+import { BookmarkTreeViewManager } from './bookmark_tree_view';
 
 
 export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<BookmarkTreeItem>, vscode.TreeDragAndDropController<BookmarkTreeItem>  {
@@ -13,7 +13,7 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
     public root_group: RootGroup;
     private changeEmitter = new EventEmitter<BookmarkTreeItem | undefined | null | void>();
     private controller: Controller;
-    public treeview?: BookmarkTreeView;
+    public treeview?: BookmarkTreeViewManager;
 
     readonly onDidChangeTreeData = this.changeEmitter.event;
 
@@ -30,7 +30,7 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
     public getChildren(element?: BookmarkTreeItem | undefined): Thenable<any> {
         let el;
         if (!element) {
-            el = BookmarkTreeItem.fromGroup(this.root_group as Group, this.controller.activeGroup.get_full_uri());
+            el = BookmarkTreeItemFactory.fromGroup(this.root_group as Group, this.controller.activeGroup.get_full_uri());
         } else {
             el = element;
         }
@@ -45,8 +45,8 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
     private renderNode(el: BookmarkTreeItem) {
         // if no children in base, resolve []
         const res = el.base!.children?.map(item => {
-            if (item.type === 'group') { return BookmarkTreeItem.fromGroup(item as Group, this.controller.activeGroup.get_full_uri()); } 
-            else if (item.type === 'bookmark') { return BookmarkTreeItem.fromBookmark(item as Bookmark); }
+            if (item.type === 'group') { return BookmarkTreeItemFactory.fromGroup(item as Group, this.controller.activeGroup.get_full_uri()); } 
+            else if (item.type === 'bookmark') { return BookmarkTreeItemFactory.fromBookmark(item as Bookmark); }
         }) || [];
         return Promise.resolve(res);
     }

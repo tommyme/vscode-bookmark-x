@@ -9,13 +9,14 @@ import {
     TextDocumentChangeEvent
 } from 'vscode';
 import * as path from 'path';
-import { Bookmark, RootGroup } from "./functional_types";
+import { Bookmark, RootGroup, ViewItemUriMap } from "./functional_types";
 import { Group } from './functional_types';
 import { SerializableGroup } from './serializable_type';
 import * as util from './util';
 import { BookmarkTreeDataProvider } from './bookmark_tree_data_provider';
 import { TextEncoder } from 'util';
 import { DecorationFactory } from './decoration_factory';
+import { BookmarkTreeItemFactory } from './bookmark_tree_item';
 
 export class Controller {
     public readonly savedBookmarksKey = 'bookmarkDemo.bookmarks'; // 缓存标签的key
@@ -31,13 +32,16 @@ export class Controller {
     public fake_root_group!: RootGroup;
     public tprovider: BookmarkTreeDataProvider;
     public _range?: Range;
+    public view_item_map: ViewItemUriMap;
 
     constructor(ctx: ExtensionContext, treeViewRefreshCallback: () => void) {
         this.ctx = ctx;
         this.treeViewRefreshCallback = treeViewRefreshCallback;
+        BookmarkTreeItemFactory.controller = this
         // DecorationFactory.svgDir = this.ctx.globalStorageUri; // 缓存地址
         this.restoreSavedState(); // 读取上一次记录的状态 初始化fake root group
         this.tprovider = new BookmarkTreeDataProvider(this.fake_root_group, this);
+        this.view_item_map = new ViewItemUriMap();
     }
 
     // 保存状态 activeGroupName and fake_root_group(serialized)
@@ -269,6 +273,7 @@ export class Controller {
 
         group.children.splice(index, 1);
         this.fake_root_group.cache_del_node(bookmark);
+        this.view_item_map.del(bookmark.get_full_uri());
         this.updateDecorations();
         this.saveState();
     }
@@ -279,6 +284,7 @@ export class Controller {
             let index = group.children.indexOf(bm);
             group.children.splice(index, 1);
             this.fake_root_group.cache_del_node(bm);
+            this.view_item_map.del(bm.get_full_uri());
         });
         this.updateDecorations();
         this.saveState();
