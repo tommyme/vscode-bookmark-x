@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { ViewBadge } from 'vscode';
+import { ThemeColor, ThemeIcon, ViewBadge } from 'vscode';
 import {Controller} from './controller';
 import {BookmarkTreeItem} from './bookmark_tree_item';
 import { Bookmark, Group } from './functional_types';
@@ -20,7 +20,7 @@ export class BookmarkTreeViewManager {
 
     private treeDataProviderByGroup: any = null;
     private treeDataProviderByFile: any = null;
-    public view: any = null;
+    public view!: vscode.TreeView<BookmarkTreeItem>;
 
     public refreshCallback() {
         if (this.treeDataProviderByGroup !== null) {
@@ -35,7 +35,7 @@ export class BookmarkTreeViewManager {
         this.controller.tprovider.treeview = this;
         // this.treeDataProviderByFile = this.controller.getTreeDataProviderByFile();
         // vscode.TreeViewOptions
-        let view = vscode.window.createTreeView('bookmarksByGroup', {
+        let view = vscode.window.createTreeView<BookmarkTreeItem>('bookmarksByGroup', {
             treeDataProvider: this.treeDataProviderByGroup, 
             dragAndDropController: this.treeDataProviderByGroup,
             showCollapseAll: true, canSelectMany: true
@@ -56,9 +56,20 @@ export class BookmarkTreeViewManager {
             this.controller!.activateGroup("");
             vscode.window.showInformationMessage(`切换至root group`);
             return;
+            // clear view map icon
         }
         vscode.window.showInformationMessage(`切换至${group.get_full_uri()}`);
         this.controller!.activateGroup(group.get_full_uri());
+        this.controller!.view_item_map.keys().forEach(key => {
+            let tvi = this.controller!.view_item_map.get(key);
+            if (tvi.base?.type === 'group') {
+                if (util.isSubUriOrEqual(key, group.get_full_uri())) {
+                    tvi.iconPath = new ThemeIcon("folder-opened", new ThemeColor("statusBarItem.remoteBackground"));
+                } else {
+                    tvi.iconPath = new ThemeIcon("folder");
+                }
+            }
+        })
     }
 
     public deleteGroup(treeItem: BookmarkTreeItem) {

@@ -2,7 +2,7 @@ import {DecorationFactory} from './decoration_factory';
 import {TextEditorDecorationType, TreeItem, Uri} from 'vscode';
 import {SerializableBookmark, SerializableGroup} from './serializable_type';
 import * as util from './util';
-import { BookmarkTreeItem } from './bookmark_tree_item';
+import { BookmarkTreeItem, BookmarkTreeItemFactory } from './bookmark_tree_item';
 
 class BaseFunctional {
     name: string;
@@ -164,9 +164,17 @@ export class Group extends BaseFunctional {
     }
 
     public bfs_get_tvmap(): ViewItemUriMap {
+        console.log("bfs get tv map");
         let res = new ViewItemUriMap();
         function bfs(node: BaseFunctional) {
-            let view_item = new BookmarkTreeItem(node.name);
+            let view_item;
+            if (node.type === "group") {
+                view_item = BookmarkTreeItemFactory.createGroup(node as Group);
+            } else if (node.type === "bookmark") {
+                view_item = BookmarkTreeItemFactory.createBookmark(node as Bookmark)
+            } else {
+                throw new Error("bfs get tvmap error")
+            }
             res.set(node.get_full_uri(), view_item);
             if (node.children.length === 0) {
                 return;
@@ -277,6 +285,18 @@ class UriMap<T> extends Object {
     public values(): Array<T> {
         return Object.values(this.map);
     }
+    public del_group(uri: string) {
+        this.keys().forEach(key => {
+            if (util.isSubUriOrEqual(uri, key)) {
+                this.del(key);
+            }
+        });
+    }
+    public rename_key(old_key: string, new_key: string) {
+        let x = this.get(old_key);
+        this.set(new_key, x);
+        this.del(old_key);
+    }
 }
 export class NodeUriMap extends UriMap<BaseFunctional> {
     public findOverlapBookmark() {
@@ -299,16 +319,9 @@ export class NodeUriMap extends UriMap<BaseFunctional> {
     public bookmark_num() {
         let result = 0;
         for (let key of this.keys()) {
-            if (this.get(key).type == 'bookmark') { result++; }
+            if (this.get(key).type === 'bookmark') { result++; }
         }
         return result;
-    }
-    public del_group(uri: string) {
-        this.keys().forEach(key => {
-            if (util.isSubUriOrEqual(uri, key)) {
-                this.del(key)
-            }
-        })
     }
 }
 

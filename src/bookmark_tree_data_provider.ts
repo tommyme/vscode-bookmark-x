@@ -28,9 +28,15 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
 
     // 初始化tree item
     public getChildren(element?: BookmarkTreeItem | undefined): Thenable<any> {
+        console.log("get children call", element)
         let el;
         if (!element) {
-            el = BookmarkTreeItemFactory.fromGroup(this.root_group as Group, this.controller.activeGroup.get_full_uri());
+            el = BookmarkTreeItemFactory.fromGroup(this.root_group as Group);
+            if (this.root_group.children.length === 0) {
+                this.treeview!.view.message = "";
+            } else {
+                this.treeview!.view.message = "∠( ᐛ 」∠)_";  // clear message and show welcome
+            }
         } else {
             el = element;
         }
@@ -46,14 +52,9 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
         // if no children in base, resolve []
         const res = el.base!.children?.map(item => {
             // return this.controller.view_item_map.get(item.get_full_uri());
-            if (item.type === 'group') { return BookmarkTreeItemFactory.fromGroup(item as Group, this.controller.activeGroup.get_full_uri()); } 
+            if (item.type === 'group') { return BookmarkTreeItemFactory.fromGroup(item as Group) } 
             else if (item.type === 'bookmark') { return BookmarkTreeItemFactory.fromBookmark(item as Bookmark); }
         }) || [];
-        if (res.length === 0) {
-            this.treeview!.view.message = "";
-        } else {
-            this.treeview!.view.message = "∠( ᐛ 」∠)_";  // clear message and show welcome
-        }
         return Promise.resolve(res);
     }
 
@@ -104,7 +105,7 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
                 Group.dfsRefreshUri(this.root_group);
                 // 变化太大, 直接重新build cache
                 this.root_group.cache = this.root_group.bfs_get_nodes();
-                // this.controller.view_item_map = this.root_group.bfs_get_tvmap();
+                this.controller.view_item_map = this.root_group.bfs_get_tvmap();
                 changed_flag = true;
                 this.root_group.sortGroupBookmark();
             }
@@ -121,7 +122,7 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
                 target!.base.children.push(item);
                 Group.dfsRefreshUri(target!.base);
                 this.root_group.cache = this.root_group.bfs_get_nodes();
-                // this.controller.view_item_map = this.root_group.bfs_get_tvmap();
+                this.controller.view_item_map = this.root_group.bfs_get_tvmap();
                 changed_flag = true;
                 target!.base.sortGroupBookmark();
                 target!.collapsibleState = TreeItemCollapsibleState.Expanded;
@@ -133,9 +134,12 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
                     return;
                 }
                 this.root_group.cut_node_recache(item);
+                let old_key = item.get_full_uri();
                 item.uri = '';
                 item.group = this.root_group;
+                let new_key = item.get_full_uri();
                 this.root_group.add_bookmark_recache(item);
+                this.controller.view_item_map.rename_key(old_key, new_key);
                 changed_flag = true;
                 this.root_group.sortGroupBookmark();
             }
@@ -145,10 +149,14 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
                     vscode.window.showInformationMessage("已经在目标group里了");
                     return;
                 }
+                let old_key = item.get_full_uri();
                 this.root_group.cut_node_recache(item);
+                // this.controller.view_item_map.del(item.get_full_uri());
                 item.uri = target!.base.get_full_uri();
                 item.group = target!.base;
+                let new_key = item.get_full_uri();
                 this.root_group.add_bookmark_recache(item);
+                this.controller.view_item_map.rename_key(old_key, new_key);
                 changed_flag = true;
                 target!.base.sortGroupBookmark();
                 target!.collapsibleState = TreeItemCollapsibleState.Expanded;
@@ -169,4 +177,12 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
             this.controller.saveState();
         }
 	}
+    /**
+     * getParent
+     */
+    public getParent(element: BookmarkTreeItem): BookmarkTreeItem {
+        let uri = element.base!.uri;
+        let bmti = this.controller.view_item_map.get(uri);
+        return bmti;
+    }
 }
