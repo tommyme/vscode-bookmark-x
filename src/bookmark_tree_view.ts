@@ -3,14 +3,14 @@ import { ViewBadge } from 'vscode';
 import {Controller} from './controller';
 import {BookmarkTreeItem} from './bookmark_tree_item';
 import { Bookmark, Group } from './functional_types';
-import * as util from './util'
+import * as util from './util';
 
 class MyViewBadge implements ViewBadge {
     tooltip: string;
     value: number;
     public constructor(value: number=0) {
-        this.value = value
-        this.tooltip = `${this.value} bookmarks`
+        this.value = value;
+        this.tooltip = `${this.value} bookmarks`;
     }
 }
 
@@ -20,13 +20,13 @@ export class BookmarkTreeViewManager {
 
     private treeDataProviderByGroup: any = null;
     private treeDataProviderByFile: any = null;
-    public view: any = null
+    public view: any = null;
 
     public refreshCallback() {
         if (this.treeDataProviderByGroup !== null) {
             this.treeDataProviderByGroup.refresh();
         }
-        this.refresh_badge()
+        this.refresh_badge();
     }
 
     public async init(controller: Controller) {
@@ -41,12 +41,12 @@ export class BookmarkTreeViewManager {
             showCollapseAll: true, canSelectMany: true
         });
         // view.message = "∠( ᐛ 」∠)_"  // clear message and show welcome
-        view.description = "manage your bookmarks"
-        this.view = view
+        view.description = "manage your bookmarks";
+        this.view = view;
     }
     public refresh_badge() {
-        let num = this.controller!.fake_root_group.cache.bookmark_num()
-        this.view.badge = new MyViewBadge(num)
+        let num = this.controller!.fake_root_group.cache.bookmark_num();
+        this.view.badge = new MyViewBadge(num);
     }
 
     public activateGroup(treeItem: BookmarkTreeItem) {
@@ -76,9 +76,9 @@ export class BookmarkTreeViewManager {
     public addSubGroup(treeItem: BookmarkTreeItem) {
         const group = treeItem.getBaseGroup()!;
         this.controller!.addGroupInputBox().then((name: String) => {
-            let uri = util.joinTreeUri([group.get_full_uri(), name])
+            let uri = util.joinTreeUri([group.get_full_uri(), name]);
             this.controller!.addGroup(uri);
-        })
+        });
     }
 
     public editNodeLabel(treeItem: BookmarkTreeItem) {

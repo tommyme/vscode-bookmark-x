@@ -1,5 +1,5 @@
 import {DecorationFactory} from './decoration_factory';
-import {TextEditorDecorationType, Uri} from 'vscode';
+import {TextEditorDecorationType, TreeItem, Uri} from 'vscode';
 import {SerializableBookmark, SerializableGroup} from './serializable_type';
 import * as util from './util';
 import { BookmarkTreeItem } from './bookmark_tree_item';
@@ -149,10 +149,25 @@ export class Group extends BaseFunctional {
      * @param {type} param1 - param1 desc
      * @returns {type} - return value desc
      */
-    public bfs_get_nodes(): Cache {
-        let res = new Cache();
+    public bfs_get_nodes(): BookmarkUriMap {
+        let res = new BookmarkUriMap();
         function bfs(node: BaseFunctional) {
             res.set(node.get_full_uri(), node);
+            if (node.children.length === 0) {
+                return;
+            } else {
+                node.children.forEach(item => {bfs(item);});
+            }
+        }
+        bfs(this);
+        return res;
+    }
+
+    public bfs_get_tvmap(): ViewItemUriMap {
+        let res = new ViewItemUriMap();
+        function bfs(node: BaseFunctional) {
+            let view_item = new BookmarkTreeItem(node.name);
+            res.set(node.get_full_uri(), view_item);
             if (node.children.length === 0) {
                 return;
             } else {
@@ -243,10 +258,10 @@ class UriMap<T> extends Object {
         return Object.keys(this.map);
     }
     public values(): Array<T> {
-        return Object.values(this.map)
+        return Object.values(this.map);
     }
 }
-export class Cache extends UriMap<BaseFunctional> {
+export class BookmarkUriMap extends UriMap<BaseFunctional> {
     public findOverlapBookmark() {
         let result = [];
         let map: { [key: number]: Bookmark} = {};
@@ -265,9 +280,9 @@ export class Cache extends UriMap<BaseFunctional> {
         return result;
     }
     public bookmark_num() {
-        let result = 0
+        let result = 0;
         for (let key of this.keys()) {
-            if (this.get(key).type == 'bookmark') { result++ }
+            if (this.get(key).type == 'bookmark') { result++; }
         }
         return result;
     }
@@ -277,8 +292,12 @@ export class ViewItemUriMap extends UriMap<BookmarkTreeItem> {
     protected map: { [key: string]: BookmarkTreeItem } = {};
 }
 
+/**
+ * 
+ * 封装一些步骤多一点的cache操作
+ */
 export class RootGroup extends Group {
-    cache: Cache;
+    cache: BookmarkUriMap;
 
     constructor(
         name: string,
@@ -287,7 +306,7 @@ export class RootGroup extends Group {
         children: (Group|Bookmark)[]=[]
     ) {
         super(name, color, uri, children);
-        this.cache = new Cache();
+        this.cache = new BookmarkUriMap();
     }
     /**
      * rootnode add bookmark and return bookmark's father group
@@ -336,17 +355,6 @@ export class RootGroup extends Group {
         }
     }
 
-    public mv_group(group: Group, target_uri: string) {
-        // 遍历组内 children, 改变其uri
-        group.children.forEach(item => {
-            item.uri = util.joinTreeUri([target_uri, group.name]);
-        });
-        // TODO 检查一下cache里面的引用变没变
-        this.cut_node_recache(group);
-        group.uri = target_uri;
-        // mv 完毕
-    }
-
     public cache_build() {
         this.cache = this.bfs_get_nodes();
     }
@@ -386,13 +394,13 @@ export class RootGroup extends Group {
      * @returns {type} - return value desc
      */
     public get_bm_with_under_fspath(fspath: string): Array<Bookmark> {
-        let res: Array<Bookmark> = []
+        let res: Array<Bookmark> = [];
         this.cache.keys().forEach(key => {
             let node = this.cache.get(key);
             if (node instanceof Bookmark && util.isPathAEqUnderPathB(node.fsPath, fspath)) {
-                res.push(node)
+                res.push(node);
             }
-        })
-        return res
+        });
+        return res;
     }
 }

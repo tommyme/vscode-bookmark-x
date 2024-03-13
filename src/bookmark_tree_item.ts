@@ -10,7 +10,7 @@ export class BookmarkTreeItemFactory {
         const label = (typeof bookmark.name !== 'undefined' ? bookmark.name : '');
         let result: BookmarkTreeItem;
         if (this.controller.view_item_map.check_uri_exists(bookmark.get_full_uri())) {
-            result = this.controller.view_item_map.get(bookmark.get_full_uri())
+            result = this.controller.view_item_map.get(bookmark.get_full_uri());
         } else {
             result = new BookmarkTreeItem(label, TreeItemCollapsibleState.None);
             result.contextValue = 'bookmark';
@@ -33,14 +33,14 @@ export class BookmarkTreeItemFactory {
         const label = group.name;
         const get_collapse_state = () => {
             if (group.children.length > 0) {
-                return currActiveGroup ? TreeItemCollapsibleState.Expanded : TreeItemCollapsibleState.Collapsed
+                return currActiveGroup ? TreeItemCollapsibleState.Expanded : TreeItemCollapsibleState.Collapsed;
             } else {
-                return TreeItemCollapsibleState.None
+                return TreeItemCollapsibleState.None;
             }
-        }
+        };
         let result: BookmarkTreeItem;
         if (this.controller.view_item_map.check_uri_exists(group.get_full_uri())) {
-            result = this.controller.view_item_map.get(group.get_full_uri())
+            result = this.controller.view_item_map.get(group.get_full_uri());
         } else {
             result = new BookmarkTreeItem(label, get_collapse_state());
             result.contextValue = 'group';
@@ -85,6 +85,6 @@ export class BookmarkTreeItem extends TreeItem {
 class A {
     static xxx: string|undefined;
     public static fuck() {
-        console.log(this.xxx)
+        console.log(this.xxx);
     }
 }

@@ -37,7 +37,7 @@ export class Controller {
     constructor(ctx: ExtensionContext, treeViewRefreshCallback: () => void) {
         this.ctx = ctx;
         this.treeViewRefreshCallback = treeViewRefreshCallback;
-        BookmarkTreeItemFactory.controller = this
+        BookmarkTreeItemFactory.controller = this;
         // DecorationFactory.svgDir = this.ctx.globalStorageUri; // 缓存地址
         this.restoreSavedState(); // 读取上一次记录的状态 初始化fake root group
         this.tprovider = new BookmarkTreeDataProvider(this.fake_root_group, this);
@@ -172,28 +172,28 @@ export class Controller {
         }).then((groupName) => {
             groupName = groupName?.trim();
             if (!groupName) {
-                let err_msg = "empty group name not allowed."
-                window.showInformationMessage(err_msg)
-                throw new Error(err_msg)
+                let err_msg = "empty group name not allowed.";
+                window.showInformationMessage(err_msg);
+                throw new Error(err_msg);
             } else {
-                return groupName
+                return groupName;
             }
-        })
+        });
     }
     public addGroup(uri: string) {
         let new_group = this.createGroupWithUri(uri);
         let res = this.addGroup2Root(new_group);
         if (res) {
-            window.showInformationMessage('group: ' + uri + ' 创建成功')
+            window.showInformationMessage('group: ' + uri + ' 创建成功');
         } else {
-            window.showInformationMessage('group: ' + uri + ' 创建失败, exists')
+            window.showInformationMessage('group: ' + uri + ' 创建失败, exists');
         }
     }
     // 添加新分组
     public actionAddGroup() {
         this.addGroupInputBox().then((groupName: String) => {
-            let uri = util.joinTreeUri([this.activeGroup.get_full_uri(), groupName])
-            this.addGroup(uri)
+            let uri = util.joinTreeUri([this.activeGroup.get_full_uri(), groupName]);
+            this.addGroup(uri);
         });
     }
 
@@ -298,14 +298,14 @@ export class Controller {
         if (index < 0) {
             return undefined;
         }
-        let original_full_uri = node.get_full_uri()
+        let original_full_uri = node.get_full_uri();
         father.children[index].name = val;
-        let new_full_uri = node.get_full_uri()
+        let new_full_uri = node.get_full_uri();
         if (node.type == 'group') {
             // bfs edit uri
             (node as Group).bfs_get_nodes().values().forEach(node => {
-                node.uri = node.uri.replace(original_full_uri, new_full_uri)    // only replace once
-            })
+                node.uri = node.uri.replace(original_full_uri, new_full_uri);    // only replace once
+            });
         }
 
 
@@ -424,7 +424,7 @@ export class Controller {
             let fsPath = editor.document.uri.fsPath;
             let editorDecos = this.getDecoListInFile(fsPath);
             if (editorDecos.size === 0) {
-                editor.setDecorations(DecorationFactory.decoration, [])
+                editor.setDecorations(DecorationFactory.decoration, []);
             }
             // set decos, remove decos
             for (let [decoration, ranges] of editorDecos) {
@@ -572,15 +572,15 @@ export class Controller {
     }
 
     public revealBookmark(textEditor: TextEditor) {
-        let fspath = textEditor.document.uri.fsPath
+        let fspath = textEditor.document.uri.fsPath;
         if (textEditor.selections.length == 1) {
-            let selection = textEditor.selections[0]
-            let line = selection.start.line
+            let selection = textEditor.selections[0];
+            let line = selection.start.line;
             this.getBookmarksInFile(fspath).forEach(item => {
                 if (item.line == line) {
-                    window.showInformationMessage("current bookmark: " + item.get_full_uri())
+                    window.showInformationMessage("current bookmark: " + item.get_full_uri());
                 }
-            })
+            });
         }
     }
 }

@@ -50,35 +50,35 @@ export class DecorationFactory {
     public static async set_deco_from_settings() {
         let config = workspace.getConfiguration('bookmarkX');
         let decoFilePath = config.get('bookmarkSvg') as string;
-        let set_done = false
+        let set_done = false;
         if (decoFilePath) {
-            let uri = Uri.file(decoFilePath)
+            let uri = Uri.file(decoFilePath);
             try {
-                let stat = await workspace.fs.stat(uri)
+                let stat = await workspace.fs.stat(uri);
                 // 只有文件存在的时候才会进入这里
-                console.log(stat)
+                console.log(stat);
                 DecorationFactory.decoration = window.createTextEditorDecorationType(
                     { gutterIconPath: decoFilePath, gutterIconSize: 'contain' }
-                )
-                set_done = true
+                );
+                set_done = true;
             } catch (err) {
-                window.showInformationMessage("svg file load error (default svg used): "+String(err))
+                window.showInformationMessage("svg file load error (default svg used): "+String(err));
             }
         }
-        return set_done
+        return set_done;
     }
 
     public static async init_svgdir() {
         let dir = Uri.file(
             path.join(DecorationFactory.svgDir.fsPath, 'svg_icons')
-        )
-        await workspace.fs.createDirectory(dir)
-        let default_svg_path = path.join(dir.fsPath, "default.svg")
+        );
+        await workspace.fs.createDirectory(dir);
+        let default_svg_path = path.join(dir.fsPath, "default.svg");
         if (!fs.existsSync(default_svg_path)) {
             try {
-                fs.writeFileSync(default_svg_path, svgBookmark)
+                fs.writeFileSync(default_svg_path, svgBookmark);
             } catch(err) {
-                window.showErrorMessage(String(err))
+                window.showErrorMessage(String(err));
             }
         }
         if (!await DecorationFactory.set_deco_from_settings()) {
@@ -87,7 +87,7 @@ export class DecorationFactory {
                     gutterIconPath: default_svg_path,
                     gutterIconSize: 'contain',
                 }
-            )
+            );
         }
     }
 }

@@ -33,9 +33,9 @@ function joinTreeUri(input: Array<String>): string {
     // "aa", "bb" -- "aa/bb"
     // "", "aa/bb" -- "aa/bb"
     if (input[0] === "") {
-        return input.splice(1).join("/")
+        return input.splice(1).join("/");
     } else {
-        return input.join("/")
+        return input.join("/");
     }
 }
 
@@ -93,4 +93,4 @@ export {
     joinTreeUri,
     isPathAEqUnderPathB,
     updateChildPath
-}
+};

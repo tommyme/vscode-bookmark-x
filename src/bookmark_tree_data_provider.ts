@@ -45,6 +45,7 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
     private renderNode(el: BookmarkTreeItem) {
         // if no children in base, resolve []
         const res = el.base!.children?.map(item => {
+            // return this.controller.view_item_map.get(item.get_full_uri());
             if (item.type === 'group') { return BookmarkTreeItemFactory.fromGroup(item as Group, this.controller.activeGroup.get_full_uri()); } 
             else if (item.type === 'bookmark') { return BookmarkTreeItemFactory.fromBookmark(item as Bookmark); }
         }) || [];
@@ -96,6 +97,7 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
                 item.uri = '';
                 this.root_group.children.push(item);
                 RootGroup.refresh_uri(this.root_group);
+                // 变化太大, 直接重新build cache
                 this.root_group.cache_build();
                 changed_flag = true;
                 this.root_group.sortGroupBookmark();

@@ -9,8 +9,8 @@ import { DecorationFactory } from './decoration_factory';
 export async function activate(context: vscode.ExtensionContext) {
 
 	let treeViewManager: BookmarkTreeViewManager = new BookmarkTreeViewManager();
-	DecorationFactory.svgDir = context.globalStorageUri
-	await DecorationFactory.init_svgdir()
+	DecorationFactory.svgDir = context.globalStorageUri;
+	await DecorationFactory.init_svgdir();
 	let controller: Controller = new Controller(context, treeViewManager.refreshCallback.bind(treeViewManager));
 	// 切换标签的命令
 	let disposable;
