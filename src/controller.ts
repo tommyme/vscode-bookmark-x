@@ -67,7 +67,8 @@ export class Controller {
             this.fake_root_group = new RootGroup("", "", "", []);
         }
         this.activeGroup = this.fake_root_group.get_node(activeGroupUri, 'group') as Group;
-        this.fake_root_group.cache_build();
+        this.fake_root_group.cache = this.fake_root_group.bfs_get_nodes();
+        // this.view_item_map = this.fake_root_group.bfs_get_tvmap();
     }
     /**
      * 装饰器 执行完动作之后update和save一下
@@ -165,7 +166,7 @@ export class Controller {
         });
     }
 
-    public addGroupInputBox() {
+    public inputBoxAddGroup() {
         return window.showInputBox({
             placeHolder: "分组名",
             prompt: "请输入新的分组名",
@@ -191,7 +192,7 @@ export class Controller {
     }
     // 添加新分组
     public actionAddGroup() {
-        this.addGroupInputBox().then((groupName: String) => {
+        this.inputBoxAddGroup().then((groupName: String) => {
             let uri = util.joinTreeUri([this.activeGroup.get_full_uri(), groupName]);
             this.addGroup(uri);
         });
@@ -218,7 +219,8 @@ export class Controller {
                 let obj = JSON.parse(content.toString());
                 // let pre_root_group = this.fake_root_group
                 this.fake_root_group = SerializableGroup.build_root(obj);
-                this.fake_root_group.cache_build();
+                this.fake_root_group.cache = this.fake_root_group.bfs_get_nodes();
+                // this.view_item_map = this.fake_root_group.bfs_get_tvmap();
                 // TODO 内存优化 delete this.fake_root_group
                 this.tprovider.root_group = this.fake_root_group;
                 this.tprovider.treeview?.init(this);
@@ -272,8 +274,8 @@ export class Controller {
         }
 
         group.children.splice(index, 1);
-        this.fake_root_group.cache_del_node(bookmark);
-        this.view_item_map.del(bookmark.get_full_uri());
+        this.fake_root_group.cache.del(bookmark.get_full_uri());
+        // this.view_item_map.del(bookmark.get_full_uri());
         this.updateDecorations();
         this.saveState();
     }
@@ -283,8 +285,8 @@ export class Controller {
             let group = this.fake_root_group.get_node(bm.uri, 'group') as Group;
             let index = group.children.indexOf(bm);
             group.children.splice(index, 1);
-            this.fake_root_group.cache_del_node(bm);
-            this.view_item_map.del(bm.get_full_uri());
+            this.fake_root_group.cache.del(bm.get_full_uri());
+            // this.view_item_map.del(bm.get_full_uri());
         });
         this.updateDecorations();
         this.saveState();
@@ -306,6 +308,7 @@ export class Controller {
             (node as Group).bfs_get_nodes().values().forEach(node => {
                 node.uri = node.uri.replace(original_full_uri, new_full_uri);    // only replace once
             });
+            this.fake_root_group.cache = this.fake_root_group.bfs_get_nodes();
         }
 
 
@@ -323,11 +326,15 @@ export class Controller {
         if (this.fake_root_group.cache.check_uri_exists(util.joinTreeUri([node.uri, val]))) {
             return false;
         }
+        this.fake_root_group.cache.set(util.joinTreeUri([node.uri, val]), node);
         this.fake_root_group.cache.del(node.get_full_uri());
+        // let tvitem = this.fake_root_group.cache.get(node.get_full_uri());
+        // this.view_item_map.del(node.get_full_uri())
         let father = this._editNodeLabel(node, val);
         if (father) {
             father.sortGroupBookmark();
-            this.fake_root_group.cache_add_node(node);
+            this.fake_root_group.cache.set(node.get_full_uri(), node);
+            // this.view_item_map.set(node.)
             this.saveState();
             this.updateDecorations();
             return true;
@@ -350,7 +357,7 @@ export class Controller {
             return;
         }
         father_group.children.splice(idx, 1);
-
+        this.fake_root_group.cache.del_group(group.get_full_uri())
         if (wasActiveGroupDeleted) {
             // 如果激活组被删除了, 就换一个组设置激活
             this.activateGroup(this.fake_root_group.get_full_uri());
@@ -365,6 +372,7 @@ export class Controller {
         if (this.fake_root_group.cache.check_uri_exists(group.get_full_uri())) {
             return false;
         }
+        this.fake_root_group.cache.set(group.get_full_uri(), group)
         let father = this.fake_root_group.add_group(group);
         father.sortGroupBookmark();
         this.updateDecorations();

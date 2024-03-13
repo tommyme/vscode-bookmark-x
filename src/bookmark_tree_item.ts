@@ -52,7 +52,7 @@ export class BookmarkTreeItemFactory {
             result.base = group;
             result.tooltip = group.name;
             // result.checkboxState = TreeItemCheckboxState.Unchecked
-            this.controller.view_item_map.set(group.get_full_uri(), result);
+            // this.controller.view_item_map.set(group.get_full_uri(), result);
         }
         return result;
     }

@@ -149,8 +149,8 @@ export class Group extends BaseFunctional {
      * @param {type} param1 - param1 desc
      * @returns {type} - return value desc
      */
-    public bfs_get_nodes(): BookmarkUriMap {
-        let res = new BookmarkUriMap();
+    public bfs_get_nodes(): NodeUriMap {
+        let res = new NodeUriMap();
         function bfs(node: BaseFunctional) {
             res.set(node.get_full_uri(), node);
             if (node.children.length === 0) {
@@ -176,6 +176,23 @@ export class Group extends BaseFunctional {
         }
         bfs(this);
         return res;
+    }
+
+    /**
+     * 根据group树,来刷新所有子节点的uri
+     * @param {type} param1 - param1 desc
+     * @returns {type} - return value desc
+     */
+    public static dfsRefreshUri(group: Group) {
+        if (group.children.length === 0) {
+            return;
+        }
+        group.children.forEach((child: Group|Bookmark) => {
+            child.uri = group.get_full_uri();
+            if (child.type === "group") {
+                Group.dfsRefreshUri(child as Group);
+            }
+        });
     }
 }
 
@@ -261,7 +278,7 @@ class UriMap<T> extends Object {
         return Object.values(this.map);
     }
 }
-export class BookmarkUriMap extends UriMap<BaseFunctional> {
+export class NodeUriMap extends UriMap<BaseFunctional> {
     public findOverlapBookmark() {
         let result = [];
         let map: { [key: number]: Bookmark} = {};
@@ -286,6 +303,13 @@ export class BookmarkUriMap extends UriMap<BaseFunctional> {
         }
         return result;
     }
+    public del_group(uri: string) {
+        this.keys().forEach(key => {
+            if (util.isSubUriOrEqual(uri, key)) {
+                this.del(key)
+            }
+        })
+    }
 }
 
 export class ViewItemUriMap extends UriMap<BookmarkTreeItem> {
@@ -297,7 +321,7 @@ export class ViewItemUriMap extends UriMap<BookmarkTreeItem> {
  * 封装一些步骤多一点的cache操作
  */
 export class RootGroup extends Group {
-    cache: BookmarkUriMap;
+    cache: NodeUriMap;
 
     constructor(
         name: string,
@@ -306,7 +330,7 @@ export class RootGroup extends Group {
         children: (Group|Bookmark)[]=[]
     ) {
         super(name, color, uri, children);
-        this.cache = new BookmarkUriMap();
+        this.cache = new NodeUriMap();
     }
     /**
      * rootnode add bookmark and return bookmark's father group
@@ -322,7 +346,7 @@ export class RootGroup extends Group {
         } else {
             throw new Error("add bookmark 时 对应的group没找到!");
         }
-        this.cache_add_node(bookmark);
+        this.cache.set(bookmark.get_full_uri(), bookmark);
         return group;
     }
 
@@ -351,41 +375,8 @@ export class RootGroup extends Group {
             this.cache.del(node.get_full_uri());
         } else if (node instanceof Group) {
             // 由于group可能有很多级, 所以直接重新bfs一遍, 构建cache
-            this.cache_build();
+            this.cache = this.bfs_get_nodes();
         }
-    }
-
-    public cache_build() {
-        this.cache = this.bfs_get_nodes();
-    }
-
-    /**
-     * 给cache简单地加个key
-     * @param {type} param1 - param1 desc
-     * @returns {type} - return value desc
-     */
-    public cache_add_node(node: Bookmark|Group) {
-        this.cache.set(node.get_full_uri(), node);
-    }
-    public cache_del_node(node: Bookmark|Group) {
-        this.cache.del(node.get_full_uri());
-    }
-
-    /**
-     * 根据group树,来刷新所有子节点的uri
-     * @param {type} param1 - param1 desc
-     * @returns {type} - return value desc
-     */
-    public static refresh_uri(group: Group) {
-        if (group.children.length === 0) {
-            return;
-        }
-        group.children.forEach((child: Group|Bookmark) => {
-            child.uri = group.get_full_uri();
-            if (child.type == "group") {
-                RootGroup.refresh_uri(child as Group);
-            }
-        }); 
     }
 
     /**

@@ -40,7 +40,6 @@ export class BookmarkTreeViewManager {
             dragAndDropController: this.treeDataProviderByGroup,
             showCollapseAll: true, canSelectMany: true
         });
-        // view.message = "∠( ᐛ 」∠)_"  // clear message and show welcome
         view.description = "manage your bookmarks";
         this.view = view;
     }
@@ -75,7 +74,7 @@ export class BookmarkTreeViewManager {
 
     public addSubGroup(treeItem: BookmarkTreeItem) {
         const group = treeItem.getBaseGroup()!;
-        this.controller!.addGroupInputBox().then((name: String) => {
+        this.controller!.inputBoxAddGroup().then((name: String) => {
             let uri = util.joinTreeUri([group.get_full_uri(), name]);
             this.controller!.addGroup(uri);
         });

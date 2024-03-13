@@ -66,6 +66,13 @@ function isPathAEqUnderPathB(pathA: string, pathB: string) {
     return false;
 }
 
+function isSubUriOrEqual(parent: string, son: string) {
+    if (son === parent || son.startsWith(parent+"/") ) {
+        return true
+    }
+    return false
+}
+
 function updateChildPath(parentPath: string, childPath: string) {
     // 获取相对路径
     let relativePath = path.relative(parentPath, childPath);
@@ -92,5 +99,6 @@ export {
     randomName,
     joinTreeUri,
     isPathAEqUnderPathB,
-    updateChildPath
+    updateChildPath,
+    isSubUriOrEqual
 };

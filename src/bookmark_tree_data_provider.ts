@@ -49,6 +49,11 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
             if (item.type === 'group') { return BookmarkTreeItemFactory.fromGroup(item as Group, this.controller.activeGroup.get_full_uri()); } 
             else if (item.type === 'bookmark') { return BookmarkTreeItemFactory.fromBookmark(item as Bookmark); }
         }) || [];
+        if (res.length === 0) {
+            this.treeview!.view.message = "";
+        } else {
+            this.treeview!.view.message = "∠( ᐛ 」∠)_";  // clear message and show welcome
+        }
         return Promise.resolve(res);
     }
 
@@ -96,9 +101,10 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
                 this.root_group.cut_node(item);
                 item.uri = '';
                 this.root_group.children.push(item);
-                RootGroup.refresh_uri(this.root_group);
+                Group.dfsRefreshUri(this.root_group);
                 // 变化太大, 直接重新build cache
-                this.root_group.cache_build();
+                this.root_group.cache = this.root_group.bfs_get_nodes();
+                // this.controller.view_item_map = this.root_group.bfs_get_tvmap();
                 changed_flag = true;
                 this.root_group.sortGroupBookmark();
             }
@@ -113,8 +119,9 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
                 item.uri = target!.base.get_full_uri();
                 // 给目标group添加链接
                 target!.base.children.push(item);
-                RootGroup.refresh_uri(target!.base);
-                this.root_group.cache_build();
+                Group.dfsRefreshUri(target!.base);
+                this.root_group.cache = this.root_group.bfs_get_nodes();
+                // this.controller.view_item_map = this.root_group.bfs_get_tvmap();
                 changed_flag = true;
                 target!.base.sortGroupBookmark();
                 target!.collapsibleState = TreeItemCollapsibleState.Expanded;
