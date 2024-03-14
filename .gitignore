@@ -10,3 +10,4 @@ resources/*
 !resources/gutter_icon_bm.svg
 !resources/icon.jpg
 !resources/readme
+.vscode/bookmark_x.json

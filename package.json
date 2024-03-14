@@ -5,6 +5,7 @@
 	"version": "0.1.4",
 	"publisher": "tommyme",
 	"icon": "resources/icon.jpg",
+	"homepage": "https://github.com/tommyme/vscode_bookmark_x",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/tommyme/vscode_bookmark_x"
