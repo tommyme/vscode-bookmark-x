@@ -2,6 +2,9 @@
 
 Drag-and-drop, grouping, sorting bookmarklet plugin
 
+> If you encounter any problems with the plugin, feel free to raise an issue on [my github](https://github.com/tommyme/vscode_bookmark_x) to help me make it better!
+> and feel free to suggest improvements to the code implementation
+
 ## Quick Start
 - there is no default key map, define yourself.
 - Run command from the command palette by pressing (`Ctrl+Shift+P` or `Cmd+Shift+P` on Mac) and type `bookmark_x ...`
@@ -22,11 +25,14 @@ Drag-and-drop, grouping, sorting bookmarklet plugin
 - `clear data`: clear all data in extension
 - `load bookmarks in workspace`: load bookmarks in `{your_workspace}/.vscode/bookmark_x.json`
 - `save bookmarks in workspace`: save bookmarks in `{your_workspace}/.vscode/bookmark_x.json`
+- `reveal bookmark in current line`: show the bookmark on current line
 
 ## Roadmap
 - [ ] multi drag and drop support
 - [ ] save customized svg bookmark icon in extension for select and switch
 - [ ] better performance
+- [ ] reveal bookmark in tree view
+- [ ] bookmark search
 
 ## develop
 
@@ -40,3 +46,6 @@ graph LR
     treeview --> controller
     tree_data_provider --> treeview
 ```
+
+### tobe improved
+- Bookmark Movement Logic
