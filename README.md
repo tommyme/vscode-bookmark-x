@@ -7,6 +7,7 @@ Drag-and-drop, grouping, sorting bookmarklet plugin
 
 ## Quick Start
 - there is no default key map, define yourself.
+- there many useful commands defined in vscode command palette, if you are not familiar with it, I suggest you read (this document)[https://code.visualstudio.com/docs/getstarted/userinterface#_command-palette], it will greatly improve your efficiency in using vscode.
 - Run command from the command palette by pressing (`Ctrl+Shift+P` or `Cmd+Shift+P` on Mac) and type `bookmark_x ...`
 
 ![](./resources/readme/example1.png)
@@ -34,7 +35,13 @@ Drag-and-drop, grouping, sorting bookmarklet plugin
 - [ ] reveal bookmark in tree view
 - [ ] bookmark search
 
-## develop
+## Known issue
+- when using <kbd>alt</kbd> + <kbd>up</kbd>/<kbd>down</kbd> to move line, you need to pay attension to the bookmarks of the rows you are moving.
+- If two adjacent lines have bookmarks, deleting from the beginning of the next line to merge the two lines will cause the bookmarks to merge, and the merging of bookmarks cannot be undone.
+- when using git or svn to pull code from repo, If there are bookmarks in the updated file, it is not possible to anticipate changes to bookmarks. bookmarks in other files are unaffected.
+- Formatter large changes to the document may also cause bookmarks to be misplaced
+
+## development
 
 Commonly used object relation figure is shown below.
 ```mermaid
