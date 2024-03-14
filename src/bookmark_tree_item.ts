@@ -20,7 +20,7 @@ export class BookmarkTreeItemFactory {
         result.command = {
             "title": "jump to bookmark",
             "command": "bookmark_x.jumpToBookmark",
-            "arguments": [bm.get_full_uri()]
+            "arguments": [bm]
         };
         return result;
     }

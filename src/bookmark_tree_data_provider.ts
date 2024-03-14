@@ -10,15 +10,13 @@ import { BookmarkTreeViewManager } from './bookmark_tree_view';
 export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<BookmarkTreeItem>, vscode.TreeDragAndDropController<BookmarkTreeItem>  {
 	dropMimeTypes = ['application/vnd.code.tree.bookmarkitem'];
 	dragMimeTypes = ['application/vnd.code.tree.bookmarkitem'];
-    public root_group: RootGroup;
+    public root_group!: RootGroup;
     private changeEmitter = new EventEmitter<BookmarkTreeItem | undefined | null | void>();
     private controller: Controller;
-    public treeview?: BookmarkTreeViewManager;
 
     readonly onDidChangeTreeData = this.changeEmitter.event;
 
-    constructor(root_group: RootGroup, controller: Controller) {
-        this.root_group = root_group;
+    constructor(controller: Controller) {
         this.controller = controller;
     }
 
@@ -33,9 +31,9 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
         if (!element) {
             el = BookmarkTreeItemFactory.fromGroup(this.root_group as Group);
             if (this.root_group.children.length === 0) {
-                this.treeview!.view.message = "";
+                BookmarkTreeViewManager.view.message = "";
             } else {
-                this.treeview!.view.message = "∠( ᐛ 」∠)_";  // clear message and show welcome
+                BookmarkTreeViewManager.view.message = "∠( ᐛ 」∠)_";  // clear message and show welcome
             }
         } else {
             el = element;

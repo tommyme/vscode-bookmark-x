@@ -16,74 +16,76 @@ class MyViewBadge implements ViewBadge {
 
 export class BookmarkTreeViewManager {
 
-    private controller: Controller | null = null;
+    static controller: Controller;
 
-    private treeDataProviderByGroup: any = null;
-    private treeDataProviderByFile: any = null;
-    public view!: vscode.TreeView<BookmarkTreeItem>;
+    static view: vscode.TreeView<BookmarkTreeItem>;
 
-    public refreshCallback() {
-        if (this.treeDataProviderByGroup !== null) {
-            this.treeDataProviderByGroup.refresh();
+    static refreshCallback() {
+        if (this.controller!.tprovider !== null) {
+            this.controller!.tprovider.refresh();
         }
         this.refresh_badge();
     }
 
-    public async init(controller: Controller) {
-        this.controller = controller;
-        this.treeDataProviderByGroup = this.controller.tprovider;
-        this.controller.tprovider.treeview = this;
+    static async init() {
         // this.treeDataProviderByFile = this.controller.getTreeDataProviderByFile();
         // vscode.TreeViewOptions
-        let view = vscode.window.createTreeView<BookmarkTreeItem>('bookmarksByGroup', {
-            treeDataProvider: this.treeDataProviderByGroup, 
-            dragAndDropController: this.treeDataProviderByGroup,
-            showCollapseAll: true, canSelectMany: true
-        });
-        view.description = "manage your bookmarks";
-        this.view = view;
+        if (!this.view) {
+            let view = vscode.window.createTreeView<BookmarkTreeItem>('bookmarksByGroup', {
+                treeDataProvider: this.controller.tprovider, 
+                dragAndDropController: this.controller.tprovider,
+                showCollapseAll: true, canSelectMany: true
+            });
+            view.description = "manage your bookmarks";
+            this.view = view;
+        }
     }
-    public refresh_badge() {
+    static refresh_badge() {
         let num = this.controller!.fake_root_group.cache.bookmark_num();
         this.view.badge = new MyViewBadge(num);
     }
 
-    public activateGroup(treeItem: BookmarkTreeItem) {
+    static activateGroup(treeItem: BookmarkTreeItem) {
         const group = treeItem.getBaseGroup();
         const activeGroup = this.controller!.activeGroup;
         if (group === null || activeGroup.get_full_uri() === group.get_full_uri()) {
             // switch to root group
             this.controller!.activateGroup("");
             vscode.window.showInformationMessage(`切换至root group`);
-            return;
-            // clear view map icon
-        }
-        vscode.window.showInformationMessage(`切换至${group.get_full_uri()}`);
-        this.controller!.activateGroup(group.get_full_uri());
-        this.controller!.view_item_map.keys().forEach(key => {
-            let tvi = this.controller!.view_item_map.get(key);
-            if (tvi.base?.type === 'group') {
-                if (util.isSubUriOrEqual(key, group.get_full_uri())) {
-                    tvi.iconPath = new ThemeIcon("folder-opened", new ThemeColor("statusBarItem.remoteBackground"));
-                } else {
-                    tvi.iconPath = new ThemeIcon("folder");
+            this.controller!.view_item_map.keys().forEach(key => {
+                // reset icon status
+                let tvi = this.controller!.view_item_map.get(key);
+                if (tvi.base?.type === 'group') { tvi.iconPath = new ThemeIcon("folder"); }
+            })
+        } else {
+            this.controller!.activateGroup(group.get_full_uri());
+            vscode.window.showInformationMessage(`切换至${group.get_full_uri()}`);
+            this.controller!.view_item_map.keys().forEach(key => {
+                // reset icon status
+                let tvi = this.controller!.view_item_map.get(key);
+                if (tvi.base?.type === 'group') {
+                    if (util.isSubUriOrEqual(key, group!.get_full_uri())) {
+                        tvi.iconPath = new ThemeIcon("folder-opened", new ThemeColor("statusBarItem.remoteBackground"));
+                    } else {
+                        tvi.iconPath = new ThemeIcon("folder");
+                    }
                 }
-            }
-        })
+            })
+        }
     }
 
-    public deleteGroup(treeItem: BookmarkTreeItem) {
+    static deleteGroup(treeItem: BookmarkTreeItem) {
         const group = treeItem.getBaseGroup();
         this.controller!.deleteGroups(group!);
         vscode.window.showInformationMessage(`删除${group!.get_full_uri()}成功`);
     }
 
-    public deleteBookmark(treeItem: BookmarkTreeItem) {
+    static deleteBookmark(treeItem: BookmarkTreeItem) {
         const bookmark = treeItem.getBaseBookmark();
         this.controller!.deleteBookmark(bookmark!);
     }
 
-    public addSubGroup(treeItem: BookmarkTreeItem) {
+    static addSubGroup(treeItem: BookmarkTreeItem) {
         const group = treeItem.getBaseGroup()!;
         this.controller!.inputBoxAddGroup().then((name: String) => {
             let uri = util.joinTreeUri([group.get_full_uri(), name]);
@@ -91,7 +93,7 @@ export class BookmarkTreeViewManager {
         });
     }
 
-    public editNodeLabel(treeItem: BookmarkTreeItem) {
+    static editNodeLabel(treeItem: BookmarkTreeItem) {
         const node = treeItem.base;
         if (node) {
             vscode.window.showInputBox({

@@ -17,6 +17,7 @@ import { BookmarkTreeDataProvider } from './bookmark_tree_data_provider';
 import { TextEncoder } from 'util';
 import { DecorationFactory } from './decoration_factory';
 import { BookmarkTreeItemFactory } from './bookmark_tree_item';
+import { BookmarkTreeViewManager } from './bookmark_tree_view';
 
 export class Controller {
     public readonly savedBookmarksKey = 'bookmarkDemo.bookmarks'; // 缓存标签的key
@@ -24,29 +25,23 @@ export class Controller {
     public readonly savedActiveGroupKey = "bookmarkDemo.activeGroup";
     public readonly defaultGroupName = "";
 
-    private treeViewRefreshCallback = () => { };
-
     private ctx: ExtensionContext;
     public activeGroup!: Group;
     private decos2remove = new Map<TextEditorDecorationType, number>();
     public fake_root_group!: RootGroup;
-    public node_map: NodeUriMap;
-    public tprovider: BookmarkTreeDataProvider;
+    public node_map!: NodeUriMap;
+    public tprovider!: BookmarkTreeDataProvider;
     public _range?: Range;
     public view_item_map!: ViewItemUriMap;
 
-    constructor(ctx: ExtensionContext, treeViewRefreshCallback: () => void) {
+    constructor(ctx: ExtensionContext) {
         console.log("controller init");
         this.ctx = ctx;
-        this.treeViewRefreshCallback = treeViewRefreshCallback;
         BookmarkTreeItemFactory.controller = this;
+        this.tprovider = new BookmarkTreeDataProvider(this);
         // DecorationFactory.svgDir = this.ctx.globalStorageUri; // 缓存地址
         this.restoreSavedState(); // 读取上一次记录的状态 初始化fake root group
-        this.tprovider = new BookmarkTreeDataProvider(this.fake_root_group, this);
-        this.node_map = this.fake_root_group.cache;
-        console.log("node map keys:", this.node_map.keys());
-        console.log("view item map keys:", this.view_item_map.keys());
-        // this.view_item_map = new ViewItemUriMap();
+        this.init_with_fake_root();
     }
 
     // 保存状态 activeGroupName and fake_root_group(serialized)
@@ -72,9 +67,16 @@ export class Controller {
             this.fake_root_group = new RootGroup("", "", "", []);
         }
         this.activeGroup = this.fake_root_group.get_node(activeGroupUri, 'group') as Group;
+    }
+
+    public init_with_fake_root() {
+        this.tprovider.root_group = this.fake_root_group;
         this.fake_root_group.cache = this.fake_root_group.bfs_get_nodes();
         this.view_item_map = this.fake_root_group.bfs_get_tvmap();
-        console.log("restore saved state done")
+        this.node_map = this.fake_root_group.cache;
+        console.log("node map keys:", this.node_map.keys());
+        console.log("view item map keys:", this.view_item_map.keys());
+        console.log("restore saved state done");
     }
     /**
      * 装饰器 执行完动作之后update和save一下
@@ -225,11 +227,8 @@ export class Controller {
                 let obj = JSON.parse(content.toString());
                 // let pre_root_group = this.fake_root_group
                 this.fake_root_group = SerializableGroup.build_root(obj);
-                this.node_map = this.fake_root_group.bfs_get_nodes();
-                this.view_item_map = this.fake_root_group.bfs_get_tvmap();
-                // TODO 内存优化 delete this.fake_root_group
-                this.tprovider.root_group = this.fake_root_group;
-                this.tprovider.treeview?.init(this);
+                this.activeGroup = this.fake_root_group;
+                this.init_with_fake_root();
                 this.updateDecorations();
                 this.saveState();
             }
@@ -241,11 +240,7 @@ export class Controller {
         this.ctx.workspaceState.update(this.savedRootNodeKey, "");
         this.ctx.workspaceState.update(this.savedActiveGroupKey, "");
         this.restoreSavedState();
-        this.tprovider.root_group = this.fake_root_group;
-        this.fake_root_group.cache = this.fake_root_group.bfs_get_nodes();
-        this.node_map = this.fake_root_group.cache;
-        this.view_item_map = this.fake_root_group.bfs_get_tvmap();
-        this.tprovider.treeview?.init(this);
+        this.init_with_fake_root();
         this.updateDecorations();
         this.saveState();
     }
@@ -465,7 +460,7 @@ export class Controller {
 
             this.decos2remove.clear();
         }
-        this.treeViewRefreshCallback();
+        BookmarkTreeViewManager.refreshCallback();
     }
 
     /**
@@ -517,8 +512,8 @@ export class Controller {
      * @param {type} param1 - param1 desc
      * @returns {type} - return value desc
      */
-    public jumpToBookmark(bookmark_uri: string) {
-        let bookmark = this.fake_root_group.get_node(bookmark_uri, "bookmark") as Bookmark;
+    public jumpToBookmark(bm: Bookmark) {
+        let bookmark = this.fake_root_group.get_node(bm.get_full_uri(), "bookmark") as Bookmark;
         window.showTextDocument(Uri.file(bookmark.fsPath), {
             selection: new Range(
                 bookmark.line,
@@ -532,7 +527,7 @@ export class Controller {
                 let lineText = editor.document.lineAt(bookmark.line).text.trim();
                 if (lineText !== bookmark.lineText) {
                     bookmark.lineText = lineText;
-                    this.treeViewRefreshCallback();
+                    BookmarkTreeViewManager.refreshCallback();
                     this.saveState();
                 }
             }
@@ -612,7 +607,7 @@ export class Controller {
                 if (item.line === line) {
                     window.showInformationMessage("current bookmark: " + item.get_full_uri());
                     let tvitem = this.view_item_map.get(item.get_full_uri());
-                    this.tprovider.treeview!.view.reveal(tvitem, {focus: true});
+                    BookmarkTreeViewManager.view.reveal(tvitem, {focus: true});
                 }
             });
         }

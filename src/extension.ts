@@ -8,10 +8,11 @@ import { DecorationFactory } from './decoration_factory';
 
 export async function activate(context: vscode.ExtensionContext) {
 
-	let treeViewManager: BookmarkTreeViewManager = new BookmarkTreeViewManager();
 	DecorationFactory.svgDir = context.globalStorageUri;
 	await DecorationFactory.init_svgdir();
-	let controller: Controller = new Controller(context, treeViewManager.refreshCallback.bind(treeViewManager));
+	let controller: Controller = new Controller(context);
+	BookmarkTreeViewManager.controller = controller;
+	BookmarkTreeViewManager.init();
 	// 切换标签的命令
 	let disposable;
 	disposable = vscode.commands.registerTextEditorCommand('bookmark_x.toggleBookmark', (textEditor) => {
@@ -31,35 +32,35 @@ export async function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(disposable);
 
 	disposable = vscode.commands.registerCommand(
-		'bookmark_x.activateGroup', (item: BookmarkTreeItem) => treeViewManager.activateGroup(item)
+		'bookmark_x.activateGroup', (item: BookmarkTreeItem) => BookmarkTreeViewManager.activateGroup(item)
 	);
 	context.subscriptions.push(disposable);
 
 	// 通过面板-删除分组
 	disposable = vscode.commands.registerCommand(
-		'bookmark_x.deleteGroup', (item: BookmarkTreeItem) => treeViewManager.deleteGroup(item)
+		'bookmark_x.deleteGroup', (item: BookmarkTreeItem) => BookmarkTreeViewManager.deleteGroup(item)
 	);
 	context.subscriptions.push(disposable);
 
 	disposable = vscode.commands.registerCommand(
-		'bookmark_x.editGroupName', (item: BookmarkTreeItem) => treeViewManager.editNodeLabel(item)
+		'bookmark_x.editGroupName', (item: BookmarkTreeItem) => BookmarkTreeViewManager.editNodeLabel(item)
 	);
 	context.subscriptions.push(disposable);
 
 	// 通过面板-删除标签
 	disposable = vscode.commands.registerCommand(
-		'bookmark_x.deleteBookmark', (item: BookmarkTreeItem) => treeViewManager.deleteBookmark(item)
+		'bookmark_x.deleteBookmark', (item: BookmarkTreeItem) => BookmarkTreeViewManager.deleteBookmark(item)
 	);
 	context.subscriptions.push(disposable);
 
 	// triggered by clicking bookmark treeitem, jump to bookmark
 	disposable = vscode.commands.registerCommand(
-		'bookmark_x.jumpToBookmark', (bookmark_uri: string) => controller.jumpToBookmark(bookmark_uri)
+		'bookmark_x.jumpToBookmark', (bm: Bookmark) => controller.jumpToBookmark(bm)
 	);
 	context.subscriptions.push(disposable);
 
 	disposable = vscode.commands.registerCommand(
-		'bookmark_x.editBookmarkName', (item: BookmarkTreeItem) => treeViewManager.editNodeLabel(item)
+		'bookmark_x.editBookmarkName', (item: BookmarkTreeItem) => BookmarkTreeViewManager.editNodeLabel(item)
 	);
 	context.subscriptions.push(disposable);
 	
@@ -84,11 +85,10 @@ export async function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(disposable);
 
 	disposable = vscode.commands.registerCommand(
-		'bookmark_x.addSubGroup', (item: BookmarkTreeItem) => treeViewManager.addSubGroup(item)
+		'bookmark_x.addSubGroup', (item: BookmarkTreeItem) => BookmarkTreeViewManager.addSubGroup(item)
 	);
 	context.subscriptions.push(disposable);
 
-	treeViewManager.init(controller);
 	let activeEditor = vscode.window.activeTextEditor;
 
 	if (activeEditor) {
