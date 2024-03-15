@@ -1,9 +1,48 @@
 # Change Log
 
-All notable changes to the "bookmark-plugin" extension will be documented in this file.
+All notable changes to the "bookmark X" extension will be documented in this file.
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
 ## [Unreleased]
 
-- Initial release
+### Added
+
+- more preset funny bookmark icons(e.g. random poker)
+- customizable bookmark/group icon
+
+## [0.1.4] - 2024-03-05
+
+### Added
+
+- reveal bookmark in current line(now it'll select item in treeview)
+- create a cache called treeViewItemMap to avoid recreate treeViewItem
+- changelog
+
+### Fixed
+
+- prevent slash in node name
+- fix active group invalid after `clear data` while active group isn't root
+
+### Changed
+
+- use `inputBoxGetName` for label getting
+- better objects linking process
+
+## [0.1.3] - 2024-3
+
+### Added
+
+- show welcome page when there is no node in treeview
+- different active group icon and color
+- add `add sub group` command when right click group treeview item
+
+## [0.1.2] - 2024-3
+
+## [0.1.1] - 2024-3
+
+## [0.1.0] - 2024-3
+
+### Added
+
+- bookmark x plugin published
