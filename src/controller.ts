@@ -67,6 +67,10 @@ export class Controller {
             this.fake_root_group = new RootGroup("", "", "", []);
         }
         this.activeGroup = this.fake_root_group.get_node(activeGroupUri, 'group') as Group;
+        if (!this.activeGroup) {
+            this.activeGroup = this.fake_root_group;
+            this.ctx.workspaceState.update(this.savedActiveGroupKey, "");
+        }
     }
 
     public init_with_fake_root() {
@@ -145,47 +149,44 @@ export class Controller {
         }
 
         const selectedText = textEditor.document.getText(textEditor.selection).trim();
+        this.inputBoxGetName(selectedText).then((label) => {
+            const characterNumber = textEditor.selection.start.character;
+            const lineText = textEditor.document.lineAt(lineNumber).text.trim();
 
-        window.showInputBox({
-            placeHolder: '请输入标签文本',
-            value: selectedText,
-            valueSelection: [0, selectedText.length],
-        }).then((label) => {
-            if (label !== '') {
-                const characterNumber = textEditor.selection.start.character;
-                const lineText = textEditor.document.lineAt(lineNumber).text.trim();
-
-                const bookmark = new Bookmark(
-                    fsPath,
-                    lineNumber,
-                    characterNumber,
-                    label,
-                    lineText,
-                    this.activeGroup.uri
-                );
-                if (!this.addBookmark(bookmark)) {
-                    window.showInformationMessage(`label与存在的bookmark冲突`);
-                    return;
-                }
-            } else {
-                window.showInformationMessage(`输入的label为空!`);
+            const bookmark = new Bookmark(
+                fsPath,
+                lineNumber,
+                characterNumber,
+                label,
+                lineText,
+                this.activeGroup.get_full_uri()
+            );
+            if (!this.addBookmark(bookmark)) {
+                window.showInformationMessage(`Label conflicts with existing bookmarks`);
                 return;
             }
         });
     }
 
-    public inputBoxAddGroup() {
+    public inputBoxGetName(value="") {
         return window.showInputBox({
-            placeHolder: "分组名",
-            prompt: "请输入新的分组名",
-        }).then((groupName) => {
-            groupName = groupName?.trim();
-            if (!groupName) {
-                let err_msg = "empty group name not allowed.";
+            placeHolder: "node name",
+            prompt: "Please enter a new node name",
+            value: value
+        }).then((nodeName) => {
+            nodeName = nodeName?.trim();
+            if (nodeName === "") {
+                let err_msg = "empty node name not allowed.";
                 window.showInformationMessage(err_msg);
                 throw new Error(err_msg);
+            } else if (nodeName === undefined) {
+                throw new Error("user canceled");
+            } else if (nodeName.includes("/")) {
+                let err_msg = "nodename can't include slash"
+                window.showInformationMessage(err_msg);
+                throw new Error(err_msg)
             } else {
-                return groupName;
+                return nodeName;
             }
         });
     }
@@ -193,14 +194,14 @@ export class Controller {
         let new_group = this.createGroupWithUri(uri);
         let res = this.addGroup2Root(new_group);
         if (res) {
-            window.showInformationMessage('group: ' + uri + ' 创建成功');
+            window.showInformationMessage('group: ' + uri + ' Created Successfully');
         } else {
-            window.showInformationMessage('group: ' + uri + ' 创建失败, exists');
+            window.showInformationMessage('group: ' + uri + ' Creation Failed, exists');
         }
     }
     // 添加新分组
     public actionAddGroup() {
-        this.inputBoxAddGroup().then((groupName: String) => {
+        this.inputBoxGetName().then((groupName: String) => {
             let uri = util.joinTreeUri([this.activeGroup.get_full_uri(), groupName]);
             this.addGroup(uri);
         });
@@ -215,7 +216,7 @@ export class Controller {
         const encoder = new TextEncoder();
         let bytes = encoder.encode(content);
         await workspace.fs.writeFile(uri, bytes);
-        window.showInformationMessage("保存完毕");
+        window.showInformationMessage("saved.");
     }
     public async actionLoadSerializedRoot() {
         let proj_folder = workspace.workspaceFolders![0].uri.path;

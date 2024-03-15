@@ -88,13 +88,13 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
             let full_uri = droppingItems[0];
             let item = this.root_group.get_node(full_uri);
             if (target && item === target!.base) {
-                vscode.window.showInformationMessage("[x] 源 目标 相同");
+                vscode.window.showInformationMessage("Same source and target!");
                 return;
             }
             // group -> root
             if ( item instanceof Group && typeof target === 'undefined') {
                 if (item.uri === '') {
-                    vscode.window.showInformationMessage("已经在root group里了");
+                    vscode.window.showInformationMessage("It's already in the root group!");
                     return;
                 }
                 this.root_group.cut_node(item);
@@ -110,7 +110,7 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
             // group -> group
             else if ( item instanceof Group && target!.base instanceof Group ) {
                 if (item.uri === target!.base.get_full_uri()) {
-                    vscode.window.showInformationMessage("已经在目标group里了");
+                    vscode.window.showInformationMessage("It's in the target group!");
                     return;
                 }
                 // 源group断链
@@ -128,7 +128,7 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
             // bookmark -> root
             else if ( item instanceof Bookmark && typeof target === 'undefined') {
                 if (item.uri === '') {
-                    vscode.window.showInformationMessage("已经在目标root里了");
+                    vscode.window.showInformationMessage("the bookmark is already in the target root!");
                     return;
                 }
                 this.root_group.cut_node_recache(item);

@@ -51,7 +51,7 @@ export class BookmarkTreeViewManager {
         if (group === null || activeGroup.get_full_uri() === group.get_full_uri()) {
             // switch to root group
             this.controller!.activateGroup("");
-            vscode.window.showInformationMessage(`切换至root group`);
+            vscode.window.showInformationMessage(`switch to root group`);
             this.controller!.view_item_map.keys().forEach(key => {
                 // reset icon status
                 let tvi = this.controller!.view_item_map.get(key);
@@ -59,7 +59,7 @@ export class BookmarkTreeViewManager {
             })
         } else {
             this.controller!.activateGroup(group.get_full_uri());
-            vscode.window.showInformationMessage(`切换至${group.get_full_uri()}`);
+            vscode.window.showInformationMessage(`switch to ${group.get_full_uri()}`);
             this.controller!.view_item_map.keys().forEach(key => {
                 // reset icon status
                 let tvi = this.controller!.view_item_map.get(key);
@@ -77,7 +77,7 @@ export class BookmarkTreeViewManager {
     static deleteGroup(treeItem: BookmarkTreeItem) {
         const group = treeItem.getBaseGroup();
         this.controller!.deleteGroups(group!);
-        vscode.window.showInformationMessage(`删除${group!.get_full_uri()}成功`);
+        vscode.window.showInformationMessage(`delete ${group!.get_full_uri()} successfully`);
     }
 
     static deleteBookmark(treeItem: BookmarkTreeItem) {
@@ -87,7 +87,7 @@ export class BookmarkTreeViewManager {
 
     static addSubGroup(treeItem: BookmarkTreeItem) {
         const group = treeItem.getBaseGroup()!;
-        this.controller!.inputBoxAddGroup().then((name: String) => {
+        this.controller!.inputBoxGetName().then((name: String) => {
             let uri = util.joinTreeUri([group.get_full_uri(), name]);
             this.controller!.addGroup(uri);
         });
@@ -96,19 +96,16 @@ export class BookmarkTreeViewManager {
     static editNodeLabel(treeItem: BookmarkTreeItem) {
         const node = treeItem.base;
         if (node) {
-            vscode.window.showInputBox({
-                placeHolder: '请输入标签文本',
-                value: node.name
-            }).then((label) => {
-                if (label) {
-                    if (label === node.name) {
-                        vscode.window.showInformationMessage("edit info: label unchanged");
-                    } else if (!this.controller!.editNodeLabel(node, label)) {
-                        vscode.window.showInformationMessage("edit fail: label exists!");
-                    }
+            this.controller!.inputBoxGetName(node.name).then((label) => {
+                if (label === node.name) {
+                    vscode.window.showInformationMessage("edit info: label unchanged");
+                    return;
+                } else if (!this.controller!.editNodeLabel(node, label)) {
+                    vscode.window.showInformationMessage("edit fail: label exists!");
+                    return;
                 }
                 this.controller!.updateDecorations();
-            });        
+            });
         } else {
             vscode.window.showInformationMessage("node is null");
         }
