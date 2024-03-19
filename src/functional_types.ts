@@ -1,5 +1,5 @@
 import {DecorationFactory} from './decoration_factory';
-import {TextEditorDecorationType, TreeItem, Uri} from 'vscode';
+import {TextEditorDecorationType, TreeItem, Uri, window, workspace} from 'vscode';
 import {SerializableBookmark, SerializableGroup} from './serializable_type';
 import * as util from './util';
 import { BookmarkTreeItem, BookmarkTreeItemFactory } from './bookmark_tree_item';
@@ -113,23 +113,36 @@ export class Group extends BaseFunctional {
         // this.children.sort(fn);
     }
 
+    public static sortGroupFirst(a: BaseFunctional, b: BaseFunctional) {
+        if (a.type === 'group' && b.type === 'bookmark') {
+            return -1; // 'group' 排在 'bookmark' 前面
+        } else if (a.type === 'bookmark' && b.type === 'group') {
+            return 1; // 'bookmark' 排在 'group' 后面
+        } else if (a.type === b.type) {
+            return a.name.localeCompare(b.name, "zh-Hant"); // 相同 type 按照 name 排序
+        } else {
+            return 0; // 保持原有顺序
+        }
+    }
+    public static sortPlain(a: BaseFunctional, b: BaseFunctional) {
+        return a.name.localeCompare(b.name, "zh-Hant");
+    }
+
     /**
      * sort (group and bookmarks) in self
      * @param {type} param1 - param1 desc
      * @returns {type} - return value desc
      */
     public sortGroupBookmark() {
-        this.children.sort((a, b) => {
-            if (a.type === 'group' && b.type === 'bookmark') {
-                return -1; // 'group' 排在 'bookmark' 前面
-            } else if (a.type === 'bookmark' && b.type === 'group') {
-                return 1; // 'bookmark' 排在 'group' 后面
-            } else if (a.type === b.type) {
-                return a.name.localeCompare(b.name, "zh-Hant"); // 相同 type 按照 name 排序
-            } else {
-                return 0; // 保持原有顺序
-            }
-        });
+        let config = workspace.getConfiguration('bookmarkX');
+        let sortOption = config.get('sort') as string;
+        if (sortOption === "group first") {
+            this.children.sort(Group.sortGroupFirst);  // group在前 bookmark在后
+        } else if (sortOption === 'plain') {
+            this.children.sort(Group.sortPlain);
+        } else {
+            window.showInformationMessage("sort fail, sort option invalid: "+sortOption)
+        }
     }
 
     /**
@@ -297,6 +310,9 @@ class UriMap<T> extends Object {
         this.set(new_key, x);
         this.del(old_key);
     }
+    public entries(): Array<[string, T]> {
+        return Object.entries(this.map);
+    }
 }
 export class NodeUriMap extends UriMap<BaseFunctional> {
     public findOverlapBookmark() {
@@ -326,7 +342,6 @@ export class NodeUriMap extends UriMap<BaseFunctional> {
 }
 
 export class ViewItemUriMap extends UriMap<BookmarkTreeItem> {
-    protected map: { [key: string]: BookmarkTreeItem } = {};
 }
 
 /**

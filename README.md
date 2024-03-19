@@ -34,6 +34,7 @@ Drag-and-drop, grouping, sorting bookmarklet plugin
 - [ ] better performance
 - [ ] reveal bookmark in tree view
 - [ ] bookmark search
+- [ ] pin bookmark/group
 
 ## Known issue
 - when using <kbd>alt</kbd> + <kbd>up</kbd>/<kbd>down</kbd> to move line, you need to pay attension to the bookmarks of the rows you are moving.

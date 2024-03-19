@@ -6,7 +6,8 @@ import {
     window,
     Uri,
     workspace,
-    TextDocumentChangeEvent
+    TextDocumentChangeEvent,
+    TreeItemCollapsibleState
 } from 'vscode';
 import * as path from 'path';
 import { Bookmark, NodeUriMap, RootGroup, ViewItemUriMap } from "./functional_types";
@@ -78,6 +79,7 @@ export class Controller {
         this.fake_root_group.cache = this.fake_root_group.bfs_get_nodes();
         this.view_item_map = this.fake_root_group.bfs_get_tvmap();
         this.node_map = this.fake_root_group.cache;
+        this.fake_root_group.sortGroupBookmark();
         console.log("node map keys:", this.node_map.keys());
         console.log("view item map keys:", this.view_item_map.keys());
         console.log("restore saved state done");
@@ -461,6 +463,13 @@ export class Controller {
 
             this.decos2remove.clear();
         }
+        this.view_item_map.entries().forEach(([key, item]) => {
+            let node = this.node_map.get(key);
+            if (node!.children.length === 0 && node!.type === 'group') {
+                // update group state
+                item.collapsibleState = TreeItemCollapsibleState.None;
+            } 
+        })
         BookmarkTreeViewManager.refreshCallback();
     }
 

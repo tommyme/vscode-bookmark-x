@@ -2,7 +2,7 @@
 	"name": "bookmarkx",
 	"displayName": "bookmark X",
 	"description": "Drag-and-drop, grouping, sorting bookmarklet plugin",
-	"version": "0.1.4",
+	"version": "0.1.5",
 	"publisher": "tommyme",
 	"icon": "resources/icon.jpg",
 	"homepage": "https://github.com/tommyme/vscode_bookmark_x",
@@ -171,6 +171,11 @@
 					"type": "string",
 					"default": "",
 					"description": "Select svg for book icon show."
+				},
+				"bookmarkX.sort": {
+					"type": "string",
+					"default": "group first",
+					"enum": ["group first", "plain"]
 				}
 			}
 		}

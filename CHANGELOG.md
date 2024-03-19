@@ -10,6 +10,15 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 - more preset funny bookmark icons(e.g. random poker)
 - customizable bookmark/group icon
+- [ ] support for multi workspace
+
+## [0.1.5] - 2024-03-19
+
+### Added
+- sort config(group first or plain sort)
+
+### fixed
+- after dragging/deleting last item in group, group collapse state not change.
 
 ## [0.1.4] - 2024-03-05
 
@@ -38,6 +47,10 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 - add `add sub group` command when right click group treeview item
 
 ## [0.1.2] - 2024-3
+
+### Added
+
+- customized bookmark svg icon
 
 ## [0.1.1] - 2024-3
 
