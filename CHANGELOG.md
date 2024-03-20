@@ -12,6 +12,13 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 - customizable bookmark/group icon
 - [ ] support for multi workspace
 
+## [0.1.6] - 2024-03-20
+### Added
+- change bookmark icon size for better icon support
+
+### fixed
+- fixed create/drag group error.
+
 ## [0.1.5] - 2024-03-19
 
 ### Added

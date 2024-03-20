@@ -58,7 +58,7 @@ export class DecorationFactory {
                 // 只有文件存在的时候才会进入这里
                 console.log(stat);
                 DecorationFactory.decoration = window.createTextEditorDecorationType(
-                    { gutterIconPath: decoFilePath, gutterIconSize: 'contain' }
+                    { gutterIconPath: decoFilePath, gutterIconSize: '90%' }
                 );
                 set_done = true;
             } catch (err) {
@@ -85,7 +85,7 @@ export class DecorationFactory {
             DecorationFactory.decoration = window.createTextEditorDecorationType(
                 {
                     gutterIconPath: default_svg_path,
-                    gutterIconSize: 'contain',
+                    gutterIconSize: '90%',
                 }
             );
         }
