@@ -52,17 +52,17 @@ export class BookmarkTreeViewManager {
             // switch to root group
             this.controller!.activateGroup("");
             vscode.window.showInformationMessage(`switch to root group`);
-            this.controller!.view_item_map.keys().forEach(key => {
+            this.controller!.fake_root_group.vicache.keys().forEach(key => {
                 // reset icon status
-                let tvi = this.controller!.view_item_map.get(key);
+                let tvi = this.controller!.fake_root_group.vicache.get(key);
                 if (tvi.base?.type === 'group') { tvi.iconPath = new ThemeIcon("folder"); }
             })
         } else {
             this.controller!.activateGroup(group.get_full_uri());
             vscode.window.showInformationMessage(`switch to ${group.get_full_uri()}`);
-            this.controller!.view_item_map.keys().forEach(key => {
+            this.controller!.fake_root_group.vicache.keys().forEach(key => {
                 // reset icon status
-                let tvi = this.controller!.view_item_map.get(key);
+                let tvi = this.controller!.fake_root_group.vicache.get(key);
                 if (tvi.base?.type === 'group') {
                     if (util.isSubUriOrEqual(key, group!.get_full_uri())) {
                         tvi.iconPath = new ThemeIcon("folder-opened", new ThemeColor("statusBarItem.remoteBackground"));

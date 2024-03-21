@@ -26,7 +26,7 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
 
     // 初始化tree item
     public getChildren(element?: BookmarkTreeItem | undefined): Thenable<any> {
-        console.log("get children call", element)
+        console.log("get children call", element);
         let el;
         if (!element) {
             el = BookmarkTreeItemFactory.fromGroup(this.root_group as Group);
@@ -50,7 +50,7 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
         // if no children in base, resolve []
         const res = el.base!.children?.map(item => {
             // return this.controller.view_item_map.get(item.get_full_uri());
-            if (item.type === 'group') { return BookmarkTreeItemFactory.fromGroup(item as Group) } 
+            if (item.type === 'group') { return BookmarkTreeItemFactory.fromGroup(item as Group); } 
             else if (item.type === 'bookmark') { return BookmarkTreeItemFactory.fromBookmark(item as Bookmark); }
         }) || [];
         return Promise.resolve(res);
@@ -84,33 +84,22 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
 		const droppingItems: Array<string> = obj?.value;
         let changed_flag = false;
 
+        if (typeof target === 'undefined') {
+            target = new BookmarkTreeItem('');
+            target.base = this.root_group;
+        }
+        
         if (droppingItems.length === 1) {
             let full_uri = droppingItems[0];
-            let item = this.root_group.get_node(full_uri);
+            let item = this.root_group.cache.get(full_uri);
             if (target && item === target!.base) {
                 vscode.window.showInformationMessage("Same source and target!");
                 return;
             }
-            // group -> root
-            if ( item instanceof Group && typeof target === 'undefined') {
-                if (item.uri === '') {
-                    vscode.window.showInformationMessage("It's already in the root group!");
-                    return;
-                }
-                this.root_group.cut_node(item);
-                item.uri = '';
-                this.root_group.children.push(item);
-                Group.dfsRefreshUri(this.root_group);
-                // 变化太大, 直接重新build cache
-                this.root_group.cache = this.root_group.bfs_get_nodes();
-                this.controller.view_item_map = this.root_group.bfs_get_tvmap();
-                changed_flag = true;
-                this.root_group.sortGroupBookmark();
-            }
-            // group -> group
-            else if ( item instanceof Group && target!.base instanceof Group ) {
+            // group -> root/group
+            if ( item instanceof Group && target!.base instanceof Group) {
                 if (item.uri === target!.base.get_full_uri()) {
-                    vscode.window.showInformationMessage("It's in the target group!");
+                    vscode.window.showInformationMessage("It's already in the target group!");
                     return;
                 }
                 // 源group断链
@@ -120,43 +109,21 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
                 target!.base.children.push(item);
                 Group.dfsRefreshUri(target!.base);
                 this.root_group.cache = this.root_group.bfs_get_nodes();
-                this.controller.view_item_map = this.root_group.bfs_get_tvmap();
+                this.controller.fake_root_group.vicache = this.root_group.bfs_get_tvmap();
                 changed_flag = true;
                 target!.base.sortGroupBookmark();
                 target!.collapsibleState = TreeItemCollapsibleState.Expanded;
             }
-            // bookmark -> root
-            else if ( item instanceof Bookmark && typeof target === 'undefined') {
-                if (item.uri === '') {
-                    vscode.window.showInformationMessage("the bookmark is already in the target root!");
-                    return;
-                }
-                this.root_group.cut_node_recache(item);
-                let old_key = item.get_full_uri();
-                item.uri = '';
-                item.group = this.root_group;
-                let new_key = item.get_full_uri();
-                this.root_group.add_bookmark_recache(item);
-                this.controller.view_item_map.rename_key(old_key, new_key);
-                changed_flag = true;
-                this.root_group.sortGroupBookmark();
-            }
-            // bookmark -> group
+            // bookmark -> root/group
             else if ( item instanceof Bookmark && target!.base instanceof Group) {
-                if (item.uri === target!.base.get_full_uri()) {
-                    vscode.window.showInformationMessage("已经在目标group里了");
+                if (item.uri === target.base!.get_full_uri()) {
+                    vscode.window.showInformationMessage("the bookmark is already in the target group");
                     return;
                 }
-                let old_key = item.get_full_uri();
-                this.root_group.cut_node_recache(item);
-                // this.controller.view_item_map.del(item.get_full_uri());
-                item.uri = target!.base.get_full_uri();
-                item.group = target!.base;
-                let new_key = item.get_full_uri();
-                this.root_group.add_bookmark_recache(item);
-                this.controller.view_item_map.rename_key(old_key, new_key);
+                let target_group = target.base as Group;
+                this.root_group.mv_bm_recache_all(item, target_group);
                 changed_flag = true;
-                target!.base.sortGroupBookmark();
+                target_group.sortGroupBookmark();
                 target!.collapsibleState = TreeItemCollapsibleState.Expanded;
             }
             // ? case not cover
@@ -167,7 +134,21 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
         } else if (droppingItems.length === 0) {
             return;
         } else {
-            return;
+            const all_bookmark = droppingItems.every(full_uri => this.root_group.cache.get(full_uri).type === "bookmark");
+            // bookmarks to group
+            if (all_bookmark && target!.base instanceof Group) {
+                let target_group = target.base as Group;
+                droppingItems.forEach(full_uri => {
+                    let bm = this.root_group.cache.get(full_uri) as Bookmark;
+                    this.root_group.mv_bm_recache_all(bm, target_group);
+                });
+                changed_flag = true;
+                target_group.sortGroupBookmark();
+                target.collapsibleState = TreeItemCollapsibleState.Expanded;
+            } else {
+                vscode.window.showErrorMessage("drop items contain group is not supported at the moment");
+            }
+            // items contain group
         }
 
         if (changed_flag) {
@@ -180,7 +161,7 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
      */
     public getParent(element: BookmarkTreeItem): BookmarkTreeItem {
         let uri = element.base!.uri;
-        let bmti = this.controller.view_item_map.get(uri);
+        let bmti = this.controller.fake_root_group.vicache.get(uri);
         return bmti;
     }
 }

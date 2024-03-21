@@ -350,6 +350,7 @@ export class ViewItemUriMap extends UriMap<BookmarkTreeItem> {
  */
 export class RootGroup extends Group {
     cache: NodeUriMap;
+    vicache: ViewItemUriMap;
 
     constructor(
         name: string,
@@ -359,6 +360,7 @@ export class RootGroup extends Group {
     ) {
         super(name, color, uri, children);
         this.cache = new NodeUriMap();
+        this.vicache = new ViewItemUriMap();
     }
     /**
      * rootnode add bookmark and return bookmark's father group
@@ -405,6 +407,21 @@ export class RootGroup extends Group {
             // 由于group可能有很多级, 所以直接重新bfs一遍, 构建cache
             this.cache = this.bfs_get_nodes();
         }
+    }
+
+    /**
+     * move bm to target group
+     * @param {type} param1 - param1 desc
+     * @returns {type} - return value desc
+     */
+    public mv_bm_recache_all(bm: Bookmark, target_group: Group) {
+        let old_key = bm.get_full_uri();
+        this.cut_node_recache(bm);
+        bm.uri = target_group.get_full_uri();
+        bm.group = target_group;
+        let new_key = bm.get_full_uri();
+        this.add_bookmark_recache(bm);
+        this.vicache.rename_key(old_key, new_key);
     }
 
     /**

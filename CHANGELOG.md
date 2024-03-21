@@ -12,6 +12,13 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 - customizable bookmark/group icon
 - [ ] support for multi workspace
 
+## [0.1.7] - 2024-03-21
+### Added
+- optimize code
+
+### fixed
+- fix bug when add bookmark to active empty group, group collapse status don't refresh
+
 ## [0.1.6] - 2024-03-20
 ### Added
 - change bookmark icon size for better icon support

@@ -32,7 +32,7 @@ export class Controller {
     public fake_root_group!: RootGroup;
     public tprovider!: BookmarkTreeDataProvider;
     public _range?: Range;
-    public view_item_map!: ViewItemUriMap;
+    // public fake_root_group.vicache!: ViewItemUriMap;
 
     constructor(ctx: ExtensionContext) {
         console.log("controller init");
@@ -76,11 +76,11 @@ export class Controller {
     public init_with_fake_root() {
         this.tprovider.root_group = this.fake_root_group;
         this.fake_root_group.cache = this.fake_root_group.bfs_get_nodes();
-        this.view_item_map = this.fake_root_group.bfs_get_tvmap();
+        this.fake_root_group.vicache = this.fake_root_group.bfs_get_tvmap();
         // this.node_map = this.fake_root_group.cache;
         this.fake_root_group.sortGroupBookmark();
         console.log("node map keys:", this.fake_root_group.cache.keys());
-        console.log("view item map keys:", this.view_item_map.keys());
+        console.log("view item map keys:", this.fake_root_group.vicache.keys());
         console.log("restore saved state done");
     }
     /**
@@ -281,7 +281,7 @@ export class Controller {
 
         group.children.splice(index, 1);
         this.fake_root_group.cache.del(bookmark.get_full_uri());
-        this.view_item_map.del(bookmark.get_full_uri());
+        this.fake_root_group.vicache.del(bookmark.get_full_uri());
         this.updateDecorations();
         this.saveState();
     }
@@ -292,7 +292,7 @@ export class Controller {
             let index = group.children.indexOf(bm);
             group.children.splice(index, 1);
             this.fake_root_group.cache.del(bm.get_full_uri());
-            this.view_item_map.del(bm.get_full_uri());
+            this.fake_root_group.vicache.del(bm.get_full_uri());
         });
         this.updateDecorations();
         this.saveState();
@@ -318,7 +318,7 @@ export class Controller {
             });
             // refresh cache
             this.fake_root_group.cache = this.fake_root_group.bfs_get_nodes();
-            this.view_item_map = this.fake_root_group.bfs_get_tvmap();
+            this.fake_root_group.vicache = this.fake_root_group.bfs_get_tvmap();
         }
 
 
@@ -339,16 +339,16 @@ export class Controller {
         // 前后的缓存操作 用于输入的是bm的场合
         this.fake_root_group.cache.del(node.get_full_uri());
         // change tree view item's label
-        let tvitem = this.view_item_map.get(node.get_full_uri());
+        let tvitem = this.fake_root_group.vicache.get(node.get_full_uri());
         tvitem.label = val;
 
-        this.view_item_map.del(node.get_full_uri());
+        this.fake_root_group.vicache.del(node.get_full_uri());
         
         let father = this._editNodeLabel(node, val);
         if (father) {
             father.sortGroupBookmark();
             this.fake_root_group.cache.set(node.get_full_uri(), node);
-            this.view_item_map.set(util.joinTreeUri([node.uri, val]), tvitem);
+            this.fake_root_group.vicache.set(util.joinTreeUri([node.uri, val]), tvitem);
             // this.view_item_map.set(node.)
             this.saveState();
             this.updateDecorations();
@@ -373,7 +373,7 @@ export class Controller {
         }
         father_group.children.splice(idx, 1);
         this.fake_root_group.cache.del_group(group.get_full_uri());
-        this.view_item_map.del_group(group.get_full_uri());
+        this.fake_root_group.vicache.del_group(group.get_full_uri());
         if (activeGroupDeleted) {
             // 如果激活组被删除了, 就换一个组设置激活
             this.activateGroup(this.fake_root_group.get_full_uri());
@@ -389,7 +389,7 @@ export class Controller {
             return false;
         }
         this.fake_root_group.cache.set(group.get_full_uri(), group);
-        this.view_item_map.set(group.get_full_uri(), BookmarkTreeItemFactory.createGroup(group))
+        this.fake_root_group.vicache.set(group.get_full_uri(), BookmarkTreeItemFactory.createGroup(group))
         let father = this.fake_root_group.add_group(group);
         father.sortGroupBookmark();
         this.updateDecorations();
@@ -403,7 +403,7 @@ export class Controller {
             return false;
         }
         let group = this.fake_root_group.add_bookmark_recache(bm);
-        this.view_item_map.set(
+        this.fake_root_group.vicache.set(
             bm.get_full_uri(), 
             BookmarkTreeItemFactory.createBookmark(bm)
         );
@@ -462,12 +462,16 @@ export class Controller {
 
             this.decos2remove.clear();
         }
-        this.view_item_map.entries().forEach(([key, item]) => {
+        this.fake_root_group.vicache.entries().forEach(([key, item]) => {
             let node = this.fake_root_group.cache.get(key);
-            if (node!.children.length === 0 && node!.type === 'group') {
-                // update group state
-                item.collapsibleState = TreeItemCollapsibleState.None;
-            } 
+            if (node!.type === "group") {
+                if (node!.children.length === 0) {
+                    // update group state
+                    item.collapsibleState = TreeItemCollapsibleState.None;
+                } else {
+                    item.collapsibleState = TreeItemCollapsibleState.Expanded;
+                }
+            }
         })
         BookmarkTreeViewManager.refreshCallback();
     }
@@ -615,7 +619,7 @@ export class Controller {
             this.getBookmarksInFile(fspath).forEach(item => {
                 if (item.line === line) {
                     window.showInformationMessage("current bookmark: " + item.get_full_uri());
-                    let tvitem = this.view_item_map.get(item.get_full_uri());
+                    let tvitem = this.fake_root_group.vicache.get(item.get_full_uri());
                     BookmarkTreeViewManager.view.reveal(tvitem, {focus: true});
                 }
             });

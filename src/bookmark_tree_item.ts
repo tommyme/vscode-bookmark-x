@@ -50,9 +50,9 @@ export class BookmarkTreeItemFactory {
     }
 
     static fromBookmark(bookmark: Bookmark): BookmarkTreeItem {
-        if (this.controller.view_item_map.check_uri_exists(bookmark.get_full_uri())) {
+        if (this.controller.fake_root_group.vicache.check_uri_exists(bookmark.get_full_uri())) {
             console.log("tree view item from bm using cache")
-            return this.controller.view_item_map.get(bookmark.get_full_uri());
+            return this.controller.fake_root_group.vicache.get(bookmark.get_full_uri());
         } else {
             console.log("unexpected from bookmark");
             return BookmarkTreeItemFactory.createBookmark(bookmark);
@@ -60,9 +60,9 @@ export class BookmarkTreeItemFactory {
     }
 
     static fromGroup(group: Group): BookmarkTreeItem {
-        if (this.controller.view_item_map.check_uri_exists(group.get_full_uri())) {
+        if (this.controller.fake_root_group.vicache.check_uri_exists(group.get_full_uri())) {
             console.log("tree view item from group using cache")
-            return this.controller.view_item_map.get(group.get_full_uri());
+            return this.controller.fake_root_group.vicache.get(group.get_full_uri());
         } else {
             console.log("unexpected from group")
             return BookmarkTreeItemFactory.createGroup(group);
