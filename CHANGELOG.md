@@ -19,7 +19,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ### fixed
 - fix display bug when you delete a child active group, father group icon not change.
-
+- fix bookmark treeview description refresh problem.
 
 ## [0.1.7] - 2024-03-21
 ### Added

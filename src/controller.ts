@@ -556,6 +556,7 @@ export class Controller {
                 let lineText = editor.document.lineAt(bm.line).text.trim();
                 if (lineText !== bm.lineText) {
                     bm.lineText = lineText;
+                    this.fake_root_group.vicache.get(bm.get_full_uri()).description = lineText;
                     BookmarkTreeViewManager.refreshCallback();
                     this.saveState();
                 }
