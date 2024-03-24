@@ -4,6 +4,7 @@ import {Controller} from './controller';
 import {BookmarkTreeItem} from './bookmark_tree_item';
 import { Bookmark, Group } from './functional_types';
 import * as util from './util';
+import { ITEM_TYPE_GROUP, ITEM_TYPE_GROUP_LIKE } from './constants';
 
 class MyViewBadge implements ViewBadge {
     tooltip: string;
@@ -55,29 +56,22 @@ export class BookmarkTreeViewManager {
             this.controller!.fake_root_group.vicache.keys().forEach(key => {
                 // reset icon status
                 let tvi = this.controller!.fake_root_group.vicache.get(key);
-                if (tvi.base?.type === 'group') { tvi.iconPath = new ThemeIcon("folder"); }
-            })
+                if (ITEM_TYPE_GROUP_LIKE.includes(tvi.base!.type)) { tvi.iconPath = new ThemeIcon("folder"); }
+            });
         } else {
             this.controller!.activateGroup(group.get_full_uri());
             vscode.window.showInformationMessage(`switch to ${group.get_full_uri()}`);
-            this.controller!.fake_root_group.vicache.keys().forEach(key => {
-                // reset icon status
-                let tvi = this.controller!.fake_root_group.vicache.get(key);
-                if (tvi.base?.type === 'group') {
-                    if (util.isSubUriOrEqual(key, group!.get_full_uri())) {
-                        tvi.iconPath = new ThemeIcon("folder-opened", new ThemeColor("statusBarItem.remoteBackground"));
-                    } else {
-                        tvi.iconPath = new ThemeIcon("folder");
-                    }
-                }
-            })
+            this.controller!.fake_root_group.vicache.refresh_active_icon_status(group!.get_full_uri());
         }
     }
 
     static deleteGroup(treeItem: BookmarkTreeItem) {
         const group = treeItem.getBaseGroup();
-        this.controller!.deleteGroups(group!);
-        vscode.window.showInformationMessage(`delete ${group!.get_full_uri()} successfully`);
+        this.controller!.safeDeleteGroups(group!).then(res => {
+            if (res) { vscode.window.showInformationMessage(`delete ${group!.get_full_uri()} successfully`); }
+            else { vscode.window.showInformationMessage(`didn't delete`); }
+        })
+        
     }
 
     static deleteBookmark(treeItem: BookmarkTreeItem) {

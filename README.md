@@ -29,10 +29,10 @@ Drag-and-drop, grouping, sorting bookmarklet plugin
 - `reveal bookmark in current line`: show the bookmark on current line
 
 ## Roadmap
-- [ ] multi drag and drop support
+- [x] multi drag and drop support
 - [ ] save customized svg bookmark icon in extension for select and switch
 - [ ] better performance
-- [ ] reveal bookmark in tree view
+- [x] reveal bookmark in tree view
 - [ ] bookmark search
 - [ ] pin bookmark/group
 

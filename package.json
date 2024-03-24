@@ -2,7 +2,7 @@
 	"name": "bookmarkx",
 	"displayName": "bookmark X",
 	"description": "Drag-and-drop, grouping, sorting bookmarklet plugin",
-	"version": "0.1.7",
+	"version": "0.1.8",
 	"publisher": "tommyme",
 	"icon": "resources/icon.jpg",
 	"homepage": "https://github.com/tommyme/vscode_bookmark_x",
@@ -81,6 +81,14 @@
 				"title": "Add subgroup here"
 			},
 			{
+				"command": "bookmark_x.upgradeToGroupBookmark",
+				"title": "bookmark_x: upgrade to group bookmark"
+			},
+			{
+				"command": "bookmark_x.downgradeToGroup",
+				"title": "bookmark_x: downgrade to group"
+			},
+			{
 				"command": "bookmark_x.editBookmarkName",
 				"title": "edit bookmark name",
 				"icon": "$(edit)"
@@ -119,17 +127,17 @@
 			"view/item/context": [
 				{
 					"command": "bookmark_x.activateGroup",
-					"when": "view == bookmarksByGroup && viewItem == group",
+					"when": "view == bookmarksByGroup && (viewItem == group || viewItem == groupbookmark)",
 					"group": "inline"
 				},
 				{
 					"command": "bookmark_x.editGroupName",
-					"when": "view == bookmarksByGroup && viewItem == group",
+					"when": "view == bookmarksByGroup && (viewItem == group || viewItem == groupbookmark)",
 					"group": "inline"
 				},
 				{
 					"command": "bookmark_x.deleteGroup",
-					"when": "view == bookmarksByGroup && viewItem == group",
+					"when": "view == bookmarksByGroup && (viewItem == group || viewItem == groupbookmark)",
 					"group": "inline"
 				},
 				{
@@ -144,7 +152,15 @@
 				},
 				{
 					"command": "bookmark_x.addSubGroup",
-					"when": "view == bookmarksByGroup && viewItem == group"
+					"when": "view == bookmarksByGroup && (viewItem == group || viewItem == groupbookmark)"
+				},
+				{
+					"command": "bookmark_x.upgradeToGroupBookmark",
+					"when": "view == bookmarksByGroup && viewItem == bookmark"
+				},
+				{
+					"command": "bookmark_x.downgradeToGroup",
+					"when": "view == bookmarksByGroup && viewItem == groupbookmark"
 				}
 			],
 			"view/title": [

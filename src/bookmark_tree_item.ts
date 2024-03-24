@@ -1,8 +1,9 @@
 import {ThemeColor, ThemeIcon, TreeItem, TreeItemCheckboxState, TreeItemCollapsibleState, Uri as string, workspace} from 'vscode';
-import { Bookmark } from "./functional_types";
+import { Bookmark, GroupBookmark, BaseFunctional, NodeType } from "./functional_types";
 import {Group} from './functional_types';
 import { Controller } from './controller';
 import * as util from './util';
+import { ITEM_TYPE_BM, ITEM_TYPE_GROUP, ITEM_TYPE_GROUPBM, TREEVIEW_ITEM_CTX_TYPE_BM, TREEVIEW_ITEM_CTX_TYPE_GROUP, TREEVIEW_ITEM_CTX_TYPE_GROUPBM } from './constants';
 
 export class BookmarkTreeItemFactory {
     static controller: Controller;
@@ -11,7 +12,7 @@ export class BookmarkTreeItemFactory {
         let result;
         const label = (typeof bm.name !== 'undefined' ? bm.name : '');
         result = new BookmarkTreeItem(label, TreeItemCollapsibleState.None);
-        result.contextValue = 'bookmark';
+        result.contextValue = TREEVIEW_ITEM_CTX_TYPE_BM;
         result.description = bm.lineText;
         // result.iconPath = bookmark.group!.decorationSvg.path;
         result.iconPath = new ThemeIcon("bookmark");
@@ -24,19 +25,17 @@ export class BookmarkTreeItemFactory {
         };
         return result;
     }
-
-    static createGroup(group: Group): BookmarkTreeItem {
+    static get_collapse_state(group: Group) {
         let currActiveGroupUri = this.controller.activeGroup.get_full_uri();
-        const label = group.name;
-        const get_collapse_state = () => {
-            if (group.children.length > 0) {
-                return (group.get_full_uri() === currActiveGroupUri) ? TreeItemCollapsibleState.Expanded : TreeItemCollapsibleState.Collapsed;
-            } else {
-                return TreeItemCollapsibleState.None;
-            }
-        };
-        let result = new BookmarkTreeItem(label, get_collapse_state());
-        result.contextValue = 'group';
+        if (group.children.length > 0) {
+            return (group.get_full_uri() === currActiveGroupUri) ? TreeItemCollapsibleState.Expanded : TreeItemCollapsibleState.Collapsed;
+        } else {
+            return TreeItemCollapsibleState.None;
+        }
+    };
+    static _createGroup(group: Group): BookmarkTreeItem {
+        let currActiveGroupUri = this.controller.activeGroup.get_full_uri();
+        let result = new BookmarkTreeItem(group.name, this.get_collapse_state(group));
         if (currActiveGroupUri && util.isSubUriOrEqual(group.get_full_uri(), currActiveGroupUri)) {
             result.iconPath = new ThemeIcon("folder-opened", new ThemeColor("statusBarItem.remoteBackground"));
         } else {
@@ -44,9 +43,46 @@ export class BookmarkTreeItemFactory {
         }
         result.base = group;
         result.tooltip = group.name;
-        // result.checkboxState = TreeItemCheckboxState.Unchecked
-        // this.controller.view_item_map.set(group.get_full_uri(), result);
         return result;
+    }
+    static createGroup(group: Group): BookmarkTreeItem {
+        let result = this._createGroup(group);
+        result.contextValue = TREEVIEW_ITEM_CTX_TYPE_GROUP;
+        return result;
+    }
+
+    static createGroupBookmark(gbm: GroupBookmark): BookmarkTreeItem {
+        let result = this._createGroup(gbm);
+        result.contextValue = TREEVIEW_ITEM_CTX_TYPE_GROUPBM;
+        result.description = gbm.lineText;
+        result.command = {
+            "title": "jump to bookmark",
+            "command": "bookmark_x.jumpToBookmark",
+            "arguments": [gbm]
+        };
+        return result;
+    }
+    
+    static createType<T extends NodeType|BaseFunctional>(item: T): BookmarkTreeItem {
+        if (item.type === ITEM_TYPE_BM) {
+            return BookmarkTreeItemFactory.createBookmark(item as Bookmark);
+        } else if (item.type === ITEM_TYPE_GROUP) {
+            return BookmarkTreeItemFactory.createGroup(item as Group);
+        } else if (item.type === ITEM_TYPE_GROUPBM) {
+            return BookmarkTreeItemFactory.createGroupBookmark(item as GroupBookmark);
+        } else {
+            throw new Error("fromType fail.");
+        }
+    }
+
+    static fromType<T extends NodeType>(item: T): BookmarkTreeItem {
+        if (this.controller.fake_root_group.vicache.check_uri_exists(item.get_full_uri())) {
+            console.log("item from bm using cache")
+            return this.controller.fake_root_group.vicache.get(item.get_full_uri());
+        } else {
+            console.log("unexpected from type");
+            return this.createType(item);
+        }
     }
 
     static fromBookmark(bookmark: Bookmark): BookmarkTreeItem {
@@ -70,7 +106,7 @@ export class BookmarkTreeItemFactory {
     }
 }
 export class BookmarkTreeItem extends TreeItem {
-    public base: Bookmark | Group | null = null;
+    public base: NodeType | null = null;
 
     public getBaseBookmark(): Bookmark | null {
         if (this.base instanceof Bookmark) {

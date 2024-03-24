@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import {Controller} from './controller';
 import {BookmarkTreeViewManager} from './bookmark_tree_view';
 import {BookmarkTreeItem} from './bookmark_tree_item';
-import { Bookmark } from "./functional_types";
+import { Bookmark, GroupBookmark } from "./functional_types";
 import * as util from './util';
 import { DecorationFactory } from './decoration_factory';
 
@@ -86,6 +86,16 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	disposable = vscode.commands.registerCommand(
 		'bookmark_x.addSubGroup', (item: BookmarkTreeItem) => BookmarkTreeViewManager.addSubGroup(item)
+	);
+	context.subscriptions.push(disposable);
+
+	disposable = vscode.commands.registerCommand(
+		'bookmark_x.upgradeToGroupBookmark', (item: BookmarkTreeItem) => controller.upgradeToGroupBookmark(item.base! as Bookmark)
+	);
+	context.subscriptions.push(disposable);
+
+	disposable = vscode.commands.registerCommand(
+		'bookmark_x.downgradeToGroup', (item: BookmarkTreeItem) => controller.downgradeToGroup(item.base! as GroupBookmark)
 	);
 	context.subscriptions.push(disposable);
 

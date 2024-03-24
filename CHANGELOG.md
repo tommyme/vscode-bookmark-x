@@ -12,6 +12,11 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 - customizable bookmark/group icon
 - [ ] support for multi workspace
 
+## [0.1.8] - 2024-03-22
+### Added
+- now when you delete a group contains bookmarks, it will show a msg box to confirm with you.
+
+
 ## [0.1.7] - 2024-03-21
 ### Added
 - optimize code

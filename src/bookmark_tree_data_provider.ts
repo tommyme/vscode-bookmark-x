@@ -5,6 +5,7 @@ import {Group, RootGroup} from './functional_types';
 import * as vscode from 'vscode';
 import { Controller } from './controller';
 import { BookmarkTreeViewManager } from './bookmark_tree_view';
+import { ITEM_TYPE_BM, ITEM_TYPE_GROUP, ITEM_TYPE_GROUPBM } from './constants';
 
 
 export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<BookmarkTreeItem>, vscode.TreeDragAndDropController<BookmarkTreeItem>  {
@@ -49,9 +50,7 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
     private renderNode(el: BookmarkTreeItem) {
         // if no children in base, resolve []
         const res = el.base!.children?.map(item => {
-            // return this.controller.view_item_map.get(item.get_full_uri());
-            if (item.type === 'group') { return BookmarkTreeItemFactory.fromGroup(item as Group); } 
-            else if (item.type === 'bookmark') { return BookmarkTreeItemFactory.fromBookmark(item as Bookmark); }
+            return BookmarkTreeItemFactory.fromType(item);
         }) || [];
         return Promise.resolve(res);
     }
@@ -128,14 +127,14 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
             }
             // ? case not cover
             else { 
-                vscode.window.showInformationMessage("该情形暂不支持");
+                vscode.window.showInformationMessage("that situation not support yet");
                 return;
             }
         } else if (droppingItems.length === 0) {
             return;
         } else {
-            const all_bookmark = droppingItems.every(full_uri => this.root_group.cache.get(full_uri).type === "bookmark");
             // bookmarks to group
+            const all_bookmark = droppingItems.every(full_uri => this.root_group.cache.get(full_uri).type === ITEM_TYPE_BM);
             if (all_bookmark && target!.base instanceof Group) {
                 let target_group = target.base as Group;
                 droppingItems.forEach(full_uri => {
