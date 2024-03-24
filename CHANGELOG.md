@@ -10,11 +10,15 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 - more preset funny bookmark icons(e.g. random poker)
 - customizable bookmark/group icon
-- [ ] support for multi workspace
+- support for multi workspace
 
-## [0.1.8] - 2024-03-22
+## [0.1.8] - 2024-03-24
 ### Added
+- new FEATURE, now you can upgrade a bookmark to groupbookmark, or downgrade a groupbookmark to a group by right clicking the treeview item.
 - now when you delete a group contains bookmarks, it will show a msg box to confirm with you.
+
+### fixed
+- fix display bug when you delete a child active group, father group icon not change.
 
 
 ## [0.1.7] - 2024-03-21
