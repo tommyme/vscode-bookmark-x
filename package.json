@@ -2,7 +2,7 @@
 	"name": "bookmarkx",
 	"displayName": "bookmark X",
 	"description": "Drag-and-drop, grouping, sorting bookmarklet plugin",
-	"version": "0.1.9",
+	"version": "0.1.10",
 	"publisher": "tommyme",
 	"icon": "resources/icon.jpg",
 	"homepage": "https://github.com/tommyme/vscode_bookmark_x",
@@ -31,31 +31,31 @@
 		"commands": [
 			{
 				"command": "bookmark_x.toggleBookmark",
-				"title": "bookmark_x: toggle bookmark"
+				"title": "Bookmark X: toggle bookmark"
 			},
 			{
 				"command": "bookmark_x.toggleLabeledBookmark",
-				"title": "bookmark_x: toggle label bookmark"
+				"title": "Bookmark X: toggle label bookmark"
 			},
 			{
 				"command": "bookmark_x.addGroup",
-				"title": "bookmark_x: add group"
+				"title": "Bookmark X: add group"
 			},
 			{
 				"command": "bookmark_x.clearData",
-				"title": "bookmark_x: clear data"
+				"title": "Bookmark X: clear data"
 			},
 			{
 				"command": "bookmark_x.saveBookmarksInWorkspace",
-				"title": "bookmark_x: save bookmarks in workspace"
+				"title": "Bookmark X: save bookmarks in workspace"
 			},
 			{
 				"command": "bookmark_x.loadBookmarksInWorkSpace",
-				"title": "bookmark_x: load bookmarks in workspace"
+				"title": "Bookmark X: load bookmarks in workspace"
 			},
 			{
 				"command": "bookmark_x.revealBookmark",
-				"title": "bookmark_x: reveal bookmark in current line"
+				"title": "Bookmark X: reveal bookmark in current line"
 			},
 			{
 				"command": "bookmark_x.activateGroup",
@@ -82,11 +82,11 @@
 			},
 			{
 				"command": "bookmark_x.upgradeToGroupBookmark",
-				"title": "bookmark_x: upgrade to group bookmark"
+				"title": "Bookmark X: upgrade to group bookmark"
 			},
 			{
 				"command": "bookmark_x.downgradeToGroup",
-				"title": "bookmark_x: downgrade to group"
+				"title": "Bookmark X: downgrade to group"
 			},
 			{
 				"command": "bookmark_x.editBookmarkName",
@@ -112,7 +112,7 @@
 			"activitybar": [
 				{
 					"id": "bookmark_x",
-					"title": "Bookmarks X",
+					"title": "Bookmark X",
 					"icon": "$(bookmark)"
 				}
 			]
