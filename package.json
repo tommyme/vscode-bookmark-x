@@ -2,7 +2,7 @@
 	"name": "bookmarkx",
 	"displayName": "bookmark X",
 	"description": "Drag-and-drop, grouping, sorting bookmarklet plugin",
-	"version": "0.1.8",
+	"version": "0.1.9",
 	"publisher": "tommyme",
 	"icon": "resources/icon.jpg",
 	"homepage": "https://github.com/tommyme/vscode_bookmark_x",
@@ -97,6 +97,15 @@
 				"command": "bookmark_x.deleteBookmark",
 				"title": "Delete bookmark",
 				"icon": "$(close)"
+			},
+			{
+				"command": "bmx.quickrun.runItem",
+				"title": "bmx.quickrun: run item"
+			},
+			{
+				"command": "bmx.quickrun.refresh",
+				"title": "bmx.quickrun: refresh",
+				"icon": "$(refresh)"
 			}
 		],
 		"viewsContainers": {
@@ -113,6 +122,11 @@
 				{
 					"id": "bookmarksByGroup",
 					"name": "bookmark x",
+					"icon": "$(bookmark)"
+				},
+				{
+					"id": "bmx_quickrun",
+					"name": "quick run",
 					"icon": "$(bookmark)"
 				}
 			]
@@ -167,6 +181,11 @@
 				{
 					"command": "bookmark_x.addGroup",
 					"when": "view == bookmarksByGroup"
+				},
+				{
+					"command": "bmx.quickrun.refresh",
+					"when": "view == bmx_quickrun",
+					"group": "navigation"
 				}
 			],
 			"commandPalette": [

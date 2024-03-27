@@ -5,9 +5,9 @@ import {BookmarkTreeItem} from './bookmark_tree_item';
 import { Bookmark, GroupBookmark } from "./functional_types";
 import * as util from './util';
 import { DecorationFactory } from './decoration_factory';
-
+import {TaskTreeViewManager} from "./views/quick_run/view_manager";
 export async function activate(context: vscode.ExtensionContext) {
-
+	TaskTreeViewManager.init(context);
 	DecorationFactory.svgDir = context.globalStorageUri;
 	await DecorationFactory.init_svgdir();
 	let controller: Controller = new Controller(context);
