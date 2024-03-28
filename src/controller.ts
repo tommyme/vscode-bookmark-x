@@ -109,7 +109,7 @@ export class Controller {
         if (textEditor.selections.length === 0) {
             return;
         }
-
+        let xx = workspace.getWorkspaceFolder(textEditor.document.uri);
         let documentFsPath = textEditor.document.uri.fsPath;
         // 可能存在着多个光标
         for (let selection of textEditor.selections) {

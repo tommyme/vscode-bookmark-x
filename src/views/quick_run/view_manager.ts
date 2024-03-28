@@ -10,6 +10,7 @@ import {
   tasks,
   workspace,
 } from "vscode";
+import { TREEVIEW_ITEM_CTX_TYPE_TASK } from "./constants";
 
 export class TaskDataProvider implements TreeDataProvider<TaskTreeItem> {
   private changeEmitter = new EventEmitter<
@@ -95,12 +96,12 @@ export class TaskTreeItem extends TreeItem {
     public readonly wsf: vscode.WorkspaceFolder
   ) {
     super(_task.name, collapsibleState);
-    let args: vscode.Task | string;
+    let args: vscode.Task | vscode.DebugConfiguration;
     if (this._task instanceof vscode.Task) {
       args = this._task;
       this.iconPath = new vscode.ThemeIcon("explorer-view-icon");
     } else {
-      args = _task.name;
+      args = _task as vscode.DebugConfiguration;
       this.iconPath = new vscode.ThemeIcon("debug-start");
     }
     this.command = {
@@ -109,20 +110,21 @@ export class TaskTreeItem extends TreeItem {
       arguments: [args, wsf],
     };
     this.tooltip = this._task.name;
+    this.contextValue = TREEVIEW_ITEM_CTX_TYPE_TASK;
   }
 }
-function run_xxx(task: TaskTreeItem | String, wsf: vscode.WorkspaceFolder) {
+function run_xxx(task: TaskTreeItem | vscode.DebugConfiguration, wsf: vscode.WorkspaceFolder) {
   function runTask(task: vscode.Task) {
     tasks.executeTask(task);
   }
 
-  function launchDebug(debugTask: string) {
+  function launchDebug(debugTask: vscode.DebugConfiguration) {
       vscode.debug.startDebugging(wsf, debugTask);
   }
   if  (task instanceof vscode.Task) {
       runTask(task);
   } else {
-      launchDebug(task as string);
+      launchDebug(task as vscode.DebugConfiguration);
   }
 }
 export class TaskTreeViewManager {
@@ -148,8 +150,21 @@ export class TaskTreeViewManager {
     }
     commands.registerCommand('bmx.quickrun.refresh', () => this.tprovider.refresh());
 
-    let disposable = commands.registerCommand('bmx.quickrun.runItem', (task: TaskTreeItem | String, wsf: vscode.WorkspaceFolder) => run_xxx(task, wsf));
+    let disposable;
+    disposable = commands.registerCommand('bmx.quickrun.runItem', (task: TaskTreeItem | vscode.DebugConfiguration, wsf: vscode.WorkspaceFolder) => run_xxx(task, wsf));
     context.subscriptions.push(disposable);
+    disposable = commands.registerCommand('bmx.quickrun.openProgramFile', async (item: TaskTreeItem) => {
+      // 需要是python的运行配置，然后需要用workspaceFolder 才能用，其他情况待测试
+      let path = ((item._task as vscode.DebugConfiguration).program as string).replace("${workspaceFolder}", item.wsf.uri.path);
+      let uri = vscode.Uri.file(path);
+      try {
+        let stat = await vscode.workspace.fs.stat(uri);
+        // file exists, go to the file
+        vscode.window.showTextDocument(uri);
+      } catch (err) {
+        console.error("文件不存在");
+      }
+    });
   }
 }
 

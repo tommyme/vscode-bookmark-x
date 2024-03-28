@@ -11,3 +11,4 @@ resources/*
 !resources/icon.jpg
 !resources/readme
 .vscode/bookmark_x.json
+documents
