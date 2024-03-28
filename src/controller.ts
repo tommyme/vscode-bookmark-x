@@ -9,6 +9,7 @@ import {
     TextDocumentChangeEvent,
     TreeItemCollapsibleState
 } from 'vscode';
+import * as vscode from 'vscode'
 import * as path from 'path';
 import { Bookmark, GroupBookmark, NodeType, NodeUriMap, RootGroup, ViewItemUriMap } from "./functional_types";
 import { Group } from './functional_types';
@@ -21,6 +22,13 @@ import { DecorationFactory } from './decoration_factory';
 import { BookmarkTreeItemFactory } from './bookmark_tree_item';
 import { BookmarkTreeViewManager } from './bookmark_tree_view';
 
+export class SpaceMap {
+    static root_group_map: {[key: string]: RootGroup} = {};
+    static active_group_map: {[key: string]: Group} = {};
+}
+
+
+
 export class Controller {
     public readonly savedBookmarksKey = 'bookmarkDemo.bookmarks'; // 缓存标签的key
     public readonly savedRootNodeKey = "bookmarkDemo.root_Node";
@@ -28,12 +36,44 @@ export class Controller {
     public readonly defaultGroupName = "";
 
     private ctx: ExtensionContext;
-    public activeGroup!: Group;
+    // public activeGroup!: Group;
     private decos2remove = new Map<TextEditorDecorationType, number>();
-    public fake_root_group!: RootGroup;
+    // public fake_root_group!: RootGroup;
     public tprovider!: BookmarkTreeDataProvider;
     public _range?: Range;
+    // public wsf: vscode.WorkspaceFolder;
     // public fake_root_group.vicache!: ViewItemUriMap;
+
+    get fake_root_group(): RootGroup {
+        return SpaceMap.root_group_map[this.wsf.uri.path];
+    }
+
+    set fake_root_group(val: RootGroup) {
+        SpaceMap.root_group_map[this.wsf.uri.path] = val;
+    }
+
+    get activeGroup(): Group {
+        return SpaceMap.active_group_map[this.wsf.uri.path];
+    }
+    set activeGroup(group: Group) {
+        SpaceMap.active_group_map[this.wsf.uri.path] = group;
+    }
+
+    get wsf(): vscode.WorkspaceFolder {
+        let fake_wsf = {
+            uri: vscode.Uri.file("/path/to/404"),
+            name: "",
+            index: -1,
+        }
+        if (!vscode.workspace.workspaceFolders) {
+            return fake_wsf;
+        }
+        if (vscode.workspace.workspaceFolders.length === 0) {
+            return fake_wsf;
+        }
+        let default_wsf = vscode.workspace.workspaceFolders[0];
+        return default_wsf;
+    }
 
     constructor(ctx: ExtensionContext) {
         console.log("controller init");
