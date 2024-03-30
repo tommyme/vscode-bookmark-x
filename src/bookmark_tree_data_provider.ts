@@ -1,6 +1,6 @@
 import {EventEmitter, TreeDataProvider, TreeItem, TreeItemCollapsibleState} from 'vscode';
 import { Bookmark } from "./functional_types";
-import {BookmarkTreeItem, BookmarkTreeItemFactory} from './bookmark_tree_item';
+import {BookmarkTreeItem, BookmarkTreeItemFactory, WsfTreeItem} from './bookmark_tree_item';
 import {Group, RootGroup} from './functional_types';
 import * as vscode from 'vscode';
 import { Controller } from './controller';
@@ -26,16 +26,20 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
     }
 
     // 初始化tree item
-    public getChildren(element?: BookmarkTreeItem | undefined): Thenable<any> {
+    public getChildren(element?: BookmarkTreeItem | undefined | WsfTreeItem): Thenable<any> {
         console.log("get children call", element);
         let el;
         if (!element) {
-            el = BookmarkTreeItemFactory.fromGroup(this.root_group as Group);
-            if (this.root_group.children.length === 0) {
+            let wsfs = vscode.workspace.workspaceFolders?.map(wsf => new WsfTreeItem(wsf));
+            if (wsfs === undefined || wsfs.length === 0) {
                 BookmarkTreeViewManager.view.message = "";
             } else {
                 BookmarkTreeViewManager.view.message = "∠( ᐛ 」∠)_";  // clear message and show welcome
             }
+            return Promise.resolve(wsfs);
+        } else if (element instanceof WsfTreeItem) {
+            this.controller.wsf = element.wsf;
+            el = BookmarkTreeItemFactory.fromGroup(this.root_group as Group);
         } else {
             el = element;
         }

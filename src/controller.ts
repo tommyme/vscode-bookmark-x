@@ -41,6 +41,7 @@ export class Controller {
     // public fake_root_group!: RootGroup;
     public tprovider!: BookmarkTreeDataProvider;
     public _range?: Range;
+    private _wsf!: vscode.WorkspaceFolder;
     // public wsf: vscode.WorkspaceFolder;
     // public fake_root_group.vicache!: ViewItemUriMap;
 
@@ -65,14 +66,19 @@ export class Controller {
             name: "",
             index: -1,
         }
-        if (!vscode.workspace.workspaceFolders) {
+        if (!vscode.workspace.workspaceFolders || vscode.workspace.workspaceFolders.length === 0) {
             return fake_wsf;
         }
-        if (vscode.workspace.workspaceFolders.length === 0) {
+        if (!this._wsf) {
             return fake_wsf;
+        } else {
+            return this._wsf;
         }
-        let default_wsf = vscode.workspace.workspaceFolders[0];
-        return default_wsf;
+        // let default_wsf = vscode.workspace.workspaceFolders[0];
+        // return default_wsf;
+    }
+    set wsf(val: vscode.WorkspaceFolder) {
+        this._wsf = val;
     }
 
     constructor(ctx: ExtensionContext) {
@@ -103,8 +109,10 @@ export class Controller {
         // rootNodeSerialized = undefined
         if (rootNodeSerialized) {
             // TODO 针对fspath 不存在的书签 改变其显示样式 显示提示框，是否删除这些失效书签
+            // 如果有
             this.fake_root_group = SerializableGroup.build_root(rootNodeSerialized) as RootGroup;
         } else {
+            // 如果没有 遍历所有wsf 创建对应的root group
             this.fake_root_group = new RootGroup("", "", "", []);
         }
         this.activeGroup = this.fake_root_group.get_node(activeGroupUri, ITEM_TYPE_GROUP) as Group;
@@ -260,23 +268,30 @@ export class Controller {
         await workspace.fs.writeFile(uri, bytes);
         window.showInformationMessage("saved.");
     }
-    public async actionLoadSerializedRoot() {
-        let proj_folder = workspace.workspaceFolders![0].uri.path;
+    public async loadSerializedRoot(wsf: vscode.WorkspaceFolder) {
+        let proj_folder = wsf.uri.path;
         let uri = Uri.file(
             path.join(proj_folder, '.vscode', 'bookmark_x.json')
         );
         await workspace.fs.readFile(uri).then(
             content => {
                 let obj = JSON.parse(content.toString());
-                // let pre_root_group = this.fake_root_group
+                this.wsf = wsf;
                 this.fake_root_group = SerializableGroup.build_root(obj);
                 this.activeGroup = this.fake_root_group;
                 this.init_with_fake_root();
-                this.updateDecorations();
-                this.saveState();
             }
         );
-
+    }
+    public async actionLoadSerializedRoot() {
+        let wsfs = vscode.workspace.workspaceFolders;
+        if (wsfs) {
+            wsfs.forEach(wsf => {
+                this.loadSerializedRoot(wsf);
+            });
+            this.updateDecorations();
+            this.saveState();
+        }
     }
 
     public actionClearData() {

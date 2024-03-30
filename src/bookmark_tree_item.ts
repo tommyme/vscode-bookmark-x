@@ -1,4 +1,4 @@
-import {ThemeColor, ThemeIcon, TreeItem, TreeItemCheckboxState, TreeItemCollapsibleState, Uri as string, workspace} from 'vscode';
+import {ThemeColor, ThemeIcon, TreeItem, TreeItemCheckboxState, TreeItemCollapsibleState, WorkspaceFolder, Uri as string, workspace} from 'vscode';
 import { Bookmark, GroupBookmark, BaseFunctional, NodeType } from "./functional_types";
 import {Group} from './functional_types';
 import { Controller } from './controller';
@@ -127,5 +127,15 @@ export class BookmarkTreeItem extends TreeItem {
             return this.base;
         }
         return null;
+    }
+}
+
+export class WsfTreeItem extends TreeItem {
+    public wsf: WorkspaceFolder;
+
+    constructor(wsf: WorkspaceFolder) {
+        super(wsf.name, TreeItemCollapsibleState.Expanded);
+        this.wsf = wsf;
+        this.description = wsf.uri.path;
     }
 }
