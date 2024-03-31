@@ -99,6 +99,16 @@ export async function activate(context: vscode.ExtensionContext) {
 	);
 	context.subscriptions.push(disposable);
 
+	disposable = vscode.commands.registerCommand(
+		'bookmark_x.loadAllWsfState', () => controller.actionLoadAllWsfState()
+	);
+	context.subscriptions.push(disposable);
+
+	disposable = vscode.commands.registerCommand(
+		'bookmark_x.saveAllWsfState', () => controller.actionSaveAllWsfState()
+	);
+	context.subscriptions.push(disposable);
+
 	let activeEditor = vscode.window.activeTextEditor;
 
 	if (activeEditor) {

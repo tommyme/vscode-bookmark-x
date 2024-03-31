@@ -21,6 +21,7 @@ import { TextEncoder } from 'util';
 import { DecorationFactory } from './decoration_factory';
 import { BookmarkTreeItemFactory } from './bookmark_tree_item';
 import { BookmarkTreeViewManager } from './bookmark_tree_view';
+import { TaskTreeViewManager } from './views/quick_run/view_manager';
 
 export class SpaceMap {
     static root_group_map: {[key: string]: RootGroup} = {};
@@ -87,8 +88,11 @@ export class Controller {
         BookmarkTreeItemFactory.controller = this;
         this.tprovider = new BookmarkTreeDataProvider(this);
         // DecorationFactory.svgDir = this.ctx.globalStorageUri; // 缓存地址
-        this.restoreSavedState(); // 读取上一次记录的状态 初始化fake root group
-        this.init_with_fake_root();
+        workspace.workspaceFolders?.forEach(wsf => {
+            this.wsf = wsf;
+            this.restoreSavedState(); // 读取上一次记录的状态 初始化fake root group
+            this.init_with_fake_root();
+        });
     }
 
     // 保存状态 activeGroupName and fake_root_group(serialized)
@@ -98,6 +102,21 @@ export class Controller {
         this.ctx.workspaceState.update(this.savedActiveGroupKey, this.activeGroup.get_full_uri());
     }
 
+    public actionLoadAllWsfState() {
+        if (workspace.workspaceFolders) {
+            workspace.workspaceFolders.forEach(wsf => {
+                this.actionLoadSerializedRoot(wsf);
+            });
+        }
+    }
+
+    public actionSaveAllWsfState() {
+        if (workspace.workspaceFolders) {
+            workspace.workspaceFolders.forEach(wsf => {
+                this.actionLoadSerializedRoot(wsf);
+            });
+        }
+    }
     /**
      * restore fake_root_group; set ActivateGroup
      * @param {type} param1 - param1 desc
@@ -257,9 +276,12 @@ export class Controller {
         });
     }
 
-    public async actionSaveSerializedRoot() {
+    public async actionSaveSerializedRoot(wsf: vscode.WorkspaceFolder|null=null) {
+        if (wsf === null) {
+            wsf = workspace.workspaceFolders![0];
+        }
         let content: string = JSON.stringify(this.fake_root_group.serialize(), undefined, 2);
-        let proj_folder = workspace.workspaceFolders![0].uri.path;
+        let proj_folder = wsf.uri.path;
         let uri = Uri.file(
             path.join(proj_folder, '.vscode', 'bookmark_x.json')
         );
@@ -268,7 +290,10 @@ export class Controller {
         await workspace.fs.writeFile(uri, bytes);
         window.showInformationMessage("saved.");
     }
-    public async loadSerializedRoot(wsf: vscode.WorkspaceFolder) {
+    public async actionLoadSerializedRoot(wsf: vscode.WorkspaceFolder|null=null) {
+        if (wsf === null) {
+            wsf = workspace.workspaceFolders![0];
+        }
         let proj_folder = wsf.uri.path;
         let uri = Uri.file(
             path.join(proj_folder, '.vscode', 'bookmark_x.json')
@@ -276,22 +301,12 @@ export class Controller {
         await workspace.fs.readFile(uri).then(
             content => {
                 let obj = JSON.parse(content.toString());
-                this.wsf = wsf;
+                this.wsf = wsf!;
                 this.fake_root_group = SerializableGroup.build_root(obj);
                 this.activeGroup = this.fake_root_group;
                 this.init_with_fake_root();
             }
         );
-    }
-    public async actionLoadSerializedRoot() {
-        let wsfs = vscode.workspace.workspaceFolders;
-        if (wsfs) {
-            wsfs.forEach(wsf => {
-                this.loadSerializedRoot(wsf);
-            });
-            this.updateDecorations();
-            this.saveState();
-        }
     }
 
     public actionClearData() {

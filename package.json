@@ -90,6 +90,14 @@
 				"title": "Bookmark X: upgrade to group bookmark"
 			},
 			{
+				"command": "bookmark_x.loadAllWsfState",
+				"title": "Bookmark X: load all workspace state"
+			},
+			{
+				"command": "bookmark_x.saveAllWsfState",
+				"title": "Bookmark X: save all workspace state"
+			},
+			{
 				"command": "bookmark_x.downgradeToGroup",
 				"title": "Bookmark X: downgrade to group"
 			},
