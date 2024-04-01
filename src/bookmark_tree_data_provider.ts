@@ -11,7 +11,12 @@ import { ITEM_TYPE_BM, ITEM_TYPE_GROUP, ITEM_TYPE_GROUPBM } from './constants';
 export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<BookmarkTreeItem>, vscode.TreeDragAndDropController<BookmarkTreeItem>  {
 	dropMimeTypes = ['application/vnd.code.tree.bookmarkitem'];
 	dragMimeTypes = ['application/vnd.code.tree.bookmarkitem'];
-    public root_group!: RootGroup;
+    get root_group() {
+        return this.controller.fake_root_group;
+    }
+    set root_group(val) {
+        this.controller.fake_root_group = val
+    }
     private changeEmitter = new EventEmitter<BookmarkTreeItem | undefined | null | void>();
     private controller: Controller;
 

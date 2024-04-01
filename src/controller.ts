@@ -34,6 +34,7 @@ export class Controller {
     public readonly savedBookmarksKey = 'bookmarkDemo.bookmarks'; // 缓存标签的key
     public readonly savedRootNodeKey = "bookmarkDemo.root_Node";
     public readonly savedActiveGroupKey = "bookmarkDemo.activeGroup";
+    public readonly savedWsfsDataKey = "bookmarkDemo.wsfsData";
     public readonly defaultGroupName = "";
 
     private ctx: ExtensionContext;
@@ -70,13 +71,13 @@ export class Controller {
         if (!vscode.workspace.workspaceFolders || vscode.workspace.workspaceFolders.length === 0) {
             return fake_wsf;
         }
+        let default_wsf = vscode.workspace.workspaceFolders[0];
+
         if (!this._wsf) {
-            return fake_wsf;
+            return default_wsf;
         } else {
             return this._wsf;
         }
-        // let default_wsf = vscode.workspace.workspaceFolders[0];
-        // return default_wsf;
     }
     set wsf(val: vscode.WorkspaceFolder) {
         this._wsf = val;
@@ -88,15 +89,18 @@ export class Controller {
         BookmarkTreeItemFactory.controller = this;
         this.tprovider = new BookmarkTreeDataProvider(this);
         // DecorationFactory.svgDir = this.ctx.globalStorageUri; // 缓存地址
-        workspace.workspaceFolders?.forEach(wsf => {
-            this.wsf = wsf;
-            this.restoreSavedState(); // 读取上一次记录的状态 初始化fake root group
-            this.init_with_fake_root();
-        });
+        this.restoreWsfsSavedState();
+        this.init_with_fake_root_wsfs();
+        // workspace.workspaceFolders?.forEach(wsf => {
+        //     this.wsf = wsf;
+        //     this.restoreSavedState(); // 读取上一次记录的状态 初始化fake root group
+        // });
     }
 
     // 保存状态 activeGroupName and fake_root_group(serialized)
     public saveState() {
+        this.saveWsfsState()
+        return
         const content = this.fake_root_group.serialize();
         this.ctx.workspaceState.update(this.savedRootNodeKey, content);
         this.ctx.workspaceState.update(this.savedActiveGroupKey, this.activeGroup.get_full_uri());
@@ -113,8 +117,39 @@ export class Controller {
     public actionSaveAllWsfState() {
         if (workspace.workspaceFolders) {
             workspace.workspaceFolders.forEach(wsf => {
-                this.actionLoadSerializedRoot(wsf);
+                this.actionSaveSerializedRoot(wsf);
             });
+        }
+    }
+    public saveWsfsState() {
+        let res = {rg:{}, ag:{}}
+        workspace.workspaceFolders?.forEach(wsf => {
+            res.rg[wsf.uri.path] = SpaceMap.root_group_map[wsf.uri.path].serialize();
+            res.ag[wsf.uri.path] = SpaceMap.active_group_map[wsf.uri.path].get_full_uri();
+        })
+        this.ctx.workspaceState.update(this.savedWsfsDataKey, res);
+        let xx = this.ctx.workspaceState.get(this.savedWsfsDataKey);
+        console.log(xx)
+    }
+    public restoreWsfsSavedState() {
+        if (!workspace.workspaceFolders) {
+            return
+        } else {
+            let data = this.ctx.workspaceState.get(this.savedWsfsDataKey) ?? {rg: {}, ag: {}};
+            workspace.workspaceFolders.forEach(wsf => {
+                let rg = data.rg[wsf.uri.path]
+                let ag = data.ag[wsf.uri.path]
+                if (rg) {
+                    SpaceMap.root_group_map[wsf.uri.path] = SerializableGroup.build_root(rg) as RootGroup
+                } else {
+                    SpaceMap.root_group_map[wsf.uri.path] = new RootGroup("", "", "", []);
+                }
+                if (ag) {
+                    SpaceMap.active_group_map[wsf.uri.path] = SpaceMap.root_group_map[wsf.uri.path].get_node(ag as string) as Group
+                } else {
+                    SpaceMap.active_group_map[wsf.uri.path] = SpaceMap.root_group_map[wsf.uri.path]
+                }
+            })
         }
     }
     /**
@@ -150,6 +185,18 @@ export class Controller {
         console.log("node map keys:", this.fake_root_group.cache.keys());
         console.log("view item map keys:", this.fake_root_group.vicache.keys());
         console.log("restore saved state done");
+    }
+
+    public init_with_fake_root_wsfs() {
+        vscode.workspace.workspaceFolders?.forEach(wsf => {
+            let rg = SpaceMap.root_group_map[wsf.uri.path]
+            rg.cache = rg.bfs_get_nodes();
+            rg.vicache = rg.bfs_get_tvmap();
+            rg.sortGroupBookmark();
+            console.log("node map keys:", rg.cache.keys());
+            console.log("view item map keys:", rg.vicache.keys());
+            console.log("restore saved state done");  
+        })
     }
     /**
      * 装饰器 执行完动作之后update和save一下
@@ -280,7 +327,8 @@ export class Controller {
         if (wsf === null) {
             wsf = workspace.workspaceFolders![0];
         }
-        let content: string = JSON.stringify(this.fake_root_group.serialize(), undefined, 2);
+        let root_group = SpaceMap.root_group_map[wsf.uri.path]
+        let content: string = JSON.stringify(root_group.serialize(), undefined, 2);
         let proj_folder = wsf.uri.path;
         let uri = Uri.file(
             path.join(proj_folder, '.vscode', 'bookmark_x.json')
@@ -301,8 +349,7 @@ export class Controller {
         await workspace.fs.readFile(uri).then(
             content => {
                 let obj = JSON.parse(content.toString());
-                this.wsf = wsf!;
-                this.fake_root_group = SerializableGroup.build_root(obj);
+                SpaceMap.root_group_map[wsf!.uri.path] = SerializableGroup.build_root(obj);
                 this.activeGroup = this.fake_root_group;
                 this.init_with_fake_root();
             }
