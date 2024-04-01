@@ -15,7 +15,7 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
         return this.controller.fake_root_group;
     }
     set root_group(val) {
-        this.controller.fake_root_group = val
+        this.controller.fake_root_group = val;
     }
     private changeEmitter = new EventEmitter<BookmarkTreeItem | undefined | null | void>();
     private controller: Controller;
@@ -79,27 +79,43 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
     public refresh() {
         this.changeEmitter.fire();
     }
-    public async handleDrag(source: BookmarkTreeItem[], treeDataTransfer: vscode.DataTransfer, token: vscode.CancellationToken): Promise<void> {
-        let uris2trans = source.map(x => x.base!.get_full_uri());
-		treeDataTransfer.set('application/vnd.code.tree.bookmarkitem', new vscode.DataTransferItem(uris2trans));
+    public async handleDrag(source: WsfTreeItem[]|BookmarkTreeItem[], treeDataTransfer: vscode.DataTransfer, token: vscode.CancellationToken): Promise<void> {
+        if (!source.every(item => item instanceof BookmarkTreeItem)) {
+            // 这里保证在拖拽workspace的时候 dropping items为空
+            return;
+        }
+        // let uris2trans = source.map(x => x.base!.get_full_uri());
+		treeDataTransfer.set('application/vnd.code.tree.bookmarkitem', new vscode.DataTransferItem(source));
         console.log("handleDrag", source);
 	}
     
-    public async handleDrop(target: BookmarkTreeItem | undefined, sources: vscode.DataTransfer, token: vscode.CancellationToken): Promise<void> {
+    public async handleDrop(target: WsfTreeItem | BookmarkTreeItem | undefined, sources: vscode.DataTransfer, token: vscode.CancellationToken): Promise<void> {
         // console.log("handleDrop", target)
         // let x = [target, sources, token]
         const obj = sources.get('application/vnd.code.tree.bookmarkitem');
-		const droppingItems: Array<string> = obj?.value;
+		const droppingItems: Array<BookmarkTreeItem> = obj?.value;
         let changed_flag = false;
 
         if (typeof target === 'undefined') {
-            target = new BookmarkTreeItem('');
-            target.base = this.root_group;
+            vscode.window.showInformationMessage("that situation not support yet");
+            return;
+            // target = new BookmarkTreeItem('');
+            // target.base = this.root_group;
         }
         
         if (droppingItems.length === 1) {
-            let full_uri = droppingItems[0];
-            let item = this.root_group.cache.get(full_uri);
+            let tvitem = droppingItems[0];
+            let src_wsf = this.controller.get_wsf_with_node(tvitem.base!);
+            let item = tvitem.base;
+            let src_rg = this.controller.get_root_group(src_wsf!);
+            let dst_rg = src_rg;
+            if (target instanceof WsfTreeItem) {
+                // item.
+                let dst_wsf = target.wsf;
+                let dst_rg = this.controller.get_root_group(target.wsf);
+                target = new BookmarkTreeItem("");
+                target.base = this.controller.get_root_group(dst_wsf);
+            }
             if (target && item === target!.base) {
                 vscode.window.showInformationMessage("Same source and target!");
                 return;
@@ -111,25 +127,38 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
                     return;
                 }
                 // 源group断链
-                this.root_group.cut_node(item);
+                src_rg.cut_node(item);
                 item.uri = target!.base.get_full_uri();
                 // 给目标group添加链接
                 target!.base.children.push(item);
                 Group.dfsRefreshUri(target!.base);
-                this.root_group.cache = this.root_group.bfs_get_nodes();
-                this.controller.fake_root_group.vicache = this.root_group.bfs_get_tvmap();
+                src_rg.cache = src_rg.bfs_get_nodes();
+                src_rg.vicache = src_rg.bfs_get_tvmap();
+                if (dst_rg != src_rg) {
+                    dst_rg.cache = dst_rg.bfs_get_nodes();
+                    dst_rg.vicache = dst_rg.bfs_get_tvmap();
+                }
                 changed_flag = true;
                 target!.base.sortGroupBookmark();
                 target!.collapsibleState = TreeItemCollapsibleState.Expanded;
             }
             // bookmark -> root/group
             else if ( item instanceof Bookmark && target!.base instanceof Group) {
+                // 判定是否存在
                 if (item.uri === target.base!.get_full_uri()) {
                     vscode.window.showInformationMessage("the bookmark is already in the target group");
                     return;
                 }
                 let target_group = target.base as Group;
-                this.root_group.mv_bm_recache_all(item, target_group);
+                if (src_rg === dst_rg) {
+                    src_rg.mv_bm_recache_all(item, target_group);
+                } else {
+                    let old_key = item.get_full_uri();
+                    src_rg.cut_node_recache(item);
+                    src_rg.vicache.del(old_key);
+                    item.uri = target_group.get_full_uri();
+                    dst_rg.add_node_recache_all(item);
+                }
                 changed_flag = true;
                 target_group.sortGroupBookmark();
                 target!.collapsibleState = TreeItemCollapsibleState.Expanded;
@@ -142,6 +171,11 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
         } else if (droppingItems.length === 0) {
             return;
         } else {
+            if (target instanceof WsfTreeItem) {
+                // item.
+                return;
+            }
+            return;
             // bookmarks to group
             const all_bookmark = droppingItems.every(full_uri => this.root_group.cache.get(full_uri).type === ITEM_TYPE_BM);
             if (all_bookmark && target!.base instanceof Group) {

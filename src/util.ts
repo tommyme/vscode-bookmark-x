@@ -1,4 +1,6 @@
 import * as path from 'path';
+import { WorkspaceFolder } from 'vscode';
+import * as vscode from 'vscode';
 /**
  * 返回随机颜色
  */
@@ -68,9 +70,9 @@ function isPathAEqUnderPathB(pathA: string, pathB: string) {
 
 function isSubUriOrEqual(parent: string, son: string) {
     if (son === parent || son.startsWith(parent+"/") ) {
-        return true
+        return true;
     }
-    return false
+    return false;
 }
 
 function updateChildPath(parentPath: string, childPath: string) {
@@ -91,7 +93,33 @@ function randomName(): string {
     }
     return result;
 }
+function isSubPath(childPath: string, parentPath: string) {
+    const relative = path.relative(parentPath, childPath);
+    return (relative.length > 0 && !relative.startsWith('..') && !path.isAbsolute(relative));
+}
 
+function getWsfWithPath(path: string): WorkspaceFolder|null {
+    let res = null;
+    vscode.workspace.workspaceFolders?.forEach(wsf => {
+        if (isSubPath(path, wsf.uri.path.slice(1))) {
+            res = wsf;
+        }
+    });
+    return res;
+}
+
+function getWsfWithActiveEditor() {
+    // 根据打开的文件判断wsf
+    // 打开的文件没有对应的wsf || 没有打开的文件 使用默认wsf(第0个wsf)
+    let wsf;
+    if (vscode.window.activeTextEditor) {
+        let path = vscode.window.activeTextEditor.document.uri.path;
+        wsf = getWsfWithPath(path.slice(1));
+    } else {
+        wsf = vscode.workspace.workspaceFolders![0]
+    }
+    return wsf;
+}
 
 export {
     randomColor,
@@ -100,5 +128,7 @@ export {
     joinTreeUri,
     isPathAEqUnderPathB,
     updateChildPath,
-    isSubUriOrEqual
+    isSubUriOrEqual,
+    getWsfWithPath,
+    getWsfWithActiveEditor,
 };

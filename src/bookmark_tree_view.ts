@@ -48,20 +48,21 @@ export class BookmarkTreeViewManager {
 
     static activateGroup(treeItem: BookmarkTreeItem) {
         const group = treeItem.getBaseGroup();
-        const activeGroup = this.controller!.activeGroup;
+        let wsf = this.controller.get_wsf_with_node(group!);
+        const activeGroup = this.controller!.get_active_group(wsf!);
         if (group === null || activeGroup.get_full_uri() === group.get_full_uri()) {
             // switch to root group
-            this.controller!.activateGroup("");
+            this.controller!.activateGroup("", wsf!);
             vscode.window.showInformationMessage(`switch to root group`);
-            this.controller!.fake_root_group.vicache.keys().forEach(key => {
+            this.controller!.get_root_group(wsf!).vicache.keys().forEach(key => {
                 // reset icon status
-                let tvi = this.controller!.fake_root_group.vicache.get(key);
+                let tvi = this.controller!.get_root_group(wsf!).vicache.get(key);
                 if (ITEM_TYPE_GROUP_LIKE.includes(tvi.base!.type)) { tvi.iconPath = new ThemeIcon("folder"); }
             });
         } else {
-            this.controller!.activateGroup(group.get_full_uri());
+            this.controller!.activateGroup(group.get_full_uri(), wsf!);
             vscode.window.showInformationMessage(`switch to ${group.get_full_uri()}`);
-            this.controller!.fake_root_group.vicache.refresh_active_icon_status(group!.get_full_uri());
+            this.controller!.get_root_group(wsf!).vicache.refresh_active_icon_status(group!.get_full_uri());
         }
     }
 
@@ -83,7 +84,8 @@ export class BookmarkTreeViewManager {
         const group = treeItem.getBaseGroup()!;
         this.controller!.inputBoxGetName().then((name: String) => {
             let uri = util.joinTreeUri([group.get_full_uri(), name]);
-            this.controller!.addGroup(uri);
+            let wsf = this.controller!.get_wsf_with_node(group);
+            this.controller!.addGroup(uri, wsf!);
         });
     }
 

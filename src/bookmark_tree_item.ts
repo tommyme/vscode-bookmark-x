@@ -26,7 +26,8 @@ export class BookmarkTreeItemFactory {
         return result;
     }
     static get_collapse_state(group: Group) {
-        let currActiveGroupUri = this.controller.activeGroup.get_full_uri();
+        let wsf = this.controller.get_wsf_with_node(group);
+        let currActiveGroupUri = this.controller.get_active_group(wsf!).get_full_uri();
         if (group.children.length > 0) {
             return (group.get_full_uri() === currActiveGroupUri) ? TreeItemCollapsibleState.Expanded : TreeItemCollapsibleState.Collapsed;
         } else {
@@ -34,7 +35,8 @@ export class BookmarkTreeItemFactory {
         }
     };
     static _createGroup(group: Group): BookmarkTreeItem {
-        let currActiveGroupUri = this.controller.activeGroup.get_full_uri();
+        let wsf = this.controller.get_wsf_with_node(group);
+        let currActiveGroupUri = this.controller.get_active_group(wsf!).get_full_uri();
         let result = new BookmarkTreeItem(group.name, this.get_collapse_state(group));
         if (currActiveGroupUri && util.isSubUriOrEqual(group.get_full_uri(), currActiveGroupUri)) {
             result.iconPath = new ThemeIcon("folder-opened", new ThemeColor("statusBarItem.remoteBackground"));
