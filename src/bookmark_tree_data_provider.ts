@@ -103,9 +103,10 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
             let item = tvitem.base;
             let src_rg = this.controller.get_root_group(src_wsf!);
             let dst_rg = src_rg;
+            let dst_wsf;
             if (target instanceof WsfTreeItem) {
                 // item.
-                let dst_wsf = target.wsf;
+                dst_wsf = target.wsf;
                 dst_rg = this.controller.get_root_group(target.wsf);
                 target = new BookmarkTreeItem("");
                 target.base = this.controller.get_root_group(dst_wsf);
@@ -113,6 +114,9 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
             if (target && item === target!.base) {
                 vscode.window.showInformationMessage("Same source and target!");
                 return;
+            }
+            if (target instanceof Group || target instanceof Bookmark) {
+                dst_wsf = this.controller.get_wsf_with_node(target);
             }
             // group -> root/group
             if ( item instanceof Group && target!.base instanceof Group) {
@@ -128,7 +132,16 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
                 // 给目标group添加链接
                 target!.base.children.push(item);
                 Group.dfsRefreshUri(target!.base);
+
+                // 跨区 而且是 active group
+                if (src_rg !== dst_rg && this.controller.get_active_group(src_wsf!) === item) {
+                    // active group refresh
+                    SpaceMap.active_group_map[src_wsf!.uri.path] = this.controller.get_root_group(src_wsf!);
+                    SpaceMap.active_group_map[dst_wsf!.uri.path] = item;
+                }
+
                 src_rg.cache = src_rg.bfs_get_nodes();
+                // 通过 bfs tvmap 刷新状态
                 src_rg.vicache = src_rg.bfs_get_tvmap();
                 if (dst_rg != src_rg) {
                     dst_rg.cache = dst_rg.bfs_get_nodes();

@@ -116,6 +116,11 @@
 				"title": "bmx.quickrun: run item"
 			},
 			{
+				"command": "bmx.quickrun.openLaunchJson",
+				"title": "bmx.quickrun: open launch json",
+				"icon": "$(rocket)"
+			},
+			{
 				"command": "bmx.quickrun.refresh",
 				"title": "bmx.quickrun: refresh",
 				"icon": "$(refresh)"
@@ -180,6 +185,11 @@
 				{
 					"command": "bmx.quickrun.openProgramFile",
 					"when": "view == bmx_quickrun && viewItem == task",
+					"group": "inline"
+				},
+				{
+					"command": "bmx.quickrun.openLaunchJson",
+					"when": "view == bmx_quickrun && viewItem == wsf",
 					"group": "inline"
 				},
 				{

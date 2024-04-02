@@ -10,11 +10,12 @@ import {
   tasks,
   workspace,
 } from "vscode";
-import { TREEVIEW_ITEM_CTX_TYPE_TASK } from "./constants";
+import { TREEVIEW_ITEM_CTX_TYPE_TASK, TREEVIEW_ITEM_CTX_TYPE_WSF } from "./constants";
+import { error } from "console";
 
-export class TaskDataProvider implements TreeDataProvider<TaskTreeItem> {
+export class TaskDataProvider implements TreeDataProvider<QuickRunTreeItem> {
   private changeEmitter = new EventEmitter<
-    TaskTreeItem | undefined | null | void
+    QuickRunTreeItem | undefined | null | void
   >();
   readonly onDidChangeTreeData = this.changeEmitter.event;
   constructor(private context: vscode.ExtensionContext) {}
@@ -22,23 +23,24 @@ export class TaskDataProvider implements TreeDataProvider<TaskTreeItem> {
     this.changeEmitter.fire();
   }
 
-  getTreeItem(element: TaskTreeItem): TreeItem {
+  getTreeItem(element: QuickRunTreeItem): TreeItem {
     return element;
   }
 
-  getChildren(element: TaskTreeItem): Thenable<TaskTreeItem[]> {
+  getChildren(element: QuickRunTreeItem): Thenable<QuickRunTreeItem[]> {
     if (!element) {
       return Promise.resolve(this.get_all_workspaces());
     }
     return Promise.resolve(this.getAllContent(element));
   }
 
-  public async get_all_workspaces(): Promise<TaskTreeItem[]> {
-    let res: Array<TaskTreeItem> = [];
+  public async get_all_workspaces(): Promise<WsfTreeItem[]> {
+    let res: Array<WsfTreeItem> = [];
     let wsfolders = vscode.workspace.workspaceFolders;
     if (wsfolders) {
       wsfolders.forEach(folder => {
-        let tvi = new TreeItem(folder.name, TreeItemCollapsibleState.Expanded) as TaskTreeItem;
+        let tvi = new WsfTreeItem(folder.name, TreeItemCollapsibleState.Expanded, folder);
+        tvi.contextValue = TREEVIEW_ITEM_CTX_TYPE_WSF;
         res.push(tvi);
       });
     }
@@ -88,6 +90,19 @@ export class TaskDataProvider implements TreeDataProvider<TaskTreeItem> {
   }
 }
 
+type QuickRunTreeItem = TaskTreeItem | WsfTreeItem;
+
+export class WsfTreeItem extends TreeItem {
+  constructor(
+    name: string,
+    collapsibleState: TreeItemCollapsibleState,
+    public wsf: vscode.WorkspaceFolder
+  ) {
+    super(name, collapsibleState);
+    this.wsf = wsf;
+  }
+}
+
 export class TaskTreeItem extends TreeItem {
   constructor(
     public readonly _task: vscode.Task | vscode.DebugConfiguration,
@@ -128,7 +143,7 @@ function run_xxx(task: TaskTreeItem | vscode.DebugConfiguration, wsf: vscode.Wor
   }
 }
 export class TaskTreeViewManager {
-  static view: vscode.TreeView<TaskTreeItem>;
+  static view: vscode.TreeView<QuickRunTreeItem>;
   static tprovider: TaskDataProvider;
 
   static refreshCallback() {
@@ -140,7 +155,7 @@ export class TaskTreeViewManager {
     // vscode.TreeViewOptions
     if (!this.view) {
       this.tprovider = new TaskDataProvider(context);
-      let view = vscode.window.createTreeView<TaskTreeItem>("bmx_quickrun", {
+      let view = vscode.window.createTreeView<QuickRunTreeItem>("bmx_quickrun", {
         treeDataProvider: this.tprovider,
         // dragAndDropController: this.controller.tprovider,
         showCollapseAll: true,
@@ -165,6 +180,20 @@ export class TaskTreeViewManager {
         console.error("文件不存在");
       }
     });
+    context.subscriptions.push(disposable);
+    
+    disposable = commands.registerCommand('bmx.quickrun.openLaunchJson', async (task: WsfTreeItem) => {
+      let launchjsonUri = vscode.Uri.joinPath(task.wsf.uri, '.vscode', 'launch.json');
+      try {
+        await workspace.fs.stat(launchjsonUri);
+      } catch (e) {
+        // file not exist
+        let bytes = Uint8Array.from("{}".split('').map(c => c.charCodeAt(0)));
+        await workspace.fs.writeFile(launchjsonUri, bytes);
+      }
+      vscode.window.showTextDocument(launchjsonUri);
+    });
+    context.subscriptions.push(disposable);
   }
 }
 

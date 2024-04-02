@@ -156,6 +156,7 @@ export class Controller {
         if (!workspace.workspaceFolders) {
             return
         } else {
+            // let data = this.ctx.workspaceState.update(this.savedWsfsDataKey, undefined);
             let data = this.ctx.workspaceState.get(this.savedWsfsDataKey) ?? {rg: {}, ag: {}};
             workspace.workspaceFolders.forEach(wsf => {
                 let rg = data.rg[wsf.uri.path]
