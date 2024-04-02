@@ -26,6 +26,16 @@ import { TaskTreeViewManager } from './views/quick_run/view_manager';
 export class SpaceMap {
     static root_group_map: {[key: string]: RootGroup} = {};
     static active_group_map: {[key: string]: Group} = {};
+
+    static get wsfs() {
+        if (vscode.workspace.workspaceFolders) {
+            return vscode.workspace.workspaceFolders;
+        }
+        return [];
+    }
+    static get rgs() {
+        return Object.values(this.root_group_map);
+    }
 }
 
 
@@ -38,14 +48,10 @@ export class Controller {
     public readonly defaultGroupName = "";
 
     private ctx: ExtensionContext;
-    // public activeGroup!: Group;
     private decos2remove = new Map<TextEditorDecorationType, number>();
-    // public fake_root_group!: RootGroup;
     public tprovider!: BookmarkTreeDataProvider;
     public _range?: Range;
     private _wsf!: vscode.WorkspaceFolder;
-    // public wsf: vscode.WorkspaceFolder;
-    // public fake_root_group.vicache!: ViewItemUriMap;
 
     get fake_root_group(): RootGroup {
         return SpaceMap.root_group_map[this.wsf.uri.path];
@@ -115,13 +121,9 @@ export class Controller {
         // });
     }
 
-    // 保存状态 activeGroupName and fake_root_group(serialized)
+    // 保存状态 activeGroupName and root group(serialized)
     public saveState() {
-        this.saveWsfsState()
-        return
-        const content = this.fake_root_group.serialize();
-        this.ctx.workspaceState.update(this.savedRootNodeKey, content);
-        this.ctx.workspaceState.update(this.savedActiveGroupKey, this.activeGroup.get_full_uri());
+        this.saveWsfsState();
     }
 
     public actionLoadAllWsfState() {
@@ -130,6 +132,7 @@ export class Controller {
                 this.actionLoadSerializedRoot(wsf);
             });
         }
+        this.updateDecorations();
     }
 
     public actionSaveAllWsfState() {
@@ -169,40 +172,6 @@ export class Controller {
                 }
             })
         }
-    }
-    /**
-     * restore fake_root_group; set ActivateGroup
-     * @param {type} param1 - param1 desc
-     * @returns {type} - return value desc
-     */
-    private restoreSavedState() {
-        const activeGroupUri: string = this.ctx.workspaceState.get(this.savedActiveGroupKey) ?? this.defaultGroupName; // 不存在的情况，使用默认分组
-        let rootNodeSerialized: SerializableGroup | undefined = this.ctx.workspaceState.get(this.savedRootNodeKey);
-        // rootNodeSerialized = undefined
-        if (rootNodeSerialized) {
-            // TODO 针对fspath 不存在的书签 改变其显示样式 显示提示框，是否删除这些失效书签
-            // 如果有
-            this.fake_root_group = SerializableGroup.build_root(rootNodeSerialized) as RootGroup;
-        } else {
-            // 如果没有 遍历所有wsf 创建对应的root group
-            this.fake_root_group = new RootGroup("", "", "", []);
-        }
-        this.activeGroup = this.fake_root_group.get_node(activeGroupUri, ITEM_TYPE_GROUP) as Group;
-        if (!this.activeGroup) {
-            this.activeGroup = this.fake_root_group;
-            this.ctx.workspaceState.update(this.savedActiveGroupKey, "");
-        }
-    }
-
-    public init_with_fake_root() {
-        this.tprovider.root_group = this.fake_root_group;
-        this.fake_root_group.cache = this.fake_root_group.bfs_get_nodes();
-        this.fake_root_group.vicache = this.fake_root_group.bfs_get_tvmap();
-        // this.node_map = this.fake_root_group.cache;
-        this.fake_root_group.sortGroupBookmark();
-        console.log("node map keys:", this.fake_root_group.cache.keys());
-        console.log("view item map keys:", this.fake_root_group.vicache.keys());
-        console.log("restore saved state done");
     }
 
     public init_with_fake_root_wsfs() {
@@ -373,16 +342,19 @@ export class Controller {
                 let obj = JSON.parse(content.toString());
                 SpaceMap.root_group_map[wsf!.uri.path] = SerializableGroup.build_root(obj);
                 SpaceMap.active_group_map[wsf!.uri.path] = this.get_root_group(wsf!)
-                this.init_with_fake_root();
             }
         );
+        this.init_with_fake_root_wsfs();
+        this.updateDecorations();
+        this.saveWsfsState();
     }
 
     public actionClearData() {
         this.ctx.workspaceState.update(this.savedRootNodeKey, "");
         this.ctx.workspaceState.update(this.savedActiveGroupKey, "");
-        this.restoreSavedState();
-        this.init_with_fake_root();
+        this.ctx.workspaceState.update(this.savedWsfsDataKey, "");
+        this.saveWsfsState();
+        this.init_with_fake_root_wsfs();
         this.updateDecorations();
         this.saveState();
     }
@@ -579,7 +551,7 @@ export class Controller {
      * @returns {type} - return value desc
      */
     public activateGroup(uri: string, wsf: vscode.WorkspaceFolder) {
-        let group = this.fake_root_group.get_node(uri) as Group;
+        let group = this.get_root_group(wsf).cache.get(uri) as Group;
         if (group === this.get_active_group(wsf)) {
             return;
         }
@@ -622,17 +594,19 @@ export class Controller {
 
             this.decos2remove.clear();
         }
-        this.fake_root_group.vicache.entries().forEach(([key, item]) => {
-            let node = this.fake_root_group.cache.get(key);
-            if (ITEM_TYPE_GROUP_LIKE.includes(node!.type)) {
-                if (node!.children.length === 0) {
-                    // update group state
-                    item.collapsibleState = TreeItemCollapsibleState.None;
-                } else {
-                    item.collapsibleState = TreeItemCollapsibleState.Expanded;
+        SpaceMap.rgs.forEach(rg => {
+            rg.vicache.entries().forEach(([key, item]) => {
+                let node = rg.cache.get(key);
+                if (ITEM_TYPE_GROUP_LIKE.includes(node!.type)) {
+                    if (node!.children.length === 0) {
+                        // update group state
+                        item.collapsibleState = TreeItemCollapsibleState.None;
+                    } else {
+                        item.collapsibleState = TreeItemCollapsibleState.Expanded;
+                    }
                 }
-            }
-        });
+            });
+        })
         BookmarkTreeViewManager.refreshCallback();
     }
 
@@ -673,12 +647,14 @@ export class Controller {
     // 获取已存在的标签
     private getBookmarksInFile(fsPath: string): Array<Bookmark> {
         let fileBookmarks: Array<Bookmark> = [];
-        this.fake_root_group.cache.keys().forEach(full_uri => {
-            let item = this.fake_root_group.cache.get(full_uri) as Bookmark;
-            if (item.fsPath === fsPath) {
-                fileBookmarks.push(item);
-            }
-        });
+        SpaceMap.rgs.forEach(rg => {
+            rg.cache.keys().forEach(full_uri => {
+                let item = rg.cache.get(full_uri) as Bookmark;
+                if (item.fsPath === fsPath) {
+                    fileBookmarks.push(item);
+                }
+            });
+        })
         return fileBookmarks;
     }
 
@@ -688,7 +664,6 @@ export class Controller {
      * @returns {type} - return value desc
      */
     public jumpToBookmark(bm: Bookmark) {
-        // let bookmark = this.fake_root_group.get_node(bm.get_full_uri()) as Bookmark;
         window.showTextDocument(Uri.file(bm.fsPath), {
             selection: new Range(
                 bm.line,
@@ -717,6 +692,7 @@ export class Controller {
         let fsPath = event.document.uri.fsPath;
         // 针对常见场景优化 如单个、多个字符(除了\n)的书写
         let file_bm = this.getBookmarksInFile(fsPath);
+        let wsf = util.getWsfWithPath(fsPath);
 
         changes.forEach(change => {
             let txt = change.text;
@@ -761,10 +737,10 @@ export class Controller {
                             bm.line -= range.end.line - range.start.line + num_enter;
                         }
                         // 检查重叠并且删除
-                        let overlaps = this.fake_root_group.cache.findOverlapBookmark();
+                        let overlaps = this.get_root_group(wsf!).cache.findOverlapBookmark();
                         this.deleteBookmarks(
                             overlaps.map(
-                                uri => this.fake_root_group.get_node(uri, ITEM_TYPE_BM) as Bookmark
+                                uri => this.get_root_group(wsf!).get_node(uri, ITEM_TYPE_BM) as Bookmark
                             )
                         );
                     });
@@ -792,22 +768,25 @@ export class Controller {
     }
 
     public upgradeToGroupBookmark(bm: Bookmark) {
-        this.fake_root_group.replace_node(bm, new GroupBookmark(bm));
+        let wsf = this.get_wsf_with_node(bm);
+        this.get_root_group(wsf!).replace_node(bm, new GroupBookmark(bm));
         this.updateDecorations();
         this.saveState();
     }
 
     public downgradeToGroup(gbm: GroupBookmark) {
-        this.fake_root_group.replace_node(gbm, gbm.toGroup());
+        let wsf = this.get_wsf_with_node(gbm);
+        this.get_root_group(wsf!).replace_node(gbm, gbm.toGroup());
         this.updateDecorations();
         this.saveState();
     }
 
     public get_wsf_with_node(node: NodeType): vscode.WorkspaceFolder|undefined {
         let path: string = "";
+        let uri = node.get_full_uri();
         Object.entries(SpaceMap.root_group_map).forEach(([key, rg]) => {
-            if (rg.cache.values().includes(node)) {
-                path = key
+            if (rg.cache.get(uri) === node) {
+                path = key;
             }
         })
         let res = workspace.workspaceFolders?.find(wsf => wsf.uri.path === path)

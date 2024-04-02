@@ -3,20 +3,16 @@ import { Bookmark } from "./functional_types";
 import {BookmarkTreeItem, BookmarkTreeItemFactory, WsfTreeItem} from './bookmark_tree_item';
 import {Group, RootGroup} from './functional_types';
 import * as vscode from 'vscode';
-import { Controller } from './controller';
+import { Controller, SpaceMap } from './controller';
 import { BookmarkTreeViewManager } from './bookmark_tree_view';
 import { ITEM_TYPE_BM, ITEM_TYPE_GROUP, ITEM_TYPE_GROUPBM } from './constants';
+import * as util from './util';
 
 
 export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<BookmarkTreeItem>, vscode.TreeDragAndDropController<BookmarkTreeItem>  {
 	dropMimeTypes = ['application/vnd.code.tree.bookmarkitem'];
 	dragMimeTypes = ['application/vnd.code.tree.bookmarkitem'];
-    get root_group() {
-        return this.controller.fake_root_group;
-    }
-    set root_group(val) {
-        this.controller.fake_root_group = val;
-    }
+
     private changeEmitter = new EventEmitter<BookmarkTreeItem | undefined | null | void>();
     private controller: Controller;
 
@@ -43,8 +39,7 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
             }
             return Promise.resolve(wsfs);
         } else if (element instanceof WsfTreeItem) {
-            this.controller.wsf = element.wsf;
-            el = BookmarkTreeItemFactory.fromGroup(this.root_group as Group);
+            el = BookmarkTreeItemFactory.fromType(this.controller.get_root_group(element.wsf) as Group);
         } else {
             el = element;
         }
@@ -100,7 +95,6 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
             vscode.window.showInformationMessage("that situation not support yet");
             return;
             // target = new BookmarkTreeItem('');
-            // target.base = this.root_group;
         }
         
         if (droppingItems.length === 1) {
@@ -112,7 +106,7 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
             if (target instanceof WsfTreeItem) {
                 // item.
                 let dst_wsf = target.wsf;
-                let dst_rg = this.controller.get_root_group(target.wsf);
+                dst_rg = this.controller.get_root_group(target.wsf);
                 target = new BookmarkTreeItem("");
                 target.base = this.controller.get_root_group(dst_wsf);
             }
@@ -122,7 +116,9 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
             }
             // group -> root/group
             if ( item instanceof Group && target!.base instanceof Group) {
-                if (item.uri === target!.base.get_full_uri()) {
+                if (dst_rg.cache.get(
+                    util.joinTreeUri([target.base.get_full_uri(), item.name])
+                )) {
                     vscode.window.showInformationMessage("It's already in the target group!");
                     return;
                 }
@@ -145,7 +141,9 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
             // bookmark -> root/group
             else if ( item instanceof Bookmark && target!.base instanceof Group) {
                 // 判定是否存在
-                if (item.uri === target.base!.get_full_uri()) {
+                if (dst_rg.cache.get(
+                    util.joinTreeUri([target.base.get_full_uri(), item.name])
+                )) {
                     vscode.window.showInformationMessage("the bookmark is already in the target group");
                     return;
                 }
@@ -202,8 +200,9 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
      * getParent
      */
     public getParent(element: BookmarkTreeItem): BookmarkTreeItem {
+        let wsf = this.controller.get_wsf_with_node(element.base!)
         let uri = element.base!.uri;
-        let bmti = this.controller.fake_root_group.vicache.get(uri);
+        let bmti = this.controller.get_root_group(wsf!).vicache.get(uri);
         return bmti;
     }
 }

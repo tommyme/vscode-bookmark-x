@@ -78,32 +78,14 @@ export class BookmarkTreeItemFactory {
     }
 
     static fromType<T extends NodeType>(item: T): BookmarkTreeItem {
-        if (this.controller.fake_root_group.vicache.check_uri_exists(item.get_full_uri())) {
-            console.log("item from bm using cache")
-            return this.controller.fake_root_group.vicache.get(item.get_full_uri());
+        let wsf = this.controller.get_wsf_with_node(item);
+        if (this.controller.get_root_group(wsf!).vicache.check_uri_exists(item.get_full_uri())) {
+            console.log("item from bm using cache");
+            return this.controller.get_root_group(wsf!).vicache.get(item.get_full_uri());
         } else {
             console.log("unexpected from type");
+            // 不会走到这里
             return this.createType(item);
-        }
-    }
-
-    static fromBookmark(bookmark: Bookmark): BookmarkTreeItem {
-        if (this.controller.fake_root_group.vicache.check_uri_exists(bookmark.get_full_uri())) {
-            console.log("tree view item from bm using cache")
-            return this.controller.fake_root_group.vicache.get(bookmark.get_full_uri());
-        } else {
-            console.log("unexpected from bookmark");
-            return BookmarkTreeItemFactory.createBookmark(bookmark);
-        }
-    }
-
-    static fromGroup(group: Group): BookmarkTreeItem {
-        if (this.controller.fake_root_group.vicache.check_uri_exists(group.get_full_uri())) {
-            console.log("tree view item from group using cache")
-            return this.controller.fake_root_group.vicache.get(group.get_full_uri());
-        } else {
-            console.log("unexpected from group")
-            return BookmarkTreeItemFactory.createGroup(group);
         }
     }
 }

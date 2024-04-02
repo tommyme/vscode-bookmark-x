@@ -128,7 +128,8 @@ export async function activate(context: vscode.ExtensionContext) {
 		let bms2del: Array<Bookmark> = [];
 		e.files.forEach(file => {
 			let path = file.fsPath;
-			let bms = controller.fake_root_group.get_bm_with_under_fspath(path);
+			let wsf = util.getWsfWithPath(path);
+			let bms = controller.get_root_group(wsf!).get_bm_with_under_fspath(path);
 			bms2del = bms2del.concat(bms);
 		});
 		controller.deleteBookmarks(bms2del);
@@ -140,7 +141,8 @@ export async function activate(context: vscode.ExtensionContext) {
 		e.files.forEach(file => {
 			// 不用更新deco
 			let old_path = file.oldUri.fsPath;
-			let bms = controller.fake_root_group.get_bm_with_under_fspath(old_path);
+			let wsf = util.getWsfWithPath(old_path);
+			let bms = controller.get_root_group(wsf!).get_bm_with_under_fspath(old_path);
 			vscode.workspace.fs.stat(file.newUri).then(x => {
 				if (x.type === vscode.FileType.Directory) {
 					bms.forEach(bm => {

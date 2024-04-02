@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { ThemeColor, ThemeIcon, ViewBadge } from 'vscode';
-import {Controller} from './controller';
+import {Controller, SpaceMap} from './controller';
 import {BookmarkTreeItem} from './bookmark_tree_item';
 import { Bookmark, Group } from './functional_types';
 import * as util from './util';
@@ -42,7 +42,10 @@ export class BookmarkTreeViewManager {
         }
     }
     static refresh_badge() {
-        let num = this.controller!.fake_root_group.cache.bookmark_num();
+        let num = 0;
+        SpaceMap.rgs.forEach(rg => {
+            num += rg.cache.bookmark_num();
+        })
         this.view.badge = new MyViewBadge(num);
     }
 
