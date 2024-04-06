@@ -4,7 +4,7 @@ import {Controller, SpaceMap} from './controller';
 import {BookmarkTreeItem} from './bookmark_tree_item';
 import { Bookmark, Group } from './functional_types';
 import * as util from './util';
-import { ITEM_TYPE_GROUP, ITEM_TYPE_GROUP_LIKE } from './constants';
+import { ICON_GROUP, ITEM_TYPE_GROUP, ITEM_TYPE_GROUP_LIKE } from './constants';
 import { BmxTreeItem } from './bookmark_tree_data_provider';
 
 class MyViewBadge implements ViewBadge {
@@ -61,7 +61,7 @@ export class BookmarkTreeViewManager {
             this.controller!.get_root_group(wsf!).vicache.keys().forEach(key => {
                 // reset icon status
                 let tvi = this.controller!.get_root_group(wsf!).vicache.get(key);
-                if (ITEM_TYPE_GROUP_LIKE.includes(tvi.base!.type)) { tvi.iconPath = new ThemeIcon("folder"); }
+                if (ITEM_TYPE_GROUP_LIKE.includes(tvi.base!.type)) { tvi.iconPath = ICON_GROUP; }
             });
         } else {
             this.controller!.activateGroup(group.get_full_uri(), wsf!);

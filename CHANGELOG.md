@@ -10,6 +10,13 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 - more preset funny bookmark icons(e.g. random poker)
 - customizable bookmark/group icon
+
+## [0.2.1] - 2024-04-06
+### migrate guide
+1. use command (save bookmarks in workspace) in your projects before upgrade
+2. upgrade extension
+3. use command (load all workspace state) in workspace Or project
+### Added
 - support for multi workspace
 
 ## [0.1.8] - 2024-03-24

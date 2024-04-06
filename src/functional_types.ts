@@ -1,7 +1,7 @@
 import {DecorationFactory} from './decoration_factory';
 import {TextEditorDecorationType, ThemeColor, ThemeIcon, TreeItem, Uri, window, workspace} from 'vscode';
 import {SerializableBookmark, SerializableGroup, SerializableGroupBookmark} from './serializable_type';
-import {ITEM_TYPE_BM, ITEM_TYPE_GROUP, ITEM_TYPE_GROUPBM, ITEM_TYPE_GROUP_LIKE, typeIsGroupLike, } from './constants';
+import {ICON_ACTIVE_GROUP, ICON_GROUP, ITEM_TYPE_BM, ITEM_TYPE_GROUP, ITEM_TYPE_GROUPBM, ITEM_TYPE_GROUP_LIKE, typeIsGroupLike, } from './constants';
 import * as util from './util';
 import { BookmarkTreeItem, BookmarkTreeItemFactory } from './bookmark_tree_item';
 
@@ -386,9 +386,9 @@ export class ViewItemUriMap extends UriMap<BookmarkTreeItem> {
             let tvi = this.get(key);
             if (ITEM_TYPE_GROUP_LIKE.includes(tvi.base!.type)) {
                 if (util.isSubUriOrEqual(key, new_full_uri)) {
-                    tvi.iconPath = new ThemeIcon("folder-opened", new ThemeColor("statusBarItem.remoteBackground"));
+                    tvi.iconPath = ICON_ACTIVE_GROUP;
                 } else {
-                    tvi.iconPath = new ThemeIcon("folder");
+                    tvi.iconPath = ICON_GROUP;
                 }
             }
         })

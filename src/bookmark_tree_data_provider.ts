@@ -104,7 +104,7 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<BmxTree
             let item = tvitem.base;
             let src_rg = this.controller.get_root_group(src_wsf!);
             let dst_rg = src_rg;
-            let dst_wsf;
+            let dst_wsf: vscode.WorkspaceFolder;
             if (target instanceof WsfTreeItem) {
                 // item.
                 dst_wsf = target.wsf;

@@ -105,6 +105,9 @@ function getWsfWithPath(path: string): WorkspaceFolder|null {
             res = wsf;
         }
     });
+    if (!res) { // fallback
+        res = vscode.workspace.workspaceFolders![0];
+    }
     return res;
 }
 
@@ -115,8 +118,9 @@ function getWsfWithActiveEditor() {
     if (vscode.window.activeTextEditor) {
         let path = vscode.window.activeTextEditor.document.uri.path;
         wsf = getWsfWithPath(path.slice(1));
-    } else {
-        wsf = vscode.workspace.workspaceFolders![0]
+    } 
+    if (!wsf) { // fallback
+        wsf = vscode.workspace.workspaceFolders![0];
     }
     return wsf;
 }

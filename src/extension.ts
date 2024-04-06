@@ -6,10 +6,11 @@ import { Bookmark, GroupBookmark } from "./functional_types";
 import * as util from './util';
 import { DecorationFactory } from './decoration_factory';
 import {TaskTreeViewManager} from "./views/quick_run/view_manager";
+import { StoreManager } from './store';
 export async function activate(context: vscode.ExtensionContext) {
 	TaskTreeViewManager.init(context);
-	DecorationFactory.svgDir = context.globalStorageUri;
-	await DecorationFactory.init_svgdir();
+	StoreManager.home = context.globalStorageUri;
+	await DecorationFactory.init();
 	let controller: Controller = new Controller(context);
 	BookmarkTreeViewManager.controller = controller;
 	BookmarkTreeViewManager.init();
@@ -65,7 +66,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(disposable);
 	
 	disposable = vscode.commands.registerCommand(
-		'bookmark_x.saveBookmarksInWorkspace', () => controller.actionSaveSerializedRoot()
+		'bookmark_x.saveBookmarksInWorkspace', () => controller.doSaveSerializedRoot()
 	);
 	context.subscriptions.push(disposable);
 	
@@ -75,7 +76,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(disposable);
 
 	disposable = vscode.commands.registerCommand(
-		'bookmark_x.loadBookmarksInWorkSpace', () => controller.actionLoadSerializedRoot()
+		'bookmark_x.loadBookmarksInWorkSpace', () => controller.doLoadSerializedRoot()
 	);
 	context.subscriptions.push(disposable);
 

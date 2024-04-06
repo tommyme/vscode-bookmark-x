@@ -3,7 +3,8 @@ import { Bookmark, GroupBookmark, BaseFunctional, NodeType } from "./functional_
 import {Group} from './functional_types';
 import { Controller } from './controller';
 import * as util from './util';
-import { ITEM_TYPE_BM, ITEM_TYPE_GROUP, ITEM_TYPE_GROUPBM, TREEVIEW_ITEM_CTX_TYPE_BM, TREEVIEW_ITEM_CTX_TYPE_GROUP, TREEVIEW_ITEM_CTX_TYPE_GROUPBM } from './constants';
+import { ICON_ACTIVE_GROUP, ICON_BOOKMARK, ICON_GROUP, ITEM_TYPE_BM, ITEM_TYPE_GROUP, ITEM_TYPE_GROUPBM, TREEVIEW_ITEM_CTX_TYPE_BM, TREEVIEW_ITEM_CTX_TYPE_GROUP, TREEVIEW_ITEM_CTX_TYPE_GROUPBM } from './constants';
+import { DecorationFactory } from './decoration_factory';
 
 export class BookmarkTreeItemFactory {
     static controller: Controller;
@@ -15,7 +16,7 @@ export class BookmarkTreeItemFactory {
         result.contextValue = TREEVIEW_ITEM_CTX_TYPE_BM;
         result.description = bm.lineText;
         // result.iconPath = bookmark.group!.decorationSvg.path;
-        result.iconPath = new ThemeIcon("bookmark");
+        result.iconPath = ICON_BOOKMARK;
         result.base = bm;
         result.tooltip = workspace.asRelativePath(bm.fsPath) + ': ' + label;
         result.command = {
@@ -39,9 +40,9 @@ export class BookmarkTreeItemFactory {
         let currActiveGroupUri = this.controller.get_active_group(wsf!).get_full_uri();
         let result = new BookmarkTreeItem(group.name, this.get_collapse_state(group));
         if (currActiveGroupUri && util.isSubUriOrEqual(group.get_full_uri(), currActiveGroupUri)) {
-            result.iconPath = new ThemeIcon("folder-opened", new ThemeColor("statusBarItem.remoteBackground"));
+            result.iconPath = ICON_ACTIVE_GROUP;
         } else {
-            result.iconPath = new ThemeIcon("folder");
+            result.iconPath = ICON_GROUP;
         }
         result.base = group;
         result.tooltip = group.name;
@@ -121,5 +122,6 @@ export class WsfTreeItem extends TreeItem {
         super(wsf.name, TreeItemCollapsibleState.Expanded);
         this.wsf = wsf;
         this.description = wsf.uri.path;
+        this.iconPath = DecorationFactory.wsf_icon;
     }
 }

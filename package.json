@@ -47,11 +47,11 @@
 			},
 			{
 				"command": "bookmark_x.saveBookmarksInWorkspace",
-				"title": "Bookmark X: save bookmarks in workspace"
+				"title": "Bookmark X: save bookmarks in workspace(abandoned)"
 			},
 			{
 				"command": "bookmark_x.loadBookmarksInWorkSpace",
-				"title": "Bookmark X: load bookmarks in workspace"
+				"title": "Bookmark X: load bookmarks in workspace(abandoned)"
 			},
 			{
 				"command": "bookmark_x.revealBookmark",
@@ -116,6 +116,14 @@
 				"title": "bmx.quickrun: run item"
 			},
 			{
+				"command": "bmx.quickrun.gotoTopOfDocument",
+				"title": "bmx.quickrun: jump to top of document"
+			},
+			{
+				"command": "bmx.quickrun.gotoEndOfDocument",
+				"title": "bmx.quickrun: jump to end of document"
+			},
+			{
 				"command": "bmx.quickrun.openLaunchJson",
 				"title": "bmx.quickrun: open launch json",
 				"icon": "$(rocket)"
@@ -124,6 +132,11 @@
 				"command": "bmx.quickrun.refresh",
 				"title": "bmx.quickrun: refresh",
 				"icon": "$(refresh)"
+			},
+			{
+				"command": "bmx.quickrun.gotoStackTop",
+				"title": "bmx.quickrun: go to stacktop",
+				"icon": "$(issues)"
 			}
 		],
 		"viewsContainers": {
@@ -214,6 +227,11 @@
 					"command": "bmx.quickrun.refresh",
 					"when": "view == bmx_quickrun",
 					"group": "navigation"
+				},
+				{
+					"command": "bmx.quickrun.gotoStackTop",
+					"when": "view == bmx_quickrun",
+					"group": "navigation"
 				}
 			],
 			"commandPalette": [
@@ -241,7 +259,17 @@
 					"enum": ["group first", "plain"]
 				}
 			}
-		}
+		},
+		"keybindings": [
+			{
+				"command": "bmx.quickrun.gotoTopOfDocument",
+				"key": "ctrl+k ctrl+i"
+			},
+			{
+				"command": "bmx.quickrun.gotoEndOfDocument",
+				"key": "ctrl+k ctrl+o"
+			}
+		]
 	},
 	"scripts": {
 		"vscode:prepublish": "yarn run compile",

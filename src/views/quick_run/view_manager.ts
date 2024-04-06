@@ -10,7 +10,7 @@ import {
   tasks,
   workspace,
 } from "vscode";
-import { TREEVIEW_ITEM_CTX_TYPE_TASK, TREEVIEW_ITEM_CTX_TYPE_WSF } from "./constants";
+import { TREEVIEW_ITEM_CTX_TYPE_TASK, TREEVIEW_ITEM_CTX_TYPE_WSF, TREEVIEW_ITEM_ICON_TASK, TREEVIEW_ITEM_ICON_DEBUGCONF } from "./constants";
 import { error } from "console";
 
 export class TaskDataProvider implements TreeDataProvider<QuickRunTreeItem> {
@@ -78,6 +78,7 @@ export class TaskDataProvider implements TreeDataProvider<QuickRunTreeItem> {
   }
 
   private getAllLaunchConfigs(wsf :  vscode.WorkspaceFolder): TaskTreeItem[] {
+    // 从其他来源获取config，暂不支持
     let launchElements: TaskTreeItem[] = [];
     let launch = workspace.getConfiguration("launch", wsf);
     const config = launch.get("configurations") as Array<vscode.DebugConfiguration>;
@@ -114,10 +115,10 @@ export class TaskTreeItem extends TreeItem {
     let args: vscode.Task | vscode.DebugConfiguration;
     if (this._task instanceof vscode.Task) {
       args = this._task;
-      this.iconPath = new vscode.ThemeIcon("explorer-view-icon");
+      this.iconPath = new vscode.ThemeIcon(TREEVIEW_ITEM_ICON_TASK);
     } else {
       args = _task as vscode.DebugConfiguration;
-      this.iconPath = new vscode.ThemeIcon("debug-start");
+      this.iconPath = new vscode.ThemeIcon(TREEVIEW_ITEM_ICON_DEBUGCONF);
     }
     this.command = {
       title: "title",
@@ -192,6 +193,20 @@ export class TaskTreeViewManager {
         await workspace.fs.writeFile(launchjsonUri, bytes);
       }
       vscode.window.showTextDocument(launchjsonUri);
+    });
+    context.subscriptions.push(disposable);
+
+    disposable = commands.registerCommand("bmx.quickrun.gotoStackTop", () => vscode.commands.executeCommand("workbench.action.debug.callStackTop"));
+    context.subscriptions.push(disposable);
+
+    disposable = commands.registerCommand("bmx.quickrun.gotoTopOfDocument", () => {
+      let document = vscode.window.activeTextEditor!.document;
+      vscode.window.showTextDocument(document.uri, {selection: new vscode.Range(0,0,0,0)});
+    });
+
+    disposable = commands.registerCommand("bmx.quickrun.gotoEndOfDocument", () => {
+      let document = vscode.window.activeTextEditor!.document;
+      vscode.window.showTextDocument(document.uri, {selection: new vscode.Range(document.lineCount,0,document.lineCount,0)});
     });
     context.subscriptions.push(disposable);
   }

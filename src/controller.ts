@@ -21,8 +21,8 @@ import { TextEncoder } from 'util';
 import { DecorationFactory } from './decoration_factory';
 import { BookmarkTreeItemFactory } from './bookmark_tree_item';
 import { BookmarkTreeViewManager } from './bookmark_tree_view';
-import { TaskTreeViewManager } from './views/quick_run/view_manager';
 import { error } from 'console';
+import { SAVED_ACTIVEGROUP_KEY, SAVED_ROOTNODE_KEY, SAVED_WSFSDATA_KEY } from './constants';
 
 export class SpaceMap {
     static root_group_map: {[key: string]: RootGroup} = {};
@@ -39,13 +39,10 @@ export class SpaceMap {
     }
 }
 
-type WsfDataSerialiable = {rg: {[key: string]: any}, ag: {[key: string]: any}}
+type WsfDataSerialiable = {rg: {[key: string]: any}, ag: {[key: string]: any}};
 
 export class Controller {
-    public readonly savedBookmarksKey = 'bookmarkDemo.bookmarks'; // 缓存标签的key
-    public readonly savedRootNodeKey = "bookmarkDemo.root_Node";
-    public readonly savedActiveGroupKey = "bookmarkDemo.activeGroup";
-    public readonly savedWsfsDataKey = "bookmarkDemo.wsfsData";
+
     public readonly defaultGroupName = "";
 
     private ctx: ExtensionContext;
@@ -130,7 +127,7 @@ export class Controller {
     public actionLoadAllWsfState() {
         if (workspace.workspaceFolders) {
             workspace.workspaceFolders.forEach(wsf => {
-                this.actionLoadSerializedRoot(wsf);
+                this.doLoadSerializedRoot(wsf);
             });
         }
         this.updateDecorations();
@@ -139,7 +136,7 @@ export class Controller {
     public actionSaveAllWsfState() {
         if (workspace.workspaceFolders) {
             workspace.workspaceFolders.forEach(wsf => {
-                this.actionSaveSerializedRoot(wsf);
+                this.doSaveSerializedRoot(wsf);
             });
         }
     }
@@ -149,16 +146,16 @@ export class Controller {
             res.rg[wsf.uri.path] = SpaceMap.root_group_map[wsf.uri.path].serialize();
             res.ag[wsf.uri.path] = SpaceMap.active_group_map[wsf.uri.path].get_full_uri();
         });
-        this.ctx.workspaceState.update(this.savedWsfsDataKey, res);
-        let xx = this.ctx.workspaceState.get(this.savedWsfsDataKey);
+        this.ctx.workspaceState.update(SAVED_WSFSDATA_KEY, res);
+        let xx = this.ctx.workspaceState.get(SAVED_WSFSDATA_KEY);
         console.log(xx);
     }
     public restoreWsfsSavedState() {
         if (!workspace.workspaceFolders) {
             return;
         } else {
-            // let data = this.ctx.workspaceState.update(this.savedWsfsDataKey, undefined);
-            let data: WsfDataSerialiable = this.ctx.workspaceState.get(this.savedWsfsDataKey) ?? {rg: {}, ag: {}};
+            // let data = this.ctx.workspaceState.update(SAVED_WSFSDATA_KEY, undefined);
+            let data: WsfDataSerialiable = this.ctx.workspaceState.get(SAVED_WSFSDATA_KEY) ?? {rg: {}, ag: {}};
             workspace.workspaceFolders.forEach(wsf => {
                 let rg = data.rg[wsf.uri.path];
                 let ag = data.ag[wsf.uri.path];
@@ -316,7 +313,7 @@ export class Controller {
         });
     }
 
-    public async actionSaveSerializedRoot(wsf: vscode.WorkspaceFolder|null=null) {
+    public async doSaveSerializedRoot(wsf: vscode.WorkspaceFolder|null=null) {
         if (wsf === null) {
             wsf = workspace.workspaceFolders![0];
         }
@@ -331,7 +328,7 @@ export class Controller {
         await workspace.fs.writeFile(uri, bytes);
         window.showInformationMessage("saved.");
     }
-    public async actionLoadSerializedRoot(wsf: vscode.WorkspaceFolder|null=null) {
+    public async doLoadSerializedRoot(wsf: vscode.WorkspaceFolder|null=null) {
         if (wsf === null) {
             wsf = workspace.workspaceFolders![0];
         }
@@ -352,9 +349,9 @@ export class Controller {
     }
 
     public actionClearData() {
-        this.ctx.workspaceState.update(this.savedRootNodeKey, "");
-        this.ctx.workspaceState.update(this.savedActiveGroupKey, "");
-        this.ctx.workspaceState.update(this.savedWsfsDataKey, "");
+        this.ctx.workspaceState.update(SAVED_ROOTNODE_KEY, "");
+        this.ctx.workspaceState.update(SAVED_ACTIVEGROUP_KEY, "");
+        this.ctx.workspaceState.update(SAVED_WSFSDATA_KEY, "");
         this.saveWsfsState();
         this.init_with_fake_root_wsfs();
         this.updateDecorations();
