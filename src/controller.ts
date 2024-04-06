@@ -9,7 +9,7 @@ import {
     TextDocumentChangeEvent,
     TreeItemCollapsibleState
 } from 'vscode';
-import * as vscode from 'vscode'
+import * as vscode from 'vscode';
 import * as path from 'path';
 import { Bookmark, GroupBookmark, NodeType, NodeUriMap, RootGroup, ViewItemUriMap } from "./functional_types";
 import { Group } from './functional_types';
@@ -22,6 +22,7 @@ import { DecorationFactory } from './decoration_factory';
 import { BookmarkTreeItemFactory } from './bookmark_tree_item';
 import { BookmarkTreeViewManager } from './bookmark_tree_view';
 import { TaskTreeViewManager } from './views/quick_run/view_manager';
+import { error } from 'console';
 
 export class SpaceMap {
     static root_group_map: {[key: string]: RootGroup} = {};
@@ -38,7 +39,7 @@ export class SpaceMap {
     }
 }
 
-
+type WsfDataSerialiable = {rg: {[key: string]: any}, ag: {[key: string]: any}}
 
 export class Controller {
     public readonly savedBookmarksKey = 'bookmarkDemo.bookmarks'; // 缓存标签的key
@@ -62,7 +63,7 @@ export class Controller {
     }
 
     public get_root_group(wsf: vscode.WorkspaceFolder) {
-        return SpaceMap.root_group_map[wsf.uri.path]
+        return SpaceMap.root_group_map[wsf.uri.path];
     }
 
     get activeGroup(): Group {
@@ -73,13 +74,13 @@ export class Controller {
             let path = vscode.window.activeTextEditor.document.uri.path;
             wsf = util.getWsfWithPath(path);
         } else {
-            wsf = vscode.workspace.workspaceFolders![0]
+            wsf = vscode.workspace.workspaceFolders![0];
         }
         return SpaceMap.active_group_map[wsf!.uri.path];
     }
 
     public get_active_group(wsf: vscode.WorkspaceFolder): Group {
-        return SpaceMap.active_group_map[wsf.uri.path]
+        return SpaceMap.active_group_map[wsf.uri.path];
     }
 
     set activeGroup(group: Group) {
@@ -91,7 +92,7 @@ export class Controller {
             uri: vscode.Uri.file("/path/to/404"),
             name: "",
             index: -1,
-        }
+        };
         if (!vscode.workspace.workspaceFolders || vscode.workspace.workspaceFolders.length === 0) {
             return fake_wsf;
         }
@@ -143,48 +144,48 @@ export class Controller {
         }
     }
     public saveWsfsState() {
-        let res = {rg:{}, ag:{}}
+        let res: WsfDataSerialiable = {rg:{}, ag:{}};
         workspace.workspaceFolders?.forEach(wsf => {
             res.rg[wsf.uri.path] = SpaceMap.root_group_map[wsf.uri.path].serialize();
             res.ag[wsf.uri.path] = SpaceMap.active_group_map[wsf.uri.path].get_full_uri();
-        })
+        });
         this.ctx.workspaceState.update(this.savedWsfsDataKey, res);
         let xx = this.ctx.workspaceState.get(this.savedWsfsDataKey);
-        console.log(xx)
+        console.log(xx);
     }
     public restoreWsfsSavedState() {
         if (!workspace.workspaceFolders) {
-            return
+            return;
         } else {
             // let data = this.ctx.workspaceState.update(this.savedWsfsDataKey, undefined);
-            let data = this.ctx.workspaceState.get(this.savedWsfsDataKey) ?? {rg: {}, ag: {}};
+            let data: WsfDataSerialiable = this.ctx.workspaceState.get(this.savedWsfsDataKey) ?? {rg: {}, ag: {}};
             workspace.workspaceFolders.forEach(wsf => {
-                let rg = data.rg[wsf.uri.path]
-                let ag = data.ag[wsf.uri.path]
+                let rg = data.rg[wsf.uri.path];
+                let ag = data.ag[wsf.uri.path];
                 if (rg) {
-                    SpaceMap.root_group_map[wsf.uri.path] = SerializableGroup.build_root(rg) as RootGroup
+                    SpaceMap.root_group_map[wsf.uri.path] = SerializableGroup.build_root(rg) as RootGroup;
                 } else {
                     SpaceMap.root_group_map[wsf.uri.path] = new RootGroup("", "", "", []);
                 }
                 if (ag) {
-                    SpaceMap.active_group_map[wsf.uri.path] = SpaceMap.root_group_map[wsf.uri.path].get_node(ag as string) as Group
+                    SpaceMap.active_group_map[wsf.uri.path] = SpaceMap.root_group_map[wsf.uri.path].get_node(ag as string) as Group;
                 } else {
-                    SpaceMap.active_group_map[wsf.uri.path] = SpaceMap.root_group_map[wsf.uri.path]
+                    SpaceMap.active_group_map[wsf.uri.path] = SpaceMap.root_group_map[wsf.uri.path];
                 }
-            })
+            });
         }
     }
 
     public init_with_fake_root_wsfs() {
         vscode.workspace.workspaceFolders?.forEach(wsf => {
-            let rg = SpaceMap.root_group_map[wsf.uri.path]
+            let rg = SpaceMap.root_group_map[wsf.uri.path];
             rg.cache = rg.bfs_get_nodes();
             rg.vicache = rg.bfs_get_tvmap();
             rg.sortGroupBookmark();
             console.log("node map keys:", rg.cache.keys());
             console.log("view item map keys:", rg.vicache.keys());
             console.log("restore saved state done");  
-        })
+        });
     }
     /**
      * 装饰器 执行完动作之后update和save一下
@@ -213,7 +214,7 @@ export class Controller {
         }
         let xx = workspace.getWorkspaceFolder(textEditor.document.uri);
         let documentFsPath = textEditor.document.uri.fsPath;
-        let wsf = util.getWsfWithPath(documentFsPath)
+        let wsf = util.getWsfWithPath(documentFsPath);
         // 可能存在着多个光标
         for (let selection of textEditor.selections) {
             let line = selection.start.line;
@@ -242,7 +243,7 @@ export class Controller {
 
         const fsPath = textEditor.document.uri.fsPath;
         const lineNumber = textEditor.selection.start.line;
-        let wsf = util.getWsfWithPath(fsPath)
+        let wsf = util.getWsfWithPath(fsPath);
 
         // 获取已存在的标签
         const existingBookmark = this.getBookmarksInFile(fsPath).find((bookmark) => {
@@ -319,7 +320,7 @@ export class Controller {
         if (wsf === null) {
             wsf = workspace.workspaceFolders![0];
         }
-        let root_group = SpaceMap.root_group_map[wsf.uri.path]
+        let root_group = SpaceMap.root_group_map[wsf.uri.path];
         let content: string = JSON.stringify(root_group.serialize(), undefined, 2);
         let proj_folder = wsf.uri.path;
         let uri = Uri.file(
@@ -342,7 +343,7 @@ export class Controller {
             content => {
                 let obj = JSON.parse(content.toString());
                 SpaceMap.root_group_map[wsf!.uri.path] = SerializableGroup.build_root(obj);
-                SpaceMap.active_group_map[wsf!.uri.path] = this.get_root_group(wsf!)
+                SpaceMap.active_group_map[wsf!.uri.path] = this.get_root_group(wsf!);
             }
         );
         this.init_with_fake_root_wsfs();
@@ -403,7 +404,9 @@ export class Controller {
 
     public deleteBookmarks(bms: Array<Bookmark>) {
         bms.forEach(bm => {
-            let group = rg.get_node(bm.uri) as Group;
+            let wsf = this.get_wsf_with_node(bm);
+            let rg = this.get_root_group(wsf!);
+            let group = rg.cache.get(bm.uri) as Group;
             let index = group.children.indexOf(bm);
             group.children.splice(index, 1);
             rg.cache.del(bm.get_full_uri());
@@ -446,7 +449,7 @@ export class Controller {
      */
     public editNodeLabel(node: Bookmark | Group, val: string): boolean {
         let wsf = this.get_wsf_with_node(node);
-        let rg = this.get_root_group(wsf!)
+        let rg = this.get_root_group(wsf!);
         // 命名冲突
         if (rg.cache.check_uri_exists(util.joinTreeUri([node.uri, val]))) {
             return false;
@@ -607,7 +610,7 @@ export class Controller {
                     }
                 }
             });
-        })
+        });
         BookmarkTreeViewManager.refreshCallback();
     }
 
@@ -655,7 +658,7 @@ export class Controller {
                     fileBookmarks.push(item);
                 }
             });
-        })
+        });
         return fileBookmarks;
     }
 
@@ -782,16 +785,21 @@ export class Controller {
         this.saveState();
     }
 
-    public get_wsf_with_node(node: NodeType): vscode.WorkspaceFolder|undefined {
+    public get_wsf_with_node(node: NodeType): vscode.WorkspaceFolder {
         let path: string = "";
         let uri = node.get_full_uri();
-        Object.entries(SpaceMap.root_group_map).forEach(([key, rg]) => {
+        let found = Object.entries(SpaceMap.root_group_map).some(([key, rg]) => {
             if (rg.cache.get(uri) === node) {
                 path = key;
+                return true;
             }
-        })
-        let res = workspace.workspaceFolders?.find(wsf => wsf.uri.path === path)
-        return res;
+        });
+        if (!found) {
+            console.log(new Error().stack);
+            throw error("situation error!");
+        }
+        let res = workspace.workspaceFolders?.find(wsf => wsf.uri.path === path);
+        return res!;
     }
 
 }

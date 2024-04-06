@@ -8,8 +8,9 @@ import { BookmarkTreeViewManager } from './bookmark_tree_view';
 import { ITEM_TYPE_BM, ITEM_TYPE_GROUP, ITEM_TYPE_GROUPBM } from './constants';
 import * as util from './util';
 
+export type BmxTreeItem = BookmarkTreeItem | WsfTreeItem;
 
-export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<BookmarkTreeItem>, vscode.TreeDragAndDropController<BookmarkTreeItem>  {
+export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<BmxTreeItem>, vscode.TreeDragAndDropController<BmxTreeItem>  {
 	dropMimeTypes = ['application/vnd.code.tree.bookmarkitem'];
 	dragMimeTypes = ['application/vnd.code.tree.bookmarkitem'];
 
@@ -74,7 +75,7 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
     public refresh() {
         this.changeEmitter.fire();
     }
-    public async handleDrag(source: WsfTreeItem[]|BookmarkTreeItem[], treeDataTransfer: vscode.DataTransfer, token: vscode.CancellationToken): Promise<void> {
+    public async handleDrag(source: BmxTreeItem[], treeDataTransfer: vscode.DataTransfer, token: vscode.CancellationToken): Promise<void> {
         if (!source.every(item => item instanceof BookmarkTreeItem)) {
             // 这里保证在拖拽workspace的时候 dropping items为空
             return;
@@ -187,21 +188,21 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<Bookmar
                 return;
             }
             return;
-            // bookmarks to group
-            const all_bookmark = droppingItems.every(full_uri => this.root_group.cache.get(full_uri).type === ITEM_TYPE_BM);
-            if (all_bookmark && target!.base instanceof Group) {
-                let target_group = target.base as Group;
-                droppingItems.forEach(full_uri => {
-                    let bm = this.root_group.cache.get(full_uri) as Bookmark;
-                    this.root_group.mv_bm_recache_all(bm, target_group);
-                });
-                changed_flag = true;
-                target_group.sortGroupBookmark();
-                target.collapsibleState = TreeItemCollapsibleState.Expanded;
-            } else {
-                vscode.window.showErrorMessage("drop items contain group is not supported at the moment");
-            }
-            // items contain group
+            // // bookmarks to group
+            // const all_bookmark = droppingItems.every(full_uri => this.root_group.cache.get(full_uri).type === ITEM_TYPE_BM);
+            // if (all_bookmark && target!.base instanceof Group) {
+            //     let target_group = target.base as Group;
+            //     droppingItems.forEach(full_uri => {
+            //         let bm = this.root_group.cache.get(full_uri) as Bookmark;
+            //         this.root_group.mv_bm_recache_all(bm, target_group);
+            //     });
+            //     changed_flag = true;
+            //     target_group.sortGroupBookmark();
+            //     target.collapsibleState = TreeItemCollapsibleState.Expanded;
+            // } else {
+            //     vscode.window.showErrorMessage("drop items contain group is not supported at the moment");
+            // }
+            // // items contain group
         }
 
         if (changed_flag) {

@@ -5,6 +5,7 @@ import {BookmarkTreeItem} from './bookmark_tree_item';
 import { Bookmark, Group } from './functional_types';
 import * as util from './util';
 import { ITEM_TYPE_GROUP, ITEM_TYPE_GROUP_LIKE } from './constants';
+import { BmxTreeItem } from './bookmark_tree_data_provider';
 
 class MyViewBadge implements ViewBadge {
     tooltip: string;
@@ -19,7 +20,7 @@ export class BookmarkTreeViewManager {
 
     static controller: Controller;
 
-    static view: vscode.TreeView<BookmarkTreeItem>;
+    static view: vscode.TreeView<BmxTreeItem>;
 
     static refreshCallback() {
         if (this.controller!.tprovider !== null) {
@@ -32,7 +33,7 @@ export class BookmarkTreeViewManager {
         // this.treeDataProviderByFile = this.controller.getTreeDataProviderByFile();
         // vscode.TreeViewOptions
         if (!this.view) {
-            let view = vscode.window.createTreeView<BookmarkTreeItem>('bookmarksByGroup', {
+            let view = vscode.window.createTreeView<BmxTreeItem>('bookmarksByGroup', {
                 treeDataProvider: this.controller.tprovider, 
                 dragAndDropController: this.controller.tprovider,
                 showCollapseAll: true, canSelectMany: true
