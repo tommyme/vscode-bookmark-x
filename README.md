@@ -57,3 +57,12 @@ graph LR
 
 ### tobe improved
 - Bookmark Movement Logic
+
+# migration guide
+## from 0.1 to 0.2
+
+bookmark x 0.1 and 0.2 are using different data strcture to store bookmark data.
+
+if your bookmark x is upgraded to 0.2 and there is no bookmark data, **don't worry, your data is safe**.
+
+you can switch to old version bookmark x and use command `>save bookmarks in workspace` in command palette to save your bookmarks in project with json format

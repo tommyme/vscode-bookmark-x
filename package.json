@@ -38,6 +38,10 @@
 				"title": "Bookmark X: toggle label bookmark"
 			},
 			{
+				"command": "bookmark_x.toggleLabeledBookmarkForce",
+				"title": "Bookmark X: toggle label bookmark force"
+			},
+			{
 				"command": "bookmark_x.addGroup",
 				"title": "Bookmark X: add group"
 			},

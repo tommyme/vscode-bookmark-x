@@ -22,7 +22,7 @@ import { DecorationFactory } from './decoration_factory';
 import { BookmarkTreeItemFactory } from './bookmark_tree_item';
 import { BookmarkTreeViewManager } from './bookmark_tree_view';
 import { error } from 'console';
-import { SAVED_ACTIVEGROUP_KEY, SAVED_ROOTNODE_KEY, SAVED_WSFSDATA_KEY } from './constants';
+import { SAVED_WSFSDATA_KEY } from './constants';
 
 export class SpaceMap {
     static root_group_map: {[key: string]: RootGroup} = {};
@@ -233,7 +233,7 @@ export class Controller {
      * @param {type} param1 - param1 desc
      * @returns {type} - return value desc
      */
-    public actionToggleLabeledBookmark(textEditor: TextEditor) {
+    public actionToggleLabeledBookmark(textEditor: TextEditor, force=false) {
         if (textEditor.selections.length === 0) {
             return;
         }
@@ -242,7 +242,6 @@ export class Controller {
         const lineNumber = textEditor.selection.start.line;
         let wsf = util.getWsfWithPath(fsPath);
 
-        // 获取已存在的标签
         const existingBookmark = this.getBookmarksInFile(fsPath).find((bookmark) => {
             return bookmark.line === lineNumber;
         });
@@ -265,7 +264,7 @@ export class Controller {
                 lineText,
                 this.get_active_group(wsf!).get_full_uri()
             );
-            if (!this.addBookmark(bookmark)) {
+            if (!this.addBookmark(bookmark, force)) {
                 window.showInformationMessage(`Label conflicts with existing bookmarks`);
                 return;
             }
@@ -349,8 +348,9 @@ export class Controller {
     }
 
     public actionClearData() {
-        this.ctx.workspaceState.update(SAVED_ROOTNODE_KEY, "");
-        this.ctx.workspaceState.update(SAVED_ACTIVEGROUP_KEY, "");
+        this.ctx.workspaceState.keys().forEach(key => {
+            this.ctx.workspaceState.update(key, undefined);
+        });
         this.ctx.workspaceState.update(SAVED_WSFSDATA_KEY, "");
         this.saveWsfsState();
         this.init_with_fake_root_wsfs();
@@ -532,12 +532,21 @@ export class Controller {
         return true;
     }
 
-    public addBookmark(bm: Bookmark): boolean {
+    /**
+     * @param {Boolean} bm - bookmark to add
+     * @param {Boolean} force - delete the exist bm and create new.
+     * @returns {Boolean} - success or fail
+     */
+    public addBookmark(bm: Bookmark, force=false): boolean {
         // uri confliction
         let wsf = util.getWsfWithPath(bm.fsPath);
         let rg = this.get_root_group(wsf!);
         if (rg.cache.check_uri_exists(bm.get_full_uri())) {
-            return false;
+            if (force) {
+                this.deleteBookmark(bm);
+            } else {
+                return false;
+            }
         }
         let group = rg.add_node_recache_all(bm);
         group.sortGroupBookmark();

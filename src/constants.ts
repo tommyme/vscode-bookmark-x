@@ -14,9 +14,7 @@ export const TREEVIEW_ITEM_CTX_TYPE_GROUP      = 'group';
 export const TREEVIEW_ITEM_CTX_TYPE_GROUPBM    = 'groupbookmark';
 
 // state key
-export const SAVED_ROOTNODE_KEY = "bookmarkDemo.root_Node";
-export const SAVED_ACTIVEGROUP_KEY = "bookmarkDemo.activeGroup";
-export const SAVED_WSFSDATA_KEY = "bookmarkDemo.wsfsData";
+export const SAVED_WSFSDATA_KEY    = "bookmarkDemo.wsfsData";
 
 // icons
 export const ICON_BOOKMARK = new ThemeIcon("bookmark");

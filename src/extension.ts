@@ -26,6 +26,11 @@ export async function activate(context: vscode.ExtensionContext) {
 	});
 	context.subscriptions.push(disposable);
 
+	disposable = vscode.commands.registerTextEditorCommand('bookmark_x.toggleLabeledBookmarkForce', (textEditor) => {
+		controller.actionToggleLabeledBookmark(textEditor, true);
+	});
+	context.subscriptions.push(disposable);
+
 	// 添加分组的命令
 	disposable = vscode.commands.registerCommand(
 		'bookmark_x.addGroup', () => controller.actionAddGroup()
