@@ -543,7 +543,8 @@ export class Controller {
         let rg = this.get_root_group(wsf!);
         if (rg.cache.check_uri_exists(bm.get_full_uri())) {
             if (force) {
-                this.deleteBookmark(bm);
+                let old_bm = rg.get_node(bm.get_full_uri()) as Bookmark;
+                this.deleteBookmark(old_bm);
             } else {
                 return false;
             }
