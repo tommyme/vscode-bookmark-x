@@ -5,7 +5,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import {Uri, TextEditorDecorationType, window, workspace, DecorationRenderOptions} from 'vscode';
-import { StoreManager } from './store';
+import { StoreManager } from '../../store';
 import { WSF_TVI_ICON, svgBookmark } from './constants';
 
 export class DecorationFactory {
