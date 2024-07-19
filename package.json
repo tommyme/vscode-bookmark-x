@@ -141,6 +141,10 @@
 				"command": "bmx.quickrun.gotoStackTop",
 				"title": "bmx.quickrun: go to stacktop",
 				"icon": "$(issues)"
+			},
+			{
+				"command": "bmx.showWelcomePage",
+				"title": "bmx: show welcome page"
 			}
 		],
 		"viewsContainers": {
