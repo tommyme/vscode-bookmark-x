@@ -20,7 +20,7 @@ function randomColor() {
  */
 function splitTreeUri2parts(input: string): [string, string] {
     const lastIndex = input.lastIndexOf('/');
-    
+
     if (lastIndex !== -1) {
         const firstPart = input.slice(0, lastIndex);
         const secondPart = input.slice(lastIndex + 1);
@@ -69,7 +69,7 @@ function isPathAEqUnderPathB(pathA: string, pathB: string) {
 }
 
 function isSubUriOrEqual(parent: string, son: string) {
-    if (son === parent || son.startsWith(parent+"/") ) {
+    if (son === parent || son.startsWith(parent + "/")) {
         return true;
     }
     return false;
@@ -98,7 +98,7 @@ function isSubPath(childPath: string, parentPath: string) {
     return (relative.length > 0 && !relative.startsWith('..') && !path.isAbsolute(relative));
 }
 
-function getWsfWithPath(path: string): WorkspaceFolder|null {
+function getWsfWithPath(path: string): WorkspaceFolder | null {
     let res = null;
     vscode.workspace.workspaceFolders?.forEach(wsf => {
         if (isSubPath(path, wsf.uri.path.slice(1))) {
@@ -118,11 +118,33 @@ function getWsfWithActiveEditor() {
     if (vscode.window.activeTextEditor) {
         let path = vscode.window.activeTextEditor.document.uri.path;
         wsf = getWsfWithPath(path.slice(1));
-    } 
+    }
     if (!wsf) { // fallback
         wsf = vscode.workspace.workspaceFolders![0];
     }
     return wsf;
+}
+
+function wsfGetBookmarkJsonUri(wsf: WorkspaceFolder): vscode.Uri {
+    let uri = vscode.Uri.file(
+        path.join(wsf.uri.path, '.vscode', 'bookmark_x.json')
+    );
+    return uri;
+}
+
+async function wsfReadBookmarkJson(wsf: WorkspaceFolder): Promise<Object | null> {
+    let uri = wsfGetBookmarkJsonUri(wsf);
+    let result = null;
+    await vscode.workspace.fs.stat(uri).then(
+        async () => {
+            await vscode.workspace.fs.readFile(uri).then(content => {
+                let obj = JSON.parse(content.toString());
+                result = obj
+            });
+        },
+        () => {}
+    );
+    return result;
 }
 
 export {
@@ -135,4 +157,6 @@ export {
     isSubUriOrEqual,
     getWsfWithPath,
     getWsfWithActiveEditor,
+    wsfGetBookmarkJsonUri,
+    wsfReadBookmarkJson,
 };

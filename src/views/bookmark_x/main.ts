@@ -1,11 +1,13 @@
 import * as vscode from 'vscode';
-import { Controller } from './controller';
+import { Controller, SpaceMap } from './controller';
 import { BookmarkTreeItem } from './bookmark_tree_item';
 import { BookmarkTreeViewManager } from './bookmark_tree_view';
-import { Bookmark, GroupBookmark } from './functional_types';
+import { Bookmark, GroupBookmark, RootGroup } from './functional_types';
 import * as util from './util';
 import { StoreManager } from '../../store';
 import { DecorationFactory } from './decoration_factory';
+import * as path from 'path';
+import { SerializableGroup } from './serializable_type';
 export class bmxLauncher {
   static async init(context: vscode.ExtensionContext) {
     StoreManager.home = context.globalStorageUri;
@@ -161,5 +163,28 @@ export class bmxLauncher {
         
       });
     });
+    vscode.workspace.onDidChangeWorkspaceFolders(e => {
+      e.added.forEach(async wsf => {
+        // 读取project的配置文件 初始化root group map
+        let obj = await util.wsfReadBookmarkJson(wsf);
+        if (obj) {
+          SpaceMap.root_group_map[wsf.uri.path] = SerializableGroup.build_root(obj);
+          SpaceMap.active_group_map[wsf.uri.path] = controller.get_root_group(wsf);
+        } else {
+          SpaceMap.root_group_map[wsf.uri.path] = new RootGroup("", "", "", []);
+          SpaceMap.active_group_map[wsf.uri.path] = SpaceMap.root_group_map[wsf.uri.path];
+        }
+        let rg = SpaceMap.root_group_map[wsf.uri.path];
+        rg.cache = rg.bfs_get_nodes();
+        rg.vicache = rg.bfs_get_tvmap();
+        rg.sortGroupBookmark();
+        controller.tprovider.refresh();
+      });
+      e.removed.forEach(folder => {
+        delete SpaceMap.root_group_map[folder.uri.path];
+        delete SpaceMap.active_group_map[folder.uri.path];
+        controller.tprovider.refresh();
+      });
+    })
   }
 }

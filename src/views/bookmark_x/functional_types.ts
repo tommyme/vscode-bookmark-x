@@ -133,7 +133,7 @@ export class Group extends BaseFunctional {
     }
 
     /**
-     * sort (group and bookmarks) in self
+     * sort (group and bookmarks) inplace
      * @param {type} param1 - param1 desc
      * @returns {type} - return value desc
      */
