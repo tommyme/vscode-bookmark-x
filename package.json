@@ -145,6 +145,26 @@
 			{
 				"command": "bmx.showWelcomePage",
 				"title": "bmx: show welcome page"
+			},
+			{
+				"command": "bmx.referLink.copyVscodeReferLink",
+				"title": "bmx.referLink: copy vscode refer link"
+			},
+			{
+				"command": "bmx.referLink.InsertRandomFlag",
+				"title": "bmx.referLink: insert random flag in current cursors"
+			},
+			{
+				"command": "bmx.referLink.DoubleBackSlash",
+				"title": "bmx.referLink: windows path double backslash"
+			},
+			{
+				"command": "bmx.referLink.toLinuxPath",
+				"title": "bmx.referLink: windows path to linux path"
+			},
+			{
+				"command": "bmx.referLink.toWindowsPath",
+				"title": "bmx.referLink: linux path to windows path"
 			}
 		],
 		"viewsContainers": {
@@ -299,5 +319,8 @@
 		"mocha": "^8.4.0",
 		"typescript": "^4.3.2",
 		"vscode-test": "^1.5.2"
+	},
+	"dependencies": {
+		"clipboardy": "^2.3.0"
 	}
 }

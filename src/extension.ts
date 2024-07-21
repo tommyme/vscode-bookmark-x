@@ -1,15 +1,17 @@
 import * as vscode from 'vscode';
 import { TaskTreeViewManager } from "./views/quick_run/view_manager";
 import { bmxLauncher } from './views/bookmark_x/main';
+import { ReferLinkLauncher } from './views/refer_link/main';
 import * as path from 'path';
 import * as fs from 'fs';
-import {chan} from './channel'
+import {chan} from './channel';
 
 
 export async function activate(context: vscode.ExtensionContext) {
-	chan.appendLine("activate")
+	chan.appendLine("activate");
 	TaskTreeViewManager.init(context);
 	bmxLauncher.init(context);
+	ReferLinkLauncher.init(context);
 	let disposable = vscode.commands.registerCommand('bmx.showWelcomePage', () => {
 		const panel = vscode.window.createWebviewPanel(
 			'bmxWelcomePage',
@@ -18,7 +20,7 @@ export async function activate(context: vscode.ExtensionContext) {
 			{}
 		);
 		panel.webview.html = getWebviewContent(context.extensionPath);
-	})
+	});
 	context.subscriptions.push(disposable);
 	showWelcomePageOnUpdate(context);
 }
