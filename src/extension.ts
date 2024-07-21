@@ -15,7 +15,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	let disposable = vscode.commands.registerCommand('bmx.showWelcomePage', () => {
 		const panel = vscode.window.createWebviewPanel(
 			'bmxWelcomePage',
-			'Welcome to BookmarkX',
+			'Bookmark X upgrade notes',
 			vscode.ViewColumn.One,
 			{}
 		);
