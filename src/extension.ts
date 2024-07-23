@@ -12,7 +12,8 @@ export async function activate(context: vscode.ExtensionContext) {
 	TaskTreeViewManager.init(context);
 	bmxLauncher.init(context);
 	ReferLinkLauncher.init(context);
-	let disposable = vscode.commands.registerCommand('bmx.showWelcomePage', () => {
+	chan.appendLine("activate done");
+	let disposable = vscode.commands.registerCommand('bmx.showChangelog', () => {
 		const panel = vscode.window.createWebviewPanel(
 			'bmxWelcomePage',
 			'Bookmark X upgrade notes',
@@ -22,21 +23,21 @@ export async function activate(context: vscode.ExtensionContext) {
 		panel.webview.html = getWebviewContent(context.extensionPath);
 	});
 	context.subscriptions.push(disposable);
-	showWelcomePageOnUpdate(context);
+	showChangelogOnUpdate(context);
 }
-function showWelcomePageOnUpdate(context: vscode.ExtensionContext) {
+function showChangelogOnUpdate(context: vscode.ExtensionContext) {
 	const currentVersion = vscode.extensions.getExtension('tommyme.bookmarkx')?.packageJSON.version;
 	const previousVersion = context.globalState.get('extensionVersion');
 	chan.appendLine("curr version: " + currentVersion);
 	chan.appendLine("prev version: " + previousVersion);
 	if (currentVersion !== previousVersion) {
 			context.globalState.update('extensionVersion', currentVersion);
-			vscode.commands.executeCommand('bmx.showWelcomePage');
+			vscode.commands.executeCommand('bmx.showChangelog');
 	}
 }
 
 function getWebviewContent(home: string): string {
-	const welcomePath = path.join(home, 'src', 'welcome.html');
+	const welcomePath = path.join(home, 'resources', 'changelog', 'changelog.html');
 	return fs.readFileSync(welcomePath, 'utf-8');
 }
 export function deactivate() { }

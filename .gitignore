@@ -10,5 +10,6 @@ resources/*
 !resources/gutter_icon_bm.svg
 !resources/icon.jpg
 !resources/readme
+!resources/changelog
 .vscode/bookmark_x.json
 documents

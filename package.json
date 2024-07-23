@@ -2,7 +2,7 @@
 	"name": "bookmarkx",
 	"displayName": "bookmark X",
 	"description": "Drag-and-drop, grouping, sorting bookmarklet plugin",
-	"version": "0.2.3",
+	"version": "0.2.4",
 	"publisher": "tommyme",
 	"icon": "resources/icon.jpg",
 	"homepage": "https://github.com/tommyme/vscode_bookmark_x",
@@ -143,8 +143,8 @@
 				"icon": "$(issues)"
 			},
 			{
-				"command": "bmx.showWelcomePage",
-				"title": "bmx: show welcome page"
+				"command": "bmx.showChangelog",
+				"title": "bmx: show changelog"
 			},
 			{
 				"command": "bmx.referLink.copyVscodeReferLink",

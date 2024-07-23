@@ -3,6 +3,9 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 export class StoreManager {
+  /**
+   * extension Home folder
+   */ 
   static home: Uri;
   public static async ensureDir(dir: string) {
     let dirUri = Uri.file(dir);
@@ -22,6 +25,9 @@ export class StoreManager {
     }
   }
 
+  /**
+   * ensure file exists and content is correct
+   */
   public static async ensureFile(path: string, content: string) {
     let fileUri = Uri.file(path);
     try {
