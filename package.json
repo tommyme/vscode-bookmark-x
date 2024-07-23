@@ -89,6 +89,10 @@
 				"command": "bookmark_x.deleteBookmark",
 				"title": "Delete bookmark",
 				"icon": "$(close)"
+			},
+			{
+				"command": "bmx.showChangelog",
+				"title": "bmx: show changelog"
 			}
 		],
 		"viewsContainers": {
