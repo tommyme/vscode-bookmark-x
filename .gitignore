@@ -12,3 +12,4 @@ resources/*
 !resources/readme
 !resources/changelog.html
 .vscode/bookmark_x.json
+package.json
