@@ -1,33 +1,5 @@
 {
-	"name": "bookmarkx",
-	"displayName": "bookmark X",
-	"description": "Drag-and-drop, grouping, sorting bookmarklet plugin",
-	"version": "0.2.4",
-	"publisher": "tommyme",
-	"icon": "resources/icon.jpg",
-	"homepage": "https://github.com/tommyme/vscode_bookmark_x",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/tommyme/vscode_bookmark_x"
-	},
-	"engines": {
-		"vscode": "^1.73.0"
-	},
-	"license": "SEE LICENSE IN LICENSE",
-	"keywords": [
-		"bookmark",
-		"source",
-		"productivity",
-		"coding"
-	],
-	"categories": [
-		"Other"
-	],
-	"activationEvents": [
-		"onStartupFinished"
-	],
-	"main": "./out/extension.js",
-	"contributes": {
+  "contributes": {
 		"commands": [
 			{
 				"command": "bookmark_x.toggleBookmark",
@@ -72,11 +44,6 @@
 				"icon": "$(edit)"
 			},
 			{
-				"command": "bmx.quickrun.openProgramFile",
-				"title": "open run config program file",
-				"icon": "$(code)"
-			},
-			{
 				"command": "bookmark_x.deleteGroup",
 				"title": "Delete bookmark group",
 				"icon": "$(close)"
@@ -116,55 +83,8 @@
 				"icon": "$(close)"
 			},
 			{
-				"command": "bmx.quickrun.runItem",
-				"title": "bmx.quickrun: run item"
-			},
-			{
-				"command": "bmx.quickrun.gotoTopOfDocument",
-				"title": "bmx.quickrun: jump to top of document"
-			},
-			{
-				"command": "bmx.quickrun.gotoEndOfDocument",
-				"title": "bmx.quickrun: jump to end of document"
-			},
-			{
-				"command": "bmx.quickrun.openLaunchJson",
-				"title": "bmx.quickrun: open launch json",
-				"icon": "$(rocket)"
-			},
-			{
-				"command": "bmx.quickrun.refresh",
-				"title": "bmx.quickrun: refresh",
-				"icon": "$(refresh)"
-			},
-			{
-				"command": "bmx.quickrun.gotoStackTop",
-				"title": "bmx.quickrun: go to stacktop",
-				"icon": "$(issues)"
-			},
-			{
 				"command": "bmx.showChangelog",
 				"title": "bmx: show changelog"
-			},
-			{
-				"command": "bmx.referLink.copyVscodeReferLink",
-				"title": "bmx.referLink: copy vscode refer link"
-			},
-			{
-				"command": "bmx.referLink.InsertRandomFlag",
-				"title": "bmx.referLink: insert random flag in current cursors"
-			},
-			{
-				"command": "bmx.referLink.DoubleBackSlash",
-				"title": "bmx.referLink: windows path double backslash"
-			},
-			{
-				"command": "bmx.referLink.toLinuxPath",
-				"title": "bmx.referLink: windows path to linux path"
-			},
-			{
-				"command": "bmx.referLink.toWindowsPath",
-				"title": "bmx.referLink: linux path to windows path"
 			}
 		],
 		"viewsContainers": {
@@ -181,11 +101,6 @@
 				{
 					"id": "bookmarksByGroup",
 					"name": "bookmark x",
-					"icon": "$(bookmark)"
-				},
-				{
-					"id": "bmx_quickrun",
-					"name": "quick run",
 					"icon": "$(bookmark)"
 				}
 			]
@@ -224,16 +139,6 @@
 					"group": "inline"
 				},
 				{
-					"command": "bmx.quickrun.openProgramFile",
-					"when": "view == bmx_quickrun && viewItem == task",
-					"group": "inline"
-				},
-				{
-					"command": "bmx.quickrun.openLaunchJson",
-					"when": "view == bmx_quickrun && viewItem == wsf",
-					"group": "inline"
-				},
-				{
 					"command": "bookmark_x.addSubGroup",
 					"when": "view == bookmarksByGroup && (viewItem == group || viewItem == groupbookmark)"
 				},
@@ -250,16 +155,6 @@
 				{
 					"command": "bookmark_x.addGroup",
 					"when": "view == bookmarksByGroup"
-				},
-				{
-					"command": "bmx.quickrun.refresh",
-					"when": "view == bmx_quickrun",
-					"group": "navigation"
-				},
-				{
-					"command": "bmx.quickrun.gotoStackTop",
-					"when": "view == bmx_quickrun",
-					"group": "navigation"
 				}
 			],
 			"commandPalette": [
@@ -287,40 +182,6 @@
 					"enum": ["group first", "plain"]
 				}
 			}
-		},
-		"keybindings": [
-			{
-				"command": "bmx.quickrun.gotoTopOfDocument",
-				"key": "ctrl+k ctrl+i"
-			},
-			{
-				"command": "bmx.quickrun.gotoEndOfDocument",
-				"key": "ctrl+k ctrl+o"
-			}
-		]
-	},
-	"scripts": {
-		"vscode:prepublish": "yarn run compile",
-		"compile": "tsc -p ./",
-		"watch": "tsc -watch -p ./",
-		"pretest": "yarn run compile && yarn run lint",
-		"lint": "eslint src --ext ts",
-		"test": "node ./out/test/runTest.js"
-	},
-	"devDependencies": {
-		"@types/vscode": "^1.73.0",
-		"@types/glob": "^7.1.3",
-		"@types/mocha": "^8.2.2",
-		"@types/node": "14.x",
-		"eslint": "^7.27.0",
-		"@typescript-eslint/eslint-plugin": "^4.26.0",
-		"@typescript-eslint/parser": "^4.26.0",
-		"glob": "^7.1.7",
-		"mocha": "^8.4.0",
-		"typescript": "^4.3.2",
-		"vscode-test": "^1.5.2"
-	},
-	"dependencies": {
-		"clipboardy": "^2.3.0"
+		}
 	}
 }

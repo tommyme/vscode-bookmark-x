@@ -10,7 +10,7 @@ Drag-and-drop, grouping, sorting bookmarklet plugin
 - there many useful commands defined in vscode command palette, if you are not familiar with it, I suggest you read [this document](https://code.visualstudio.com/docs/getstarted/userinterface#_command-palette), it will greatly improve your efficiency in using vscode.
 - Run command from the command palette by pressing (`Ctrl+Shift+P` or `Cmd+Shift+P` on Mac) and type `bookmark_x ...`
 
-![](./resources/readme/example1.png)
+![](./pkgAssets/example1.png)
 
 ## features
 - drag and drop

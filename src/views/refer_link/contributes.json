@@ -1,0 +1,26 @@
+{
+  "contributes": {
+		"commands": [
+      {
+				"command": "bmx.referLink.copyVscodeReferLink",
+				"title": "bmx.referLink: copy vscode refer link"
+			},
+			{
+				"command": "bmx.referLink.InsertRandomFlag",
+				"title": "bmx.referLink: insert random flag in current cursors"
+			},
+			{
+				"command": "bmx.referLink.DoubleBackSlash",
+				"title": "bmx.referLink: windows path double backslash"
+			},
+			{
+				"command": "bmx.referLink.toLinuxPath",
+				"title": "bmx.referLink: windows path to linux path"
+			},
+			{
+				"command": "bmx.referLink.toWindowsPath",
+				"title": "bmx.referLink: linux path to windows path"
+			}
+    ]
+  }
+}

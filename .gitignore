@@ -13,3 +13,5 @@ resources/*
 !resources/changelog
 .vscode/bookmark_x.json
 documents
+pnpm-lock.yaml
+package.json
