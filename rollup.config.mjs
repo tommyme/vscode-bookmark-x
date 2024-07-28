@@ -41,11 +41,11 @@ export default {
   plugins: [
     resolve({
       preferBuiltins: true,
-      exportConditions: ['node']
+      // exportConditions: ['node']
     }),
     commonjs(),  // 处理 CommonJS 模块
     typescript(),  // 处理 TypeScript 文件
     terser(),  // 可选，用于压缩代码
   ],
-  external: ['vscode', 'fs', 'util'],  // 将 Electron 模块标记为外部依赖，不进行打包
+  external: ['vscode', 'fs', 'util', 'path'],  // 将 Electron 模块标记为外部依赖，不进行打包
 };

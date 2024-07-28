@@ -1,6 +1,4 @@
 import * as vscode from 'vscode';
-import { copy } from "../../clipboard";
-
 export class ReferLinkLauncher {
   static async init(context: vscode.ExtensionContext) {
     let disposable;
@@ -10,7 +8,7 @@ export class ReferLinkLauncher {
         const position = editor.selection.active;
         const filePath = editor.document.uri.fsPath;
         const content = `vscode://file/${filePath}:${position.line + 1}:${position.character}`;
-        copy(content);
+        vscode.env.clipboard.writeText(content);
         vscode.window.showInformationMessage('copied.');
       } else {
         vscode.window.showInformationMessage('no file is open');
