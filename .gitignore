@@ -11,6 +11,7 @@ resources/*
 !resources/icon.jpg
 !resources/readme
 !resources/changelog
+!resources/tasks.json
 .vscode/bookmark_x.json
 documents
 pnpm-lock.yaml

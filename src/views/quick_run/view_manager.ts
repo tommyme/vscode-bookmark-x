@@ -1,4 +1,5 @@
 import * as path from "path";
+import * as fs from "fs";
 import * as vscode from "vscode";
 import {
   Event,
@@ -63,12 +64,13 @@ export class TaskDataProvider implements TreeDataProvider<QuickRunTreeItem> {
   /**
      * Find all tasks, and filter on source
      */
-  private async getAllTasks(wsf:  vscode.WorkspaceFolder): Promise<TaskTreeItem[]> {
+  private async getAllTasks(wsf: vscode.WorkspaceFolder): Promise<TaskTreeItem[]> {
     let taskElements: TaskTreeItem[] = [];
     let allTasks = await tasks.fetchTasks();
     allTasks.forEach((task) => {
-      let taskSources = ['Workspace'];
-      if (taskSources.some((value) => value === task.source)) {
+      let taskSources = ['Workspace'];  // 这里筛选一次，因为有时候有一些自动隐式生成的npm的task
+      if (taskSources.some((value) => value === task.source) && task.scope === wsf) {
+        // scope如果为2 则可能是workspace的全局task 或者User里面的task
         taskElements.push(
           new TaskTreeItem(task, TreeItemCollapsibleState.None, this.context, wsf)
         );
@@ -183,8 +185,8 @@ export class TaskTreeViewManager {
     });
     context.subscriptions.push(disposable);
     
-    disposable = commands.registerCommand('bmx.quickrun.openLaunchJson', async (task: WsfTreeItem) => {
-      let launchjsonUri = vscode.Uri.joinPath(task.wsf.uri, '.vscode', 'launch.json');
+    disposable = commands.registerCommand('bmx.quickrun.openLaunchJson', async (wsfTreeItem: WsfTreeItem) => {
+      let launchjsonUri = vscode.Uri.joinPath(wsfTreeItem.wsf.uri, '.vscode', 'launch.json');
       try {
         await workspace.fs.stat(launchjsonUri);
       } catch (e) {
@@ -193,6 +195,21 @@ export class TaskTreeViewManager {
         await workspace.fs.writeFile(launchjsonUri, bytes);
       }
       vscode.window.showTextDocument(launchjsonUri);
+    });
+    context.subscriptions.push(disposable);
+
+    disposable = commands.registerCommand("bmx.quickrun.openTasksJson", async (wsfTreeItem: WsfTreeItem) => {
+      let taskjsonUri = vscode.Uri.joinPath(wsfTreeItem.wsf.uri, '.vscode', 'tasks.json');
+      try {
+        await workspace.fs.stat(taskjsonUri);
+      } catch (e) {
+        // file not exist
+        const defaultJsonTasksPath = path.join(context.extensionPath, 'resources', 'tasks.json');
+        const content = fs.readFileSync(defaultJsonTasksPath, 'utf-8');
+        let bytes = Uint8Array.from(content.split('').map(c => c.charCodeAt(0)));
+        await workspace.fs.writeFile(taskjsonUri, bytes);
+      }
+      vscode.window.showTextDocument(taskjsonUri);
     });
     context.subscriptions.push(disposable);
 

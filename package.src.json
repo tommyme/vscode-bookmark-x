@@ -2,7 +2,7 @@
 	"name": "bookmarkx",
 	"displayName": "bookmark X",
 	"description": "Drag-and-drop, grouping, sorting bookmarklet plugin",
-	"version": "0.2.5",
+	"version": "0.2.6",
 	"publisher": "tommyme",
 	"icon": "resources/icon.jpg",
 	"homepage": "https://github.com/tommyme/vscode_bookmark_x",
