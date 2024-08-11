@@ -115,7 +115,12 @@ export class bmxLauncher {
       'bookmark_x.saveAllWsfState', () => controller.actionSaveAllWsfState()
     );
     context.subscriptions.push(disposable);
-  
+
+    disposable = vscode.commands.registerCommand(
+      'bookmark_x.quickSelectActiveGroup', () => BookmarkTreeViewManager.selectActiveGroup()
+    );
+    context.subscriptions.push(disposable);
+
     let activeEditor = vscode.window.activeTextEditor;
   
     if (activeEditor) {

@@ -110,4 +110,33 @@ export class BookmarkTreeViewManager {
             vscode.window.showInformationMessage("node is null");
         }
     }
+
+    static async selectActiveGroup() {
+        let wsf = util.getWsfWithActiveEditor();
+        let cache = this.controller!.get_root_group(wsf!).cache;
+        let selectedFile: string | undefined = await vscode.window.showQuickPick(
+            (() => {
+                let options = ["root group"];
+                for (const element of cache.keys().slice(1)) {
+                    if (cache.get(element).type === "group") {
+                        options.push(element)
+                    }
+                }
+                return options;
+            })(),
+            { placeHolder: 'Select Active Group', canPickMany: false }
+        );
+
+        if (selectedFile === undefined) { vscode.window.showInformationMessage("active group selection fail: undefined error!"); return; }
+
+        if (selectedFile === "root group") {
+            selectedFile = "";
+            vscode.window.showInformationMessage(`switch to root group`);
+        } else {
+            vscode.window.showInformationMessage(`switch to ` + selectedFile);
+        }
+        this.controller!.activateGroup(selectedFile, wsf!);
+        this.controller!.get_root_group(wsf!).vicache.refresh_active_icon_status(selectedFile);
+        return;
+    }
 }
