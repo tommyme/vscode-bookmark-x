@@ -1,12 +1,5 @@
 {
-  "contributes": {
-		"keybindings": [
-			{
-				"key": "ctrl+shift+q",
-				"command": "bookmark_x.quickSelectActiveGroup",
-				"when": "!inQuickOpen"
-			}
-		],
+	"contributes": {
 		"commands": [
 			{
 				"command": "bookmark_x.toggleBookmark",
