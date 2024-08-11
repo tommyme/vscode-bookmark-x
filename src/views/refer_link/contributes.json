@@ -20,6 +20,10 @@
 			{
 				"command": "bmx.referLink.toWindowsPath",
 				"title": "bmx.referLink: linux path to windows path"
+			},
+			{
+				"command": "bmx.referLink.showHtmlPreview",
+				"title": "bmx.referLink: show html preview"
 			}
     ]
   }

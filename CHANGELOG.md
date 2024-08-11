@@ -4,12 +4,12 @@ All notable changes to the "bookmark X" extension will be documented in this fil
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
-## [Unreleased]
-
+## [0.2.7] - 2024-8-11
 ### Added
-
-- more preset funny bookmark icons(e.g. random poker)
-- customizable bookmark/group icon
+1. better html changelog will be shown on upgrade.
+2. the whole plugin is splited into three parts: bookmark, quick_run, refer_link
+### notice
+- use command `bmx: show changelog` to get detailed changelog.
 
 ## [0.2.1] - 2024-04-06
 ### migrate guide

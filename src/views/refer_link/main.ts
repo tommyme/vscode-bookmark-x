@@ -66,5 +66,20 @@ export class ReferLinkLauncher {
       }
     });
     context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand("bmx.referLink.showHtmlPreview", () => {
+      const editor = vscode.window.activeTextEditor;
+      if (editor) {
+        const document = editor.document;
+        const content = document.getText();
+        const panel = vscode.window.createWebviewPanel(
+          "html preview",
+          "html preview",
+          vscode.ViewColumn.One,
+          {}
+        );
+        panel.webview.html = content;
+      };
+    });
+    context.subscriptions.push(disposable);
   }
 }
