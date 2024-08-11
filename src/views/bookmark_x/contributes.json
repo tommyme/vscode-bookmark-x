@@ -1,5 +1,5 @@
 {
-  "contributes": {
+	"contributes": {
 		"commands": [
 			{
 				"command": "bookmark_x.toggleBookmark",
@@ -67,6 +67,10 @@
 			{
 				"command": "bookmark_x.saveAllWsfState",
 				"title": "Bookmark X: save all workspace state"
+			},
+			{
+				"command": "bookmark_x.quickSelectActiveGroup",
+				"title": "Bookmark X: quick select active group"
 			},
 			{
 				"command": "bookmark_x.downgradeToGroup",

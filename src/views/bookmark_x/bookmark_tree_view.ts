@@ -4,7 +4,7 @@ import {Controller, SpaceMap} from './controller';
 import {BookmarkTreeItem} from './bookmark_tree_item';
 import { Bookmark, Group } from './functional_types';
 import * as util from './util';
-import { ICON_GROUP, ITEM_TYPE_GROUP, ITEM_TYPE_GROUP_LIKE } from './constants';
+import { ICON_GROUP, ITEM_TYPE_GROUP, ITEM_TYPE_GROUP_LIKE, typeIsGroupLike } from './constants';
 import { BmxTreeItem } from './bookmark_tree_data_provider';
 
 class MyViewBadge implements ViewBadge {
@@ -109,5 +109,34 @@ export class BookmarkTreeViewManager {
         } else {
             vscode.window.showInformationMessage("node is null");
         }
+    }
+
+    static async selectActiveGroup() {
+        let wsf = util.getWsfWithActiveEditor();
+        let cache = this.controller!.get_root_group(wsf!).cache;
+        let selectedGroupName: string | undefined = await vscode.window.showQuickPick(
+            (() => {
+                let options = ["root group"];
+                for (const element of cache.keys().slice(1)) {
+                    if ((typeIsGroupLike(cache.get(element).type))) {
+                        options.push(element)
+                    }
+                }
+                return options;
+            })(),
+            { placeHolder: 'Select Active Group', canPickMany: false }
+        );
+
+        if (selectedGroupName === undefined) { vscode.window.showInformationMessage("active group selection fail: undefined error!"); return; }
+
+        if (selectedGroupName === "root group") {
+            selectedGroupName = "";
+            vscode.window.showInformationMessage(`switch to root group`);
+        } else {
+            vscode.window.showInformationMessage(`switch to ` + selectedGroupName);
+        }
+        this.controller!.activateGroup(selectedGroupName, wsf!);
+        this.controller!.get_root_group(wsf!).vicache.refresh_active_icon_status(selectedGroupName);
+        return;
     }
 }
