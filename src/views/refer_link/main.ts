@@ -81,5 +81,19 @@ export class ReferLinkLauncher {
       };
     });
     context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand("bmx.referLink.swapSelection", () => {
+      const editor = vscode.window.activeTextEditor;
+      if (editor && editor.selections.length === 2) {
+        editor.edit(editBuilder => {
+          const [firstSelection, secondSelection] = editor.selections;
+          const firstText = editor.document.getText(firstSelection);
+          const secondText = editor.document.getText(secondSelection);
+          editBuilder.replace(firstSelection, secondText);
+          editBuilder.replace(secondSelection, firstText);
+        });
+      } else {
+        vscode.window.showInformationMessage("please select two part to swap.");
+      }
+    });
   }
 }
