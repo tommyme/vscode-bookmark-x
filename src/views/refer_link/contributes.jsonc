@@ -22,6 +22,10 @@
 				"title": "bmx.referLink: linux path to windows path"
 			},
 			{
+				"command": "bmx.referLink.swapSelection",
+				"title": "bmx.referLink: swap two selection"
+			},
+			{
 				"command": "bmx.referLink.showHtmlPreview",
 				"title": "bmx.referLink: show html preview"
 			}

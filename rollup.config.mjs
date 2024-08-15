@@ -4,11 +4,12 @@ import typescript from '@rollup/plugin-typescript';
 import commonjs from '@rollup/plugin-commonjs';
 import _ from 'lodash';
 import fs from 'fs';
+import { parse } from 'jsonc-parser';
 
 let jsons2merge = [
-  'src/views/bookmark_x/contributes.json',
-  'src/views/quick_run/contributes.json',
-  'src/views/refer_link/contributes.json',
+  'src/views/bookmark_x/contributes.jsonc',
+  'src/views/quick_run/contributes.jsonc',
+  'src/views/refer_link/contributes.jsonc',
   'package.src.json',
 ];
 
@@ -16,7 +17,7 @@ let outputJsonFile = 'package.json';
 
 let jsonObjects = jsons2merge.map(filePath => {
   const data = fs.readFileSync(filePath, 'utf-8');
-  return JSON.parse(data);
+  return parse(data);
 });
 
 let res = jsonObjects.reduce((acc, curr) => {

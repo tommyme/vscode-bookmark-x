@@ -68,8 +68,25 @@
 					"when": "view == bmx_quickrun",
 					"group": "navigation"
 				}
+      ],
+      "commandPalette": [
+        {
+          "command": "bmx.quickrun.runItem",
+          "when": "false"
+        },
+        {
+          "command": "bmx.quickrun.openProgramFile",
+          "when": "false"
+        },
+        {
+          "command": "bmx.quickrun.openTasksJson",
+          "when": "false"
+        },
+        {
+          "command": "bmx.quickrun.openLaunchJson",
+          "when": "false"
+        }
       ]
-
     },
     "views": {
 			"bookmark_x": [
