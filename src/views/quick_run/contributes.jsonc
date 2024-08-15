@@ -79,10 +79,6 @@
           "when": "false"
         },
         {
-          "command": "bmx.quickrun.openTasksJson",
-          "when": "false"
-        },
-        {
           "command": "bmx.quickrun.openLaunchJson",
           "when": "false"
         }

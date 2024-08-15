@@ -2,7 +2,6 @@ import * as path from "path";
 import * as fs from "fs";
 import * as vscode from "vscode";
 import {
-  Event,
   EventEmitter,
   TreeDataProvider,
   TreeItem,
@@ -12,7 +11,7 @@ import {
   workspace,
 } from "vscode";
 import { TREEVIEW_ITEM_CTX_TYPE_TASK, TREEVIEW_ITEM_CTX_TYPE_WSF, TREEVIEW_ITEM_ICON_TASK, TREEVIEW_ITEM_ICON_DEBUGCONF } from "./constants";
-import { error } from "console";
+import * as commonUtil from '../utils/util';
 
 export class TaskDataProvider implements TreeDataProvider<QuickRunTreeItem> {
   private changeEmitter = new EventEmitter<
@@ -199,7 +198,14 @@ export class TaskTreeViewManager {
     context.subscriptions.push(disposable);
 
     disposable = commands.registerCommand("bmx.quickrun.openTasksJson", async (wsfTreeItem: WsfTreeItem) => {
-      let taskjsonUri = vscode.Uri.joinPath(wsfTreeItem.wsf.uri, '.vscode', 'tasks.json');
+      let wsf;
+      if (wsfTreeItem === undefined) {
+        // called by command palette, get wsf with active editor
+        wsf = commonUtil.getWsfWithActiveEditor();
+      } else {
+        wsf = wsfTreeItem.wsf;
+      }
+      let taskjsonUri = vscode.Uri.joinPath(wsf.uri, '.vscode', 'tasks.json');
       try {
         await workspace.fs.stat(taskjsonUri);
       } catch (e) {
@@ -228,4 +234,3 @@ export class TaskTreeViewManager {
     context.subscriptions.push(disposable);
   }
 }
-
