@@ -93,37 +93,6 @@ function randomName(): string {
     }
     return result;
 }
-function isSubPath(childPath: string, parentPath: string) {
-    const relative = path.relative(parentPath, childPath);
-    return (relative.length > 0 && !relative.startsWith('..') && !path.isAbsolute(relative));
-}
-
-function getWsfWithPath(path: string): WorkspaceFolder | null {
-    let res = null;
-    vscode.workspace.workspaceFolders?.forEach(wsf => {
-        if (isSubPath(path, wsf.uri.path.slice(1))) {
-            res = wsf;
-        }
-    });
-    if (!res) { // fallback
-        res = vscode.workspace.workspaceFolders![0];
-    }
-    return res;
-}
-
-function getWsfWithActiveEditor() {
-    // 根据打开的文件判断wsf
-    // 打开的文件没有对应的wsf || 没有打开的文件 使用默认wsf(第0个wsf)
-    let wsf;
-    if (vscode.window.activeTextEditor) {
-        let path = vscode.window.activeTextEditor.document.uri.path;
-        wsf = getWsfWithPath(path.slice(1));
-    }
-    if (!wsf) { // fallback
-        wsf = vscode.workspace.workspaceFolders![0];
-    }
-    return wsf;
-}
 
 function wsfGetBookmarkJsonUri(wsf: WorkspaceFolder): vscode.Uri {
     let uri = vscode.Uri.file(
@@ -139,7 +108,7 @@ async function wsfReadBookmarkJson(wsf: WorkspaceFolder): Promise<Object | null>
         async () => {
             await vscode.workspace.fs.readFile(uri).then(content => {
                 let obj = JSON.parse(content.toString());
-                result = obj
+                result = obj;
             });
         },
         () => {}
@@ -155,8 +124,6 @@ export {
     isPathAEqUnderPathB,
     updateChildPath,
     isSubUriOrEqual,
-    getWsfWithPath,
-    getWsfWithActiveEditor,
     wsfGetBookmarkJsonUri,
     wsfReadBookmarkJson,
 };

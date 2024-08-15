@@ -15,7 +15,8 @@ import { Bookmark, GroupBookmark, NodeType, NodeUriMap, RootGroup, ViewItemUriMa
 import { Group } from './functional_types';
 import { SerializableGroup } from './serializable_type';
 import {ITEM_TYPE_BM, ITEM_TYPE_GROUP, ITEM_TYPE_GROUP_LIKE} from "./constants";
-import * as util from './util';
+import * as bmutil from './util';
+import * as commonUtil from '../utils/util';
 import { BookmarkTreeDataProvider } from './bookmark_tree_data_provider';
 import { TextEncoder } from 'util';
 import { DecorationFactory } from './decoration_factory';
@@ -69,7 +70,7 @@ export class Controller {
         let wsf;
         if (vscode.window.activeTextEditor) {
             let path = vscode.window.activeTextEditor.document.uri.path;
-            wsf = util.getWsfWithPath(path);
+            wsf = commonUtil.getWsfWithPath(path);
         } else {
             wsf = vscode.workspace.workspaceFolders![0];
         }
@@ -211,7 +212,7 @@ export class Controller {
         }
         let xx = workspace.getWorkspaceFolder(textEditor.document.uri);
         let documentFsPath = textEditor.document.uri.fsPath;
-        let wsf = util.getWsfWithPath(documentFsPath);
+        let wsf = commonUtil.getWsfWithPath(documentFsPath);
         // 可能存在着多个光标
         for (let selection of textEditor.selections) {
             let line = selection.start.line;
@@ -240,7 +241,7 @@ export class Controller {
 
         const fsPath = textEditor.document.uri.fsPath;
         const lineNumber = textEditor.selection.start.line;
-        let wsf = util.getWsfWithPath(fsPath);
+        let wsf = commonUtil.getWsfWithPath(fsPath);
 
         const existingBookmark = this.getBookmarksInFile(fsPath).find((bookmark) => {
             return bookmark.line === lineNumber;
@@ -306,8 +307,8 @@ export class Controller {
     public actionAddGroup() {
         this.inputBoxGetName().then((groupName: String) => {
             // 这里 当前打开的document属于哪个wsf就放到wsf里面
-            let wsf = util.getWsfWithActiveEditor();
-            let uri = util.joinTreeUri([this.get_active_group(wsf!).get_full_uri(), groupName]);
+            let wsf = commonUtil.getWsfWithActiveEditor();
+            let uri = bmutil.joinTreeUri([this.get_active_group(wsf!).get_full_uri(), groupName]);
             this.addGroup(uri, wsf!);
         });
     }
@@ -376,7 +377,7 @@ export class Controller {
         if (existingBookmark) {
             this.deleteBookmark(existingBookmark);
         } else {
-            let bookmark = new Bookmark(fsPath, lineNumber, characterNumber, util.randomName(), lineText, group.get_full_uri());
+            let bookmark = new Bookmark(fsPath, lineNumber, characterNumber, bmutil.randomName(), lineText, group.get_full_uri());
             // TODO 需要应对小概率的随机串碰撞
             this.addBookmark(bookmark);
         }
@@ -448,7 +449,7 @@ export class Controller {
         let wsf = this.get_wsf_with_node(node);
         let rg = this.get_root_group(wsf!);
         // 命名冲突
-        if (rg.cache.check_uri_exists(util.joinTreeUri([node.uri, val]))) {
+        if (rg.cache.check_uri_exists(bmutil.joinTreeUri([node.uri, val]))) {
             return false;
         }
         // 前后的缓存操作 用于输入的是bm的场合
@@ -463,7 +464,7 @@ export class Controller {
         if (father) {
             father.sortGroupBookmark();
             rg.cache.set(node.get_full_uri(), node);
-            rg.vicache.set(util.joinTreeUri([node.uri, val]), tvitem);
+            rg.vicache.set(bmutil.joinTreeUri([node.uri, val]), tvitem);
             // this.view_item_map.set(node.)
             this.saveState();
             this.updateDecorations();
@@ -497,7 +498,7 @@ export class Controller {
      */
     public deleteGroups(group: Group, wsf: vscode.WorkspaceFolder) {
         let rg = this.get_root_group(wsf);
-        const activeGroupDeleted = util.isSubUriOrEqual(group.get_full_uri(), this.get_active_group(wsf).get_full_uri());
+        const activeGroupDeleted = bmutil.isSubUriOrEqual(group.get_full_uri(), this.get_active_group(wsf).get_full_uri());
         let father_group = rg.get_node(group.uri) as Group;
         let idx = father_group.children.indexOf(group);
         if (idx < 0) {
@@ -539,7 +540,7 @@ export class Controller {
      */
     public addBookmark(bm: Bookmark, force=false): boolean {
         // uri confliction
-        let wsf = util.getWsfWithPath(bm.fsPath);
+        let wsf = commonUtil.getWsfWithPath(bm.fsPath);
         let rg = this.get_root_group(wsf!);
         if (rg.cache.check_uri_exists(bm.get_full_uri())) {
             if (force) {
@@ -577,8 +578,8 @@ export class Controller {
      * @returns {type} - Group
      */
     public createGroupWithUri(full_uri: string): Group {
-        let [group_uri, group_name] = util.splitString(full_uri);
-        let group = new Group(group_name, util.randomColor(), group_uri);
+        let [group_uri, group_name] = bmutil.splitString(full_uri);
+        let group = new Group(group_name, bmutil.randomColor(), group_uri);
         return group;
     }
 
@@ -703,7 +704,7 @@ export class Controller {
         let fsPath = event.document.uri.fsPath;
         // 针对常见场景优化 如单个、多个字符(除了\n)的书写
         let file_bm = this.getBookmarksInFile(fsPath);
-        let wsf = util.getWsfWithPath(fsPath);
+        let wsf = commonUtil.getWsfWithPath(fsPath);
 
         changes.forEach(change => {
             let txt = change.text;
