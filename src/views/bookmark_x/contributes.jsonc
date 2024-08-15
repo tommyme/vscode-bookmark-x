@@ -34,22 +34,22 @@
 				"title": "Bookmark X: reveal bookmark in current line"
 			},
 			{
-				"command": "bookmark_x.activateGroup",
+				"command": "bookmark_x.activateGroup",			// disable in command palette
 				"title": "Activate bookmark group",
 				"icon": "$(eye)"
 			},
 			{
-				"command": "bookmark_x.editGroupName",
+				"command": "bookmark_x.editGroupName",			// disable in command palette
 				"title": "edit group name",
 				"icon": "$(edit)"
 			},
 			{
-				"command": "bookmark_x.deleteGroup",
+				"command": "bookmark_x.deleteGroup",				// disable in command palette
 				"title": "Delete bookmark group",
 				"icon": "$(close)"
 			},
 			{
-				"command": "bookmark_x.jumpToBookmark",
+				"command": "bookmark_x.jumpToBookmark",			// disable in command palette
 				"title": "Jump to book mark"
 			},
 			{
@@ -77,12 +77,12 @@
 				"title": "Bookmark X: downgrade to group"
 			},
 			{
-				"command": "bookmark_x.editBookmarkName",
+				"command": "bookmark_x.editBookmarkName",		// disable in command palette(can be improved)
 				"title": "edit bookmark name",
 				"icon": "$(edit)"
 			},
 			{
-				"command": "bookmark_x.deleteBookmark",
+				"command": "bookmark_x.deleteBookmark",			// disable in command palette(can be improved)
 				"title": "Delete bookmark",
 				"icon": "$(close)"
 			},
@@ -162,6 +162,22 @@
 				}
 			],
 			"commandPalette": [
+				{
+					"command": "bookmark_x.editBookmarkName",
+					"when": "false"
+				},
+				{
+					"command": "bookmark_x.deleteBookmark",
+					"when": "false"
+				},
+				{
+					"command": "bookmark_x.editGroupName",
+					"when": "false"
+				},
+				{
+					"command": "bookmark_x.deleteGroup",
+					"when": "false"
+				},
 				{
 					"command": "bookmark_x.jumpToBookmark",
 					"when": "false"
