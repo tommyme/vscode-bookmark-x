@@ -4,6 +4,9 @@ All notable changes to the "bookmark X" extension will be documented in this fil
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [x.x.x] - from-now-on
+- please use command `bmx: show changelog` to see changelog in release versions
+
 ## [0.2.7] - 2024-8-11
 ### Added
 1. better html changelog will be shown on upgrade.

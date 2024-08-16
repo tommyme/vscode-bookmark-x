@@ -3,7 +3,8 @@ import { Controller, SpaceMap } from './controller';
 import { BookmarkTreeItem } from './bookmark_tree_item';
 import { BookmarkTreeViewManager } from './bookmark_tree_view';
 import { Bookmark, GroupBookmark, RootGroup } from './functional_types';
-import * as util from './util';
+import * as bmutil from './util';
+import * as commonutil from '../utils/util';
 import { StoreManager } from '../../store';
 import { DecorationFactory } from './decoration_factory';
 import * as path from 'path';
@@ -139,7 +140,7 @@ export class bmxLauncher {
       let bms2del: Array<Bookmark> = [];
       e.files.forEach(file => {
         let path = file.fsPath;
-        let wsf = util.getWsfWithPath(path);
+        let wsf = commonutil.getWsfWithPath(path);
         let bms = controller.get_root_group(wsf!).get_bm_with_under_fspath(path);
         bms2del = bms2del.concat(bms);
       });
@@ -152,12 +153,12 @@ export class bmxLauncher {
       e.files.forEach(file => {
         // 不用更新deco
         let old_path = file.oldUri.fsPath;
-        let wsf = util.getWsfWithPath(old_path);
+        let wsf = commonutil.getWsfWithPath(old_path);
         let bms = controller.get_root_group(wsf!).get_bm_with_under_fspath(old_path);
         vscode.workspace.fs.stat(file.newUri).then(x => {
           if (x.type === vscode.FileType.Directory) {
             bms.forEach(bm => {
-              let new_fspath = util.updateChildPath(file.newUri.fsPath, bm.fsPath);
+              let new_fspath = bmutil.updateChildPath(file.newUri.fsPath, bm.fsPath);
               bm.fsPath = new_fspath;
             });
           } else {
@@ -171,7 +172,7 @@ export class bmxLauncher {
     vscode.workspace.onDidChangeWorkspaceFolders(e => {
       e.added.forEach(async wsf => {
         // 读取project的配置文件 初始化root group map
-        let obj = await util.wsfReadBookmarkJson(wsf);
+        let obj = await bmutil.wsfReadBookmarkJson(wsf);
         if (obj) {
           SpaceMap.root_group_map[wsf.uri.path] = SerializableGroup.build_root(obj);
           SpaceMap.active_group_map[wsf.uri.path] = controller.get_root_group(wsf);
