@@ -26,6 +26,10 @@
 				"title": "bmx.referLink: swap two selection"
 			},
 			{
+				"command": "bmx.referLink.createSnippet",
+				"title": "bmx.referLink: create snippet with selected"
+			},
+			{
 				"command": "bmx.referLink.showHtmlPreview",
 				"title": "bmx.referLink: show html preview"
 			}
