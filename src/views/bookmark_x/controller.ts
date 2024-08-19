@@ -811,22 +811,30 @@ export class Controller {
         return res!;
     }
     
-    async selectBookmark() {
+    async selectBookmark(option: String) {
         let wsf = commonUtil.getWsfWithActiveEditor();
-        let cache = this.get_root_group(wsf!).cache;
-        let selectedBmFullUri = await vscode.window.showQuickPick((
-            () => cache.values().filter(
-                    val => typeIsBookmarkLike(val.type)
-                ).map(
-                    item => item.get_full_uri()
-                )
-            )(),
-            { placeHolder: 'Select Bookmark', canPickMany: false }
+
+        let cache;
+        if (option.includes("root")) { cache = this.get_root_group(wsf!).cache; }
+        else if (option.includes("active")) { cache = this.get_active_group(wsf!).bfs_get_nodes(); }
+
+        if (cache == undefined) { return; }
+
+        let bookmarks = cache.values()
+            .filter(val => typeIsBookmarkLike(val.type))
+            .map(item => item.get_full_uri());
+
+        if (bookmarks.length === 0) {
+            vscode.window.showInformationMessage("no bookmarks available!"); return;
+        } else {
+            let selectedBmFullUri = await vscode.window.showQuickPick(
+                bookmarks, { placeHolder: 'Select Bookmark', canPickMany: false }
         );
 
         if (selectedBmFullUri === undefined) { return; }
         let bm = cache.get(selectedBmFullUri) as Bookmark;
         this.jumpToBookmark(bm);
         return;
+        }
     }
 }
