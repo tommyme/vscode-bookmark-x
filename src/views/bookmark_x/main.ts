@@ -121,6 +121,10 @@ export class bmxLauncher {
       'bookmark_x.quickSelectActiveGroup', () => BookmarkTreeViewManager.selectActiveGroup()
     );
     context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand(
+      'bookmark_x.quickSelectBookmark', () => controller.selectBookmark()
+    );
+    context.subscriptions.push(disposable);
 
     let activeEditor = vscode.window.activeTextEditor;
   

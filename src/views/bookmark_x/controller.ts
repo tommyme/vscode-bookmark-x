@@ -17,6 +17,7 @@ import { SerializableGroup } from './serializable_type';
 import {ITEM_TYPE_BM, ITEM_TYPE_GROUP, ITEM_TYPE_GROUP_LIKE} from "./constants";
 import * as bmutil from './util';
 import * as commonUtil from '../utils/util';
+import { typeIsBookmarkLike } from './constants';
 import { BookmarkTreeDataProvider } from './bookmark_tree_data_provider';
 import { TextEncoder } from 'util';
 import { DecorationFactory } from './decoration_factory';
@@ -809,5 +810,23 @@ export class Controller {
         let res = workspace.workspaceFolders?.find(wsf => wsf.uri.path === path);
         return res!;
     }
+    
+    async selectBookmark() {
+        let wsf = commonUtil.getWsfWithActiveEditor();
+        let cache = this.get_root_group(wsf!).cache;
+        let selectedBmFullUri = await vscode.window.showQuickPick((
+            () => cache.values().filter(
+                    val => typeIsBookmarkLike(val.type)
+                ).map(
+                    item => item.get_full_uri()
+                )
+            )(),
+            { placeHolder: 'Select Bookmark', canPickMany: false }
+        );
 
+        if (selectedBmFullUri === undefined) { return; }
+        let bm = cache.get(selectedBmFullUri) as Bookmark;
+        this.jumpToBookmark(bm);
+        return;
+    }
 }
