@@ -7,6 +7,8 @@
 
 <h1 id="Beta_bookmark">bookmark</h1>
 
+- fixed a bug when use command `quickSelectActiveGroup`
+- add new command `bookmark_x.quickSelectBookmark` to select bookmark to jump in command palette. [issue#8](https://github.com/tommyme/vscode-bookmark-x/issues/8)
 
 <h1 id="Beta_quick_run">quick run</h1>
 
