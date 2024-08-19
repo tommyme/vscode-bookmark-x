@@ -3,7 +3,8 @@ import { ThemeColor, ThemeIcon, ViewBadge } from 'vscode';
 import {Controller, SpaceMap} from './controller';
 import {BookmarkTreeItem} from './bookmark_tree_item';
 import { Bookmark, Group } from './functional_types';
-import * as util from './util';
+import * as commonUtil from '../utils/util';
+import * as bmutil from './util';
 import { ICON_GROUP, ITEM_TYPE_GROUP, ITEM_TYPE_GROUP_LIKE, typeIsGroupLike } from './constants';
 import { BmxTreeItem } from './bookmark_tree_data_provider';
 
@@ -87,7 +88,7 @@ export class BookmarkTreeViewManager {
     static addSubGroup(treeItem: BookmarkTreeItem) {
         const group = treeItem.getBaseGroup()!;
         this.controller!.inputBoxGetName().then((name: String) => {
-            let uri = util.joinTreeUri([group.get_full_uri(), name]);
+            let uri = bmutil.joinTreeUri([group.get_full_uri(), name]);
             let wsf = this.controller!.get_wsf_with_node(group);
             this.controller!.addGroup(uri, wsf!);
         });
@@ -112,14 +113,14 @@ export class BookmarkTreeViewManager {
     }
 
     static async selectActiveGroup() {
-        let wsf = util.getWsfWithActiveEditor();
+        let wsf = commonUtil.getWsfWithActiveEditor();
         let cache = this.controller!.get_root_group(wsf!).cache;
         let selectedGroupName: string | undefined = await vscode.window.showQuickPick(
             (() => {
                 let options = ["root group"];
                 for (const element of cache.keys().slice(1)) {
                     if ((typeIsGroupLike(cache.get(element).type))) {
-                        options.push(element)
+                        options.push(element);
                     }
                 }
                 return options;

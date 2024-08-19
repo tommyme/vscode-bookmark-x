@@ -3,10 +3,15 @@ import { ThemeColor, ThemeIcon } from "vscode";
 export const ITEM_TYPE_BM      = 'bookmark';
 export const ITEM_TYPE_GROUP   = 'group';
 export const ITEM_TYPE_GROUPBM = 'groupbookmark';
-export const ITEM_TYPE_GROUP_LIKE = [ITEM_TYPE_GROUP, ITEM_TYPE_GROUPBM]
+export const ITEM_TYPE_GROUP_LIKE = [ITEM_TYPE_GROUP, ITEM_TYPE_GROUPBM];
+export const ITEM_TYPE_BM_LIKE = [ITEM_TYPE_BM, ITEM_TYPE_GROUPBM];
 
 export function typeIsGroupLike(type: string) {
-  return [ITEM_TYPE_GROUP, ITEM_TYPE_GROUPBM].includes(type);
+  return ITEM_TYPE_GROUP_LIKE.includes(type);
+}
+
+export function typeIsBookmarkLike(type: string) {
+  return ITEM_TYPE_BM_LIKE.includes(type);
 }
 
 export const TREEVIEW_ITEM_CTX_TYPE_BM         = 'bookmark';
