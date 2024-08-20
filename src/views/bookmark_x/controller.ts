@@ -826,15 +826,15 @@ export class Controller {
 
         if (bookmarks.length === 0) {
             vscode.window.showInformationMessage("no bookmarks available!"); return;
-        } else {
-            let selectedBmFullUri = await vscode.window.showQuickPick(
-                bookmarks, { placeHolder: 'Select Bookmark', canPickMany: false }
+        }
+
+        let selectedBmFullUri = await vscode.window.showQuickPick(
+            bookmarks, { placeHolder: 'Select Bookmark', canPickMany: false }
         );
 
         if (selectedBmFullUri === undefined) { return; }
         let bm = cache.get(selectedBmFullUri) as Bookmark;
         this.jumpToBookmark(bm);
         return;
-        }
     }
 }
