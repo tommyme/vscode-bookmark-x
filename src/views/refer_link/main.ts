@@ -124,7 +124,7 @@ export class ReferLinkLauncher {
             jsonData = JSON.parse(_data);
             const [firstSelection] = editor.selections;
             const firstText = editor.document.getText(firstSelection);
-            let newSnip = {
+            let newSnip: { prefix: string, body: string[], description: string } = { // prevent type error
               prefix: '',
               body: [],
               description: '',

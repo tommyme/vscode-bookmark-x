@@ -15,7 +15,8 @@
 			},
 			{
 				"command": "bookmark_x.addGroup",
-				"title": "Bookmark X: add group"
+				"title": "Bookmark X: add group",
+				"icon": "$(file-directory-create)"
 			},
 			{
 				"command": "bookmark_x.clearData",
@@ -91,6 +92,26 @@
 				"icon": "$(close)"
 			},
 			{
+				"command":"bookmark_x:selectSortItem",
+				"title":"Select to sort this item",
+				"icon":"$(filter)"
+			},
+			{
+				"command":"bookmark_x:deselectSortItem",
+				"title":"Deselect the sorting item",
+				"icon":"$(filter-filled)"
+			},
+			{
+				"command": "bookmark_x.moveItemUp",
+				"title": "Bookmark X: Move item up",
+				"icon": "$(arrow-up)"
+			},
+			{
+				"command": "bookmark_x.moveItemDown",
+				"title": "Bookmark X: Move item down",
+				"icon": "$(arrow-down)"
+			},
+			{
 				"command": "bmx.showChangelog",
 				"title": "bmx: show changelog"
 			}
@@ -121,6 +142,16 @@
 		],
 		"menus": {
 			"view/item/context": [
+				{
+					"command":"bookmark_x:selectSortItem",
+					"when":"view == bookmarksByGroup && viewItem != sortItem",
+					"group":"inline"
+				},
+				{
+					"command":"bookmark_x:deselectSortItem",
+					"when":"view == bookmarksByGroup && viewItem == sortItem",
+					"group":"inline"
+				},
 				{
 					"command": "bookmark_x.activateGroup",
 					"when": "view == bookmarksByGroup && (viewItem == group || viewItem == groupbookmark)",
@@ -162,7 +193,18 @@
 			"view/title": [
 				{
 					"command": "bookmark_x.addGroup",
-					"when": "view == bookmarksByGroup"
+					"when": "view == bookmarksByGroup",
+					"group": "navigation@1"
+				},
+				{
+					"command": "bookmark_x.moveItemUp",
+					"when": "view == bookmarksByGroup",
+					"group": "navigation@2"
+				},
+				{
+					"command": "bookmark_x.moveItemDown",
+					"when": "view == bookmarksByGroup",
+					"group": "navigation@3"
 				}
 			],
 			"commandPalette": [
@@ -203,9 +245,31 @@
 				"bookmarkX.sort": {
 					"type": "string",
 					"default": "group first",
-					"enum": ["group first", "plain"]
+					"enum": ["group first", "plain", "manual"]
 				}
 			}
-		}
+		},
+		"colors":[
+			{
+				"id": "bookmark_x.sortingItemColor",
+				"description": "Color of sorting item icon",
+				"defaults": {
+					"dark":"#007acc",
+					"light":"#007acc",
+					"highContrast": "#007acc",
+					"highContrastLight": "#007acc"
+				}
+			},
+			{
+				"id": "bookmark_x.activeGroupColor",
+				"description": "Color of active bookmark group icon",
+				"defaults": {
+					"dark": "#b67534",
+					"light": "#b67534",
+					"highContrast": "#b67534",
+					"highContrastLight": "#b67534"
+				}
+			}
+		]
 	}
 }

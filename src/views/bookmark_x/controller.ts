@@ -41,6 +41,27 @@ export class SpaceMap {
     }
 }
 
+export class SpaceSortNode{
+    private static _sorting_node: NodeType | undefined = undefined;
+    private static _sorting_ctx: string | undefined = undefined;
+
+    static get sorting_node() {
+        return this._sorting_node;
+    }
+
+    static set sorting_node(node: NodeType | undefined) {
+        this._sorting_node = node;
+    }
+
+    static get sorting_ctx() {
+        return this._sorting_ctx;
+    }
+
+    static set sorting_ctx(ctx: string | undefined) {
+        this._sorting_ctx = ctx;
+    }
+}
+
 type WsfDataSerialiable = {rg: {[key: string]: any}, ag: {[key: string]: any}};
 
 export class Controller {
@@ -81,6 +102,72 @@ export class Controller {
     public get_active_group(wsf: vscode.WorkspaceFolder): Group {
         return SpaceMap.active_group_map[wsf.uri.path];
     }
+
+    public get_sorting_node(): NodeType | undefined {
+        return SpaceSortNode.sorting_node;
+    }
+    
+    public disableNodeSorting(node: NodeType, wsf: vscode.WorkspaceFolder) {
+        let rg = this.get_root_group(this.wsf);
+        let tvitem = rg.vicache.get(node.get_full_uri());
+        tvitem.contextValue = SpaceSortNode.sorting_ctx;
+        SpaceSortNode.sorting_node = undefined;
+        SpaceSortNode.sorting_ctx = undefined;
+        this.updateDecorations();
+        this.saveState();
+    }
+
+
+    public enableNodeSorting(node: NodeType, wsf: vscode.WorkspaceFolder) {
+        // get corresponding treeitem
+        let rg = this.get_root_group(wsf);
+        let tvitem = rg.vicache.get(node.get_full_uri());
+        if(SpaceSortNode.sorting_node !== undefined){
+            let old_tvitem = rg.vicache.get(SpaceSortNode.sorting_node.get_full_uri());
+            old_tvitem.contextValue = SpaceSortNode.sorting_ctx;
+        }
+        SpaceSortNode.sorting_node = node;
+        SpaceSortNode.sorting_ctx = tvitem.contextValue;
+        tvitem.contextValue = "sortItem";
+        // TODO support icon change
+
+
+        this.updateDecorations();
+        this.saveState();
+    }
+
+    // move treeitem up or down
+    public moveItem(direction: string) {
+        // FIXME support move group and group bookmark.
+        let config = workspace.getConfiguration('bookmarkX');
+        let sortOption = config.get('sort') as string;
+        if (sortOption === 'manual') {
+            let node = SpaceSortNode.sorting_node;
+            if (node === undefined) {
+                vscode.window.showInformationMessage("No sorting item selected.");
+                return;
+            }
+            let wsf = this.get_wsf_with_node(node);
+            let rg = this.get_root_group(wsf!);
+            let father = rg.get_node(node.uri) as Group;
+            let index = father.children.indexOf(node);
+            if (index < 0) {
+                return;
+            }
+            let new_index = direction === 'up' ? index - 1 : index + 1;
+            if (new_index < 0 || new_index >= father.children.length) {
+                return;
+            }
+            // swap two elements
+            [father.children[index], father.children[new_index]] = [father.children[new_index], father.children[index]];
+            this.updateDecorations();
+            this.saveState();
+        } else {
+            vscode.window.showInformationMessage("Manual sort is disabled. Enable it in the settings.");
+        }
+
+    }
+
 
     set activeGroup(group: Group) {
         SpaceMap.active_group_map[this.wsf.uri.path] = group;

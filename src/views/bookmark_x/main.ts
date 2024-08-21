@@ -43,7 +43,26 @@ export class bmxLauncher {
       'bookmark_x.activateGroup', (item: BookmarkTreeItem) => BookmarkTreeViewManager.activateGroup(item)
     );
     context.subscriptions.push(disposable);
+
+    disposable = vscode.commands.registerCommand(
+      'bookmark_x:selectSortItem', (item: BookmarkTreeItem) => BookmarkTreeViewManager.selectSortItem(item)
+    );
+    context.subscriptions.push(disposable);
   
+    disposable = vscode.commands.registerCommand(
+      'bookmark_x:deselectSortItem', (item: BookmarkTreeItem) => BookmarkTreeViewManager.deselectSortItem(item)
+    );
+    context.subscriptions.push(disposable);
+
+    disposable = vscode.commands.registerCommand(
+      'bookmark_x.moveItemUp', () => controller.moveItem('up')
+    );
+    context.subscriptions.push(disposable);
+
+    disposable = vscode.commands.registerCommand(
+      'bookmark_x.moveItemDown', () => controller.moveItem('down')
+    );
+
     // 通过面板-删除分组
     disposable = vscode.commands.registerCommand(
       'bookmark_x.deleteGroup', (item: BookmarkTreeItem) => BookmarkTreeViewManager.deleteGroup(item)
