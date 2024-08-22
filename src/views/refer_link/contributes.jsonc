@@ -30,6 +30,10 @@
 				"title": "bmx.referLink: create snippet with selected"
 			},
 			{
+				"command": "bmx.referLink.diffTwo",
+				"title": "bmx.referLink: diff two file in visible editors"
+			},
+			{
 				"command": "bmx.referLink.showHtmlPreview",
 				"title": "bmx.referLink: show html preview"
 			}

@@ -102,8 +102,8 @@ export class ReferLinkLauncher {
     disposable = vscode.commands.registerCommand("bmx.referLink.createSnippet", () => {
       const editor = vscode.window.activeTextEditor;
       const homedir = os.homedir();
-      let macos_folder = 'Library/Application Support/Code/User/snippets'
-      let win_folder = 'AppData\\Roaming\\Code\\User\\snippets'
+      let macos_folder = 'Library/Application Support/Code/User/snippets';
+      let win_folder = 'AppData\\Roaming\\Code\\User\\snippets';
       if (editor && editor.selections.length === 1) {
         const langId = editor.document.languageId;
         let filename = `${langId}.json`;
@@ -120,7 +120,7 @@ export class ReferLinkLauncher {
             vscode.window.showErrorMessage('file not exists, please create it manually');
           } else {
             let jsonData;
-            let _data = fs.readFileSync(full_path, {encoding: 'utf8'})
+            let _data = fs.readFileSync(full_path, { encoding: 'utf8' });
             jsonData = JSON.parse(_data);
             const [firstSelection] = editor.selections;
             const firstText = editor.document.getText(firstSelection);
@@ -146,6 +146,22 @@ export class ReferLinkLauncher {
         });
       } else {
         vscode.window.showErrorMessage("please select some text to create snippet");
+      }
+    });
+    context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerTextEditorCommand("bmx.referLink.diffTwo", () => {
+      let editors = vscode.window.visibleTextEditors;
+      if (editors.length === 2) {
+        const editor1 = editors[0];
+        const editor2 = editors[1];
+
+        const doc1 = editor1.document;
+        const doc2 = editor2.document;
+        console.log(doc1.uri, doc2.uri);
+
+        vscode.commands.executeCommand('vscode.diff', doc1.uri, doc2.uri, 'Diff between two editors');
+      } else {
+        vscode.window.showInformationMessage("Please open exactly two editors to compare.");
       }
     });
     context.subscriptions.push(disposable);
