@@ -7,7 +7,7 @@
 			"label": "rollup build watch",
 			"type": "shell",
 			"command": [
-				"rollup -c --sourcemap --watch"
+				"npx rollup -c --sourcemap --watch"
 			],
 		}
 	],
