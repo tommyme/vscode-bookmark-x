@@ -141,7 +141,11 @@ export class bmxLauncher {
     );
     context.subscriptions.push(disposable);
     disposable = vscode.commands.registerCommand(
-      'bookmark_x.quickSelectBookmark', () => controller.selectBookmark()
+      'bookmark_x.quickSelectBookmark', () => controller.selectBookmark("root")
+    );
+    context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand(
+      'bookmark_x.quickSelectBookmarkFromActive', () => controller.selectBookmark("active")
     );
     context.subscriptions.push(disposable);
 

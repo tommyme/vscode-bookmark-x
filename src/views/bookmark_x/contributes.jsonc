@@ -78,6 +78,10 @@
 				"title": "Bookmark X: quick select bookmark"
 			},
 			{
+				"command": "bookmark_x.quickSelectBookmarkFromActive",
+				"title": "Bookmark X: quick select bookmark from active group"
+			},
+			{
 				"command": "bookmark_x.downgradeToGroup",
 				"title": "Bookmark X: downgrade to group"
 			},
