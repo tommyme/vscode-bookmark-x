@@ -144,6 +144,8 @@ export class Group extends BaseFunctional {
             this.children.sort(Group.sortGroupFirst);  // group在前 bookmark在后
         } else if (sortOption === 'plain') {
             this.children.sort(Group.sortPlain);
+        } else if(sortOption === 'manual') {
+            return;
         } else {
             window.showInformationMessage("sort fail, sort option invalid: "+sortOption);
         }

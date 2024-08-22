@@ -17,11 +17,13 @@ export function typeIsBookmarkLike(type: string) {
 export const TREEVIEW_ITEM_CTX_TYPE_BM         = 'bookmark';
 export const TREEVIEW_ITEM_CTX_TYPE_GROUP      = 'group';
 export const TREEVIEW_ITEM_CTX_TYPE_GROUPBM    = 'groupbookmark';
+export const TREEVIEW_ITEM_CTX_TYPE_SORTING_ITEM = 'sortItem';
 
 // state key
 export const SAVED_WSFSDATA_KEY    = "bookmarkDemo.wsfsData";
 
 // icons
+// colors are controlled by contributes.
 export const ICON_BOOKMARK = new ThemeIcon("bookmark");
 export const ICON_ACTIVE_GROUP = new ThemeIcon("folder-opened", new ThemeColor("statusBarItem.remoteBackground"));
 export const ICON_GROUP = new ThemeIcon("folder");
