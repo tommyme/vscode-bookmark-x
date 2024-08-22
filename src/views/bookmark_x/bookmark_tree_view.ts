@@ -27,7 +27,7 @@ export class BookmarkTreeViewManager {
         if (this.controller!.tprovider !== null) {
             this.controller!.tprovider.refresh();
         }
-        this.refresh_badge();
+        this.refreshBadge();
     }
 
     static async init() {
@@ -43,11 +43,11 @@ export class BookmarkTreeViewManager {
             this.view = view;
         }
     }
-    static refresh_badge() {
+    static refreshBadge() {
         let num = 0;
         SpaceMap.rgs.forEach(rg => {
             num += rg.cache.bookmark_num();
-        })
+        });
         this.view.badge = new MyViewBadge(num);
     }
 
@@ -90,7 +90,7 @@ export class BookmarkTreeViewManager {
         this.controller!.safeDeleteGroups(group!).then(res => {
             if (res) { vscode.window.showInformationMessage(`delete ${group!.get_full_uri()} successfully`); }
             else { vscode.window.showInformationMessage(`didn't delete`); }
-        })
+        });
         
     }
 

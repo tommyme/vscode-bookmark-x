@@ -6,13 +6,13 @@ import * as fs from 'fs';
 import * as path from 'path';
 import {Uri, TextEditorDecorationType, window, workspace, DecorationRenderOptions} from 'vscode';
 import { StoreManager } from '../../store';
-import { WSF_TVI_ICON, svgBookmark } from './constants';
+import { WSF_TVI_ICON, SVG_BOOKMARK } from './constants';
 
 export class DecorationFactory {
     public static decoration: TextEditorDecorationType;
     public static wsf_icon: string;
 
-    public static async set_deco_from_settings() {
+    public static async setDecoFromSettings() {
         let config = workspace.getConfiguration('bookmarkX');
         let decoFilePath = config.get('bookmarkSvg') as string;
         let set_done = false;
@@ -34,16 +34,16 @@ export class DecorationFactory {
     }
 
     public static async init() {
-        await this.init_svgdir();
-        await this.init_icon();
+        await this.initSvgdir();
+        await this.initIcon();
     }
 
-    public static async init_svgdir() {
+    public static async initSvgdir() {
         let dirPath = path.join(StoreManager.home.fsPath, 'svg_icons');
         await StoreManager.ensureDir(dirPath);
         let default_svg_path = path.join(dirPath, "default.svg");
-        await StoreManager.ensureFile(default_svg_path, svgBookmark);
-        if (!await DecorationFactory.set_deco_from_settings()) {
+        await StoreManager.ensureFile(default_svg_path, SVG_BOOKMARK);
+        if (!await DecorationFactory.setDecoFromSettings()) {
             DecorationFactory.decoration = window.createTextEditorDecorationType(
                 {
                     gutterIconPath: default_svg_path,
@@ -53,7 +53,7 @@ export class DecorationFactory {
         }
     }
 
-    public static async init_icon() {
+    public static async initIcon() {
         let dirPath = path.join(StoreManager.home.fsPath, "icons");
         await StoreManager.ensureDir(dirPath);
         let svgPath = path.join(dirPath, "wsf.svg");

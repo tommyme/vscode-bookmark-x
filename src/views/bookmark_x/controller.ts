@@ -248,7 +248,7 @@ export class Controller {
                 let rg = data.rg[wsf.uri.path];
                 let ag = data.ag[wsf.uri.path];
                 if (rg) {
-                    SpaceMap.root_group_map[wsf.uri.path] = SerializableGroup.build_root(rg) as RootGroup;
+                    SpaceMap.root_group_map[wsf.uri.path] = SerializableGroup.buildRoot(rg) as RootGroup;
                 } else {
                     SpaceMap.root_group_map[wsf.uri.path] = new RootGroup("", "", "", []);
                 }
@@ -277,7 +277,7 @@ export class Controller {
      * @param {type} param1 - param1 desc
      * @returns {type} - return value desc
      */
-    public static DecoUpdateSaveAfter(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+    public static decoUpdateSaveAfter(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
         const fn = descriptor.value;
         descriptor.value = function (...rest: any) {
             fn.apply(this, rest);
@@ -426,7 +426,7 @@ export class Controller {
         await workspace.fs.readFile(uri).then(
             content => {
                 let obj = JSON.parse(content.toString());
-                SpaceMap.root_group_map[wsf!.uri.path] = SerializableGroup.build_root(obj);
+                SpaceMap.root_group_map[wsf!.uri.path] = SerializableGroup.buildRoot(obj);
                 SpaceMap.active_group_map[wsf!.uri.path] = this.get_root_group(wsf!);
             }
         );
@@ -515,7 +515,7 @@ export class Controller {
         let original_full_uri = node.get_full_uri();
         father.children[index].name = val;
         let new_full_uri = node.get_full_uri();
-        if (node.type == ITEM_TYPE_GROUP) {
+        if (node.type === ITEM_TYPE_GROUP) {
             // bfs edit uri
             (node as Group).bfs_get_nodes().values().forEach(node => {
                 node.uri = node.uri.replace(original_full_uri, new_full_uri);    // only replace once
@@ -814,7 +814,7 @@ export class Controller {
                     file_bm.forEach(bm => {
                         if (bm.line > range.start.line) {
                             bm.line += num_enter;
-                        } else if (bm.line == range.start.line) {
+                        } else if (bm.line === range.start.line) {
                             // 如果from start就移动 TODO优化一下
                             // if (st_from_start) { bm.line += num_enter; } 
                         }
@@ -904,7 +904,7 @@ export class Controller {
         if (option.includes("root")) { cache = this.get_root_group(wsf!).cache; }
         else if (option.includes("active")) { cache = this.get_active_group(wsf!).bfs_get_nodes(); }
 
-        if (cache == undefined) { return; }
+        if (cache === undefined) { return; }
 
         let bookmarks = cache.values()
             .filter(val => typeIsBookmarkLike(val.type))

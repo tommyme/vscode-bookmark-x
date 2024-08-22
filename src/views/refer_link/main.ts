@@ -110,7 +110,7 @@ export class ReferLinkLauncher {
         let full_path: string;
         if (os.platform() === "win32") {
           full_path = path.join(homedir, win_folder, filename);
-        } else if (os.platform() == "darwin") {
+        } else if (os.platform() === "darwin") {
           full_path = path.join(homedir, macos_folder, filename);
         } else {
           return;

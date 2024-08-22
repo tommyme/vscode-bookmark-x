@@ -144,7 +144,7 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<BmxTree
                 src_rg.cache = src_rg.bfs_get_nodes();
                 // 通过 bfs tvmap 刷新状态
                 src_rg.vicache = src_rg.bfs_get_tvmap();
-                if (dst_rg != src_rg) {
+                if (dst_rg !== src_rg) {
                     dst_rg.cache = dst_rg.bfs_get_nodes();
                     dst_rg.vicache = dst_rg.bfs_get_tvmap();
                 }
@@ -214,7 +214,7 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<BmxTree
      * getParent
      */
     public getParent(element: BookmarkTreeItem): BookmarkTreeItem {
-        let wsf = this.controller.get_wsf_with_node(element.base!)
+        let wsf = this.controller.get_wsf_with_node(element.base!);
         let uri = element.base!.uri;
         let bmti = this.controller.get_root_group(wsf!).vicache.get(uri);
         return bmti;

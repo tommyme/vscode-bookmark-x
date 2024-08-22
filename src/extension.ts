@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { TaskTreeViewManager } from "./views/quick_run/view_manager";
-import { bmxLauncher } from './views/bookmark_x/main';
+import { BmxLauncher } from './views/bookmark_x/main';
 import { ReferLinkLauncher } from './views/refer_link/main';
 import * as path from 'path';
 import * as fs from 'fs';
@@ -10,7 +10,7 @@ import {chan} from './channel';
 export async function activate(context: vscode.ExtensionContext) {
 	chan.appendLine("activate");
 	TaskTreeViewManager.init(context);
-	bmxLauncher.init(context);
+	BmxLauncher.init(context);
 	ReferLinkLauncher.init(context);
 	chan.appendLine("activate done");
 	let disposable = vscode.commands.registerCommand('bmx.showChangelog', () => {

@@ -9,7 +9,7 @@ import { StoreManager } from '../../store';
 import { DecorationFactory } from './decoration_factory';
 import * as path from 'path';
 import { SerializableGroup } from './serializable_type';
-export class bmxLauncher {
+export class BmxLauncher {
   static async init(context: vscode.ExtensionContext) {
     StoreManager.home = context.globalStorageUri;
     await DecorationFactory.init();
@@ -201,7 +201,7 @@ export class bmxLauncher {
         // 读取project的配置文件 初始化root group map
         let obj = await bmutil.wsfReadBookmarkJson(wsf);
         if (obj) {
-          SpaceMap.root_group_map[wsf.uri.path] = SerializableGroup.build_root(obj);
+          SpaceMap.root_group_map[wsf.uri.path] = SerializableGroup.buildRoot(obj);
           SpaceMap.active_group_map[wsf.uri.path] = controller.get_root_group(wsf);
         } else {
           SpaceMap.root_group_map[wsf.uri.path] = new RootGroup("", "", "", []);
@@ -218,6 +218,6 @@ export class bmxLauncher {
         delete SpaceMap.active_group_map[folder.uri.path];
         controller.tprovider.refresh();
       });
-    })
+    });
   }
 }

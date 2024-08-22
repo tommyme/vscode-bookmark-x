@@ -43,7 +43,7 @@ export class SerializableGroup implements BaseSerializable {
         let children = obj.children.map( (item: any) => getSerializableBuildFactory(item.type).build(item) );
         return new factory(obj.name, obj.color, obj.uri, children);
     }
-    public static build_root(obj: any): RootGroup {
+    public static buildRoot(obj: any): RootGroup {
         return SerializableGroup.build(obj, RootGroup);
     }
 }

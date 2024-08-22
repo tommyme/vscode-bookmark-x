@@ -393,7 +393,7 @@ export class ViewItemUriMap extends UriMap<BookmarkTreeItem> {
                     tvi.iconPath = ICON_GROUP;
                 }
             }
-        })
+        });
     }
 }
 

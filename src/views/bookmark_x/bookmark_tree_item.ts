@@ -26,7 +26,7 @@ export class BookmarkTreeItemFactory {
         };
         return result;
     }
-    static get_collapse_state(group: Group) {
+    static getCollapseState(group: Group) {
         let wsf = this.controller.get_wsf_with_node(group);
         let currActiveGroupUri = this.controller.get_active_group(wsf!).get_full_uri();
         if (group.children.length > 0) {
@@ -38,7 +38,7 @@ export class BookmarkTreeItemFactory {
     static _createGroup(group: Group): BookmarkTreeItem {
         let wsf = this.controller.get_wsf_with_node(group);
         let currActiveGroupUri = this.controller.get_active_group(wsf!).get_full_uri();
-        let result = new BookmarkTreeItem(group.name, this.get_collapse_state(group));
+        let result = new BookmarkTreeItem(group.name, this.getCollapseState(group));
         if (currActiveGroupUri && util.isSubUriOrEqual(group.get_full_uri(), currActiveGroupUri)) {
             result.iconPath = ICON_ACTIVE_GROUP;
         } else {

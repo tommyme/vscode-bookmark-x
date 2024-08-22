@@ -29,12 +29,12 @@ export class TaskDataProvider implements TreeDataProvider<QuickRunTreeItem> {
 
   getChildren(element: QuickRunTreeItem): Thenable<QuickRunTreeItem[]> {
     if (!element) {
-      return Promise.resolve(this.get_all_workspaces());
+      return Promise.resolve(this.getAllWorkspaces());
     }
     return Promise.resolve(this.getAllContent(element));
   }
 
-  public async get_all_workspaces(): Promise<WsfTreeItem[]> {
+  public async getAllWorkspaces(): Promise<WsfTreeItem[]> {
     let res: Array<WsfTreeItem> = [];
     let wsfolders = vscode.workspace.workspaceFolders;
     if (wsfolders) {
