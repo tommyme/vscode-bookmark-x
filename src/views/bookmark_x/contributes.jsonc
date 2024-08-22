@@ -35,22 +35,22 @@
 				"title": "Bookmark X: reveal bookmark in current line"
 			},
 			{
-				"command": "bookmark_x.activateGroup",			// disable in command palette
+				"command": "bookmark_x.activateGroup", // disable in command palette
 				"title": "Activate bookmark group",
 				"icon": "$(eye)"
 			},
 			{
-				"command": "bookmark_x.editGroupName",			// disable in command palette
+				"command": "bookmark_x.editGroupName", // disable in command palette
 				"title": "edit group name",
 				"icon": "$(edit)"
 			},
 			{
-				"command": "bookmark_x.deleteGroup",				// disable in command palette
+				"command": "bookmark_x.deleteGroup", // disable in command palette
 				"title": "Delete bookmark group",
 				"icon": "$(close)"
 			},
 			{
-				"command": "bookmark_x.jumpToBookmark",			// disable in command palette
+				"command": "bookmark_x.jumpToBookmark", // disable in command palette
 				"title": "Jump to book mark"
 			},
 			{
@@ -82,24 +82,24 @@
 				"title": "Bookmark X: downgrade to group"
 			},
 			{
-				"command": "bookmark_x.editBookmarkName",		// disable in command palette(can be improved)
+				"command": "bookmark_x.editBookmarkName", // disable in command palette(can be improved)
 				"title": "edit bookmark name",
 				"icon": "$(edit)"
 			},
 			{
-				"command": "bookmark_x.deleteBookmark",			// disable in command palette(can be improved)
+				"command": "bookmark_x.deleteBookmark", // disable in command palette(can be improved)
 				"title": "Delete bookmark",
 				"icon": "$(close)"
 			},
 			{
-				"command":"bookmark_x:selectSortItem",
-				"title":"Select to sort this item",
-				"icon":"$(filter)"
+				"command": "bookmark_x:selectSortItem",
+				"title": "Bookmark X: Select to sort this item",
+				"icon": "$(filter)"
 			},
 			{
-				"command":"bookmark_x:deselectSortItem",
-				"title":"Deselect the sorting item",
-				"icon":"$(filter-filled)"
+				"command": "bookmark_x:deselectSortItem",
+				"title": "Bookmark X: Deselect the sorting item",
+				"icon": "$(filter-filled)"
 			},
 			{
 				"command": "bookmark_x.moveItemUp",
@@ -143,39 +143,39 @@
 		"menus": {
 			"view/item/context": [
 				{
-					"command":"bookmark_x:selectSortItem",
-					"when":"view == bookmarksByGroup && viewItem != sortItem",
-					"group":"inline"
+					"command": "bookmark_x:selectSortItem",
+					"when": "view == bookmarksByGroup && viewItem && viewItem != sortItem && config.bookmarkX.sort == manual", // root group doesn't have contextValue. 'viewItem' will hide the button for root group.
+					"group": "inline@4" // keep select/deselect to be the last button.
 				},
 				{
-					"command":"bookmark_x:deselectSortItem",
-					"when":"view == bookmarksByGroup && viewItem == sortItem",
-					"group":"inline"
+					"command": "bookmark_x:deselectSortItem",
+					"when": "view == bookmarksByGroup && viewItem && viewItem == sortItem && config.bookmarkX.sort == manual",
+					"group": "inline@4"
 				},
 				{
 					"command": "bookmark_x.activateGroup",
 					"when": "view == bookmarksByGroup && (viewItem == group || viewItem == groupbookmark)",
-					"group": "inline"
+					"group": "inline@1"
 				},
 				{
 					"command": "bookmark_x.editGroupName",
 					"when": "view == bookmarksByGroup && (viewItem == group || viewItem == groupbookmark)",
-					"group": "inline"
+					"group": "inline@3"
 				},
 				{
 					"command": "bookmark_x.deleteGroup",
 					"when": "view == bookmarksByGroup && (viewItem == group || viewItem == groupbookmark)",
-					"group": "inline"
+					"group": "inline@2"
 				},
 				{
 					"command": "bookmark_x.editBookmarkName",
 					"when": "viewItem == bookmark",
-					"group": "inline"
+					"group": "inline@3"
 				},
 				{
 					"command": "bookmark_x.deleteBookmark",
 					"when": "viewItem == bookmark",
-					"group": "inline"
+					"group": "inline@2"
 				},
 				{
 					"command": "bookmark_x.addSubGroup",
@@ -198,12 +198,12 @@
 				},
 				{
 					"command": "bookmark_x.moveItemUp",
-					"when": "view == bookmarksByGroup",
+					"when": "view == bookmarksByGroup && config.bookmarkX.sort == manual",
 					"group": "navigation@2"
 				},
 				{
 					"command": "bookmark_x.moveItemDown",
-					"when": "view == bookmarksByGroup",
+					"when": "view == bookmarksByGroup && config.bookmarkX.sort == manual",
 					"group": "navigation@3"
 				}
 			],
@@ -231,6 +231,22 @@
 				{
 					"command": "bookmark_x.activateGroup",
 					"when": "false"
+				},
+				{
+					"command": "bookmark_x:selectSortItem",
+					"when": "false"
+				},
+				{
+					"command": "bookmark_x:deselectSortItem",
+					"when": "false"
+				},
+				{
+					"command": "bookmark_x.moveItemUp",
+					"when": "false"
+				},
+				{
+					"command": "bookmark_x.moveItemDown",
+					"when": "false"
 				}
 			]
 		},
@@ -245,31 +261,13 @@
 				"bookmarkX.sort": {
 					"type": "string",
 					"default": "group first",
-					"enum": ["group first", "plain", "manual"]
+					"enum": [
+						"group first",
+						"plain",
+						"manual"
+					]
 				}
 			}
-		},
-		"colors":[
-			{
-				"id": "bookmark_x.sortingItemColor",
-				"description": "Color of sorting item icon",
-				"defaults": {
-					"dark":"#007acc",
-					"light":"#007acc",
-					"highContrast": "#007acc",
-					"highContrastLight": "#007acc"
-				}
-			},
-			{
-				"id": "bookmark_x.activeGroupColor",
-				"description": "Color of active bookmark group icon",
-				"defaults": {
-					"dark": "#b67534",
-					"light": "#b67534",
-					"highContrast": "#b67534",
-					"highContrastLight": "#b67534"
-				}
-			}
-		]
+		}
 	}
 }

@@ -138,7 +138,6 @@ export class Controller {
 
     // move treeitem up or down
     public moveItem(direction: string) {
-        // FIXME support move group and group bookmark.
         let config = workspace.getConfiguration('bookmarkX');
         let sortOption = config.get('sort') as string;
         if (sortOption === 'manual') {

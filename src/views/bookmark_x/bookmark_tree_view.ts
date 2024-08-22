@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { ThemeColor, ThemeIcon, ViewBadge,workspace } from 'vscode';
+import { ThemeColor, ThemeIcon, ViewBadge, workspace } from 'vscode';
 import {Controller, SpaceMap} from './controller';
 import {BookmarkTreeItem} from './bookmark_tree_item';
 import { Bookmark, Group } from './functional_types';
@@ -72,12 +72,6 @@ export class BookmarkTreeViewManager {
     }
 
     static selectSortItem(treeItem: BookmarkTreeItem){
-        let config = workspace.getConfiguration('bookmarkX');
-        let sortOption = config.get('sort') as string;
-        if(sortOption !== 'manual'){
-            vscode.window.showInformationMessage("Manual sort is disabled. Please enable it in the settings.");
-            return;
-        }
         const node = treeItem.base;
         let wsf = this.controller.get_wsf_with_node(node!);
         this.controller!.enableNodeSorting(node!, wsf!);
