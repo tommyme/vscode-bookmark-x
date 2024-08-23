@@ -1,10 +1,5 @@
-/**
- * 图标工厂
- */
-
-import * as fs from 'fs';
 import * as path from 'path';
-import {Uri, TextEditorDecorationType, window, workspace, DecorationRenderOptions} from 'vscode';
+import { Uri, TextEditorDecorationType, window, workspace } from 'vscode';
 import { StoreManager } from '../../store';
 import { WSF_TVI_ICON, SVG_BOOKMARK } from './constants';
 
@@ -27,7 +22,7 @@ export class DecorationFactory {
                 );
                 set_done = true;
             } catch (err) {
-                window.showInformationMessage("svg file load error (default svg used): "+String(err));
+                window.showInformationMessage("svg file load error (default svg used): " + String(err));
             }
         }
         return set_done;

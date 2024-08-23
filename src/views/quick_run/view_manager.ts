@@ -175,10 +175,9 @@ export class TaskTreeViewManager {
       let path = ((item._task as vscode.DebugConfiguration).program as string).replace("${workspaceFolder}", item.wsf.uri.path);
       let uri = vscode.Uri.file(path);
       try {
-        let stat = await vscode.workspace.fs.stat(uri);
         // file exists, go to the file
         vscode.window.showTextDocument(uri);
-      } catch (err) {
+      } catch {
         console.error("文件不存在");
       }
     });
@@ -188,7 +187,7 @@ export class TaskTreeViewManager {
       let launchjsonUri = vscode.Uri.joinPath(wsfTreeItem.wsf.uri, '.vscode', 'launch.json');
       try {
         await workspace.fs.stat(launchjsonUri);
-      } catch (e) {
+      } catch {
         // file not exist
         let bytes = Uint8Array.from("{}".split('').map(c => c.charCodeAt(0)));
         await workspace.fs.writeFile(launchjsonUri, bytes);
@@ -208,7 +207,7 @@ export class TaskTreeViewManager {
       let taskjsonUri = vscode.Uri.joinPath(wsf.uri, '.vscode', 'tasks.json');
       try {
         await workspace.fs.stat(taskjsonUri);
-      } catch (e) {
+      } catch {
         // file not exist
         const defaultJsonTasksPath = path.join(context.extensionPath, 'resources', 'tasks.json');
         const content = fs.readFileSync(defaultJsonTasksPath, 'utf-8');

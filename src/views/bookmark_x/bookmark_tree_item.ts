@@ -1,6 +1,6 @@
-import {ThemeColor, ThemeIcon, TreeItem, TreeItemCheckboxState, TreeItemCollapsibleState, WorkspaceFolder, Uri as string, workspace} from 'vscode';
+import { TreeItem, TreeItemCollapsibleState, WorkspaceFolder, workspace } from 'vscode';
 import { Bookmark, GroupBookmark, BaseFunctional, NodeType } from "./functional_types";
-import {Group} from './functional_types';
+import { Group } from './functional_types';
 import { Controller } from './controller';
 import * as util from './util';
 import { ICON_ACTIVE_GROUP, ICON_BOOKMARK, ICON_GROUP, ITEM_TYPE_BM, ITEM_TYPE_GROUP, ITEM_TYPE_GROUPBM, TREEVIEW_ITEM_CTX_TYPE_BM, TREEVIEW_ITEM_CTX_TYPE_GROUP, TREEVIEW_ITEM_CTX_TYPE_GROUPBM } from './constants';
@@ -65,8 +65,8 @@ export class BookmarkTreeItemFactory {
         };
         return result;
     }
-    
-    static createType<T extends NodeType|BaseFunctional>(item: T): BookmarkTreeItem {
+
+    static createType<T extends NodeType | BaseFunctional>(item: T): BookmarkTreeItem {
         if (item.type === ITEM_TYPE_BM) {
             return BookmarkTreeItemFactory.createBookmark(item as Bookmark);
         } else if (item.type === ITEM_TYPE_GROUP) {
