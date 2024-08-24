@@ -71,16 +71,12 @@ export class BookmarkTreeViewManager {
         }
     }
 
-    static selectSortItem(treeItem: BookmarkTreeItem){
-        const node = treeItem.base;
-        let wsf = this.controller.get_wsf_with_node(node!);
-        this.controller!.enableNodeSorting(node!, wsf!);
+    static selectSortItem(treeItem: BookmarkTreeItem) {
+        this.controller!.enableItemSorting(treeItem!);
     }
 
-    static deselectSortItem(treeItem: BookmarkTreeItem){
-        const node = treeItem.base;
-        let wsf = this.controller.get_wsf_with_node(node!);
-        this.controller!.disableNodeSorting(node!, wsf!);
+    static deselectSortItem(treeItem: BookmarkTreeItem) {
+        this.controller!.disableItemSorting(treeItem!);
     }
 
 
