@@ -124,22 +124,41 @@ export class ReferLinkLauncher {
             jsonData = JSON.parse(_data);
             const [firstSelection] = editor.selections;
             const firstText = editor.document.getText(firstSelection);
+            if (firstText.length === 0) {
+              return;
+            }
             let newSnip: { prefix: string, body: string[], description: string } = { // prevent type error
               prefix: '',
               body: [],
               description: '',
             };
-            const snipname = await vscode.window.showInputBox({
-              placeHolder: 'please input snippet name',
-              prompt: 'snippet name'
+            const prefix = await vscode.window.showInputBox({
+              placeHolder: 'please input prefix',
+              prompt: 'prefix',
             });
-            if (!snipname || snipname.length === 0) {
+            if (!prefix || prefix.length === 0) {
               return;
             }
-            newSnip.prefix = snipname;
+            const shortDesc = await vscode.window.showInputBox({
+              placeHolder: 'please input short description',
+              prompt: 'short description -- key of snippet json',
+              value: `bmx: ${prefix}`
+            });
+            if (!shortDesc || shortDesc.length === 0) {
+              return;
+            }
+            const description = await vscode.window.showInputBox({
+              placeHolder: 'please input description',
+              prompt: 'description',
+              value: `template for ${shortDesc}`
+            });
+            if (!description || description.length === 0) {
+              return;
+            }
+            newSnip.prefix = prefix;
             newSnip.body = firstText.split("\n");
-            newSnip.description = `template for ${snipname}`;
-            jsonData[snipname] = newSnip;
+            newSnip.description = description;
+            jsonData[shortDesc] = newSnip;
             let content_to_write = JSON.stringify(jsonData, null, 4);
             fs.writeFileSync(full_path, content_to_write);
           }
