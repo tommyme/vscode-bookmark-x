@@ -11,7 +11,7 @@ import {
 } from 'vscode';
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { Bookmark, GroupBookmark, NodeType, NodeUriMap, RootGroup, ViewItemUriMap } from "./functional_types";
+import { Bookmark, GroupBookmark, NodeType, RootGroup } from "./functional_types";
 import { Group } from './functional_types';
 import { SerializableGroup } from './serializable_type';
 import {ITEM_TYPE_BM, ITEM_TYPE_GROUP, ITEM_TYPE_GROUP_LIKE} from "./constants";
@@ -266,20 +266,6 @@ export class Controller {
             console.log("restore saved state done");  
         });
     }
-    /**
-     * 装饰器 执行完动作之后update和save一下
-     * @param {type} param1 - param1 desc
-     * @returns {type} - return value desc
-     */
-    public static decoUpdateSaveAfter(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-        const fn = descriptor.value;
-        descriptor.value = function (...rest: any) {
-            fn.apply(this, rest);
-            let x: any = this;
-            x.updateDecorations(); // 更新界面
-            x.saveState(); // 保存最新状态
-        };
-    }
 
 
     /**
@@ -291,7 +277,6 @@ export class Controller {
         if (textEditor.selections.length === 0) {
             return;
         }
-        let xx = workspace.getWorkspaceFolder(textEditor.document.uri);
         let documentFsPath = textEditor.document.uri.fsPath;
         let wsf = commonUtil.getWsfWithPath(documentFsPath);
         // 可能存在着多个光标
@@ -386,7 +371,7 @@ export class Controller {
     }
     // 添加新分组
     public actionAddGroup() {
-        this.inputBoxGetName().then((groupName: String) => {
+        this.inputBoxGetName().then((groupName: string) => {
             // 这里 当前打开的document属于哪个wsf就放到wsf里面
             let wsf = commonUtil.getWsfWithActiveEditor();
             let uri = bmutil.joinTreeUri([this.get_active_group(wsf!).get_full_uri(), groupName]);
@@ -555,7 +540,7 @@ export class Controller {
         }
     }
 
-    public async safeDeleteGroups(group: Group): Promise<Boolean> {
+    public async safeDeleteGroups(group: Group): Promise<boolean> {
         let wsf = this.get_wsf_with_node(group);
         if (group.children.length > 0) {
             let val = await
@@ -792,16 +777,16 @@ export class Controller {
             let range = change.range;
             let num_enter = (txt.match(/\n/g) || []).length;
 
-            let st_line_text = event.document.lineAt(range.start.line).text;
-            let st_line_chars = st_line_text.length;
-            let st_from_start = st_line_text.slice(0, range.start.character + 1).trim() === '';
-            let st_to_end = range.start.character === st_line_chars;
-            let st_line_empty = st_line_text.trim() === '';
+            // let st_line_text = event.document.lineAt(range.start.line).text;
+            // let st_line_chars = st_line_text.length;
+            // let st_from_start = st_line_text.slice(0, range.start.character + 1).trim() === '';
+            // let st_to_end = range.start.character === st_line_chars;
+            // let st_line_empty = st_line_text.trim() === '';
 
-            let ed_line_text = event.document.lineAt(range.end.line).text;
-            let ed_line_chars = ed_line_text.length;
-            let ed_from_start = ed_line_text.slice(0, range.end.character + 1).trim() === '';
-            let ed_to_end = range.end.character === ed_line_chars;
+            // let ed_line_text = event.document.lineAt(range.end.line).text;
+            // let ed_line_chars = ed_line_text.length;
+            // let ed_from_start = ed_line_text.slice(0, range.end.character + 1).trim() === '';
+            // let ed_to_end = range.end.character === ed_line_chars;
 
             if (range.start.line === range.end.line) {
                 if (num_enter > 0) {
@@ -891,7 +876,7 @@ export class Controller {
         return res!;
     }
     
-    async selectBookmark(option: String) {
+    async selectBookmark(option: string) {
         let wsf = commonUtil.getWsfWithActiveEditor();
 
         let cache;

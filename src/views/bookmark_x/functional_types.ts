@@ -1,7 +1,6 @@
-import {DecorationFactory} from './decoration_factory';
-import {TextEditorDecorationType, ThemeColor, ThemeIcon, TreeItem, Uri, window, workspace} from 'vscode';
-import {SerializableBookmark, SerializableGroup, SerializableGroupBookmark} from './serializable_type';
-import {ICON_ACTIVE_GROUP, ICON_GROUP, ITEM_TYPE_BM, ITEM_TYPE_GROUP, ITEM_TYPE_GROUPBM, ITEM_TYPE_GROUP_LIKE, typeIsGroupLike, } from './constants';
+import { window, workspace } from 'vscode';
+import { SerializableBookmark, SerializableGroup, SerializableGroupBookmark } from './serializable_type';
+import { ICON_ACTIVE_GROUP, ICON_GROUP, ITEM_TYPE_BM, ITEM_TYPE_GROUP, ITEM_TYPE_GROUPBM, ITEM_TYPE_GROUP_LIKE, typeIsGroupLike, } from './constants';
 import * as util from './util';
 import { BookmarkTreeItem, BookmarkTreeItemFactory } from './bookmark_tree_item';
 
@@ -41,12 +40,12 @@ export class BaseFunctional {
 export class Group extends BaseFunctional {
     color: string;
     // decoration: TextEditorDecorationType | null;
-    
+
     constructor(
         name: string,
         color: string,
         uri: string,
-        children: (NodeType)[]=[]
+        children: (NodeType)[] = []
     ) {
         super(name, uri, ITEM_TYPE_GROUP, children);
         this.color = color;
@@ -54,9 +53,6 @@ export class Group extends BaseFunctional {
     }
 
     public static fromSerialized(group: SerializableGroup): Group {
-        let children = group.children.map((child) => {
-            if (child) {}
-        });
         return new Group(
             group.name,
             group.color,
@@ -84,12 +80,13 @@ export class Group extends BaseFunctional {
      * @param {type} type - 'group' or 'bookmark'
      * @returns {type} - return value desc
      */
-    public get_node(full_uri: string, type: string|null=null): NodeType | undefined {
+    public get_node(full_uri: string, type: string | null = null): NodeType | undefined {
         if (full_uri === '') {
             return this;
         }
 
         const parts = full_uri.split('/');
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
         let current: NodeType | undefined = this;
 
         for (let part of parts) {
@@ -111,10 +108,6 @@ export class Group extends BaseFunctional {
         let father_group = this.get_node(group.uri, ITEM_TYPE_GROUP) as Group;
         father_group.children.push(group);
         return father_group;
-    }
-
-    public sortChildrenBookmarks(fn: Function) {
-        // this.children.sort(fn);
     }
 
     public static sortGroupFirst(a: BaseFunctional, b: BaseFunctional) {
@@ -144,10 +137,10 @@ export class Group extends BaseFunctional {
             this.children.sort(Group.sortGroupFirst);  // group在前 bookmark在后
         } else if (sortOption === 'plain') {
             this.children.sort(Group.sortPlain);
-        } else if(sortOption === 'manual') {
+        } else if (sortOption === 'manual') {
             return;
         } else {
-            window.showInformationMessage("sort fail, sort option invalid: "+sortOption);
+            window.showInformationMessage("sort fail, sort option invalid: " + sortOption);
         }
     }
 
@@ -162,7 +155,7 @@ export class Group extends BaseFunctional {
         });
         return false;
     }
-    
+
     /**
      * bfs遍历节点, 返回full_uri为key, node为value的map
      * @param {type} param1 - param1 desc
@@ -175,7 +168,7 @@ export class Group extends BaseFunctional {
             if (node.children.length === 0) {
                 return;
             } else {
-                node.children.forEach(item => {bfs(item);});
+                node.children.forEach(item => { bfs(item); });
             }
         }
         bfs(this);
@@ -191,7 +184,7 @@ export class Group extends BaseFunctional {
             if (node.children.length === 0) {
                 return;
             } else {
-                node.children.forEach(item => {bfs(item);});
+                node.children.forEach(item => { bfs(item); });
             }
         }
         bfs(this);
@@ -283,7 +276,7 @@ export class GroupBookmark extends Group {
 
     constructor(
         bm: Bookmark,
-        group: Group|undefined=undefined
+        group: Group | undefined = undefined
     ) {
         if (!group) {
             group = new Group(bm.name, util.randomColor(), bm.uri);
@@ -357,7 +350,7 @@ class UriMap<T> extends Object {
 export class NodeUriMap extends UriMap<BaseFunctional> {
     public findOverlapBookmark() {
         let result = [];
-        let map: { [key: number]: Bookmark} = {};
+        let map: { [key: number]: Bookmark } = {};
         for (let key of this.keys()) {
             let node = this.get(key);
             if (node.type !== ITEM_TYPE_BM) {
@@ -409,7 +402,7 @@ export class RootGroup extends Group {
         name: string,
         color: string,
         uri: string,
-        children: (NodeType)[]=[]
+        children: (NodeType)[] = []
     ) {
         super(name, color, uri, children);
         this.cache = new NodeUriMap();
@@ -444,12 +437,12 @@ export class RootGroup extends Group {
      */
     public cut_node(node: NodeType) {
         let group = this.get_node(node.uri, ITEM_TYPE_GROUP) as Group;
-        
+
         let index = group.children.indexOf(node);
         if (index < 0) {
             return;
         }
-        group.children.splice(index, 1); 
+        group.children.splice(index, 1);
     }
     /**
      * 断链; 刷新cache

@@ -7,7 +7,6 @@ import * as bmutil from './util';
 import * as commonutil from '../utils/util';
 import { StoreManager } from '../../store';
 import { DecorationFactory } from './decoration_factory';
-import * as path from 'path';
 import { SerializableGroup } from './serializable_type';
 export class BmxLauncher {
   static async init(context: vscode.ExtensionContext) {

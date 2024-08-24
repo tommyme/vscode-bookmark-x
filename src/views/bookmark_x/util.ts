@@ -7,7 +7,7 @@ import * as vscode from 'vscode';
 function randomColor() {
     const letters = '0123456789ABCDEF';
     let color = '#';
-    for (var i = 0; i < 6; i++) {
+    for (let i = 0; i < 6; i++) {
         color += letters[Math.floor(Math.random() * 16)];
     }
     return color;
@@ -30,7 +30,7 @@ function splitTreeUri2parts(input: string): [string, string] {
     }
 }
 
-function joinTreeUri(input: Array<String>): string {
+function joinTreeUri(input: Array<string>): string {
     // "", "aa" -- "aa"
     // "aa", "bb" -- "aa/bb"
     // "", "aa/bb" -- "aa/bb"
@@ -101,7 +101,7 @@ function wsfGetBookmarkJsonUri(wsf: WorkspaceFolder): vscode.Uri {
     return uri;
 }
 
-async function wsfReadBookmarkJson(wsf: WorkspaceFolder): Promise<Object | null> {
+async function wsfReadBookmarkJson(wsf: WorkspaceFolder): Promise<object | null> {
     let uri = wsfGetBookmarkJsonUri(wsf);
     let result = null;
     await vscode.workspace.fs.stat(uri).then(

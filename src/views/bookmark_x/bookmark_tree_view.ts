@@ -1,11 +1,10 @@
 import * as vscode from 'vscode';
-import { ThemeColor, ThemeIcon, ViewBadge, workspace } from 'vscode';
+import { ViewBadge } from 'vscode';
 import {Controller, SpaceMap} from './controller';
 import {BookmarkTreeItem} from './bookmark_tree_item';
-import { Bookmark, Group } from './functional_types';
 import * as commonUtil from '../utils/util';
 import * as bmutil from './util';
-import { ICON_GROUP, ITEM_TYPE_GROUP, ITEM_TYPE_GROUP_LIKE, typeIsGroupLike } from './constants';
+import { ICON_GROUP, ITEM_TYPE_GROUP_LIKE, typeIsGroupLike } from './constants';
 import { BmxTreeItem } from './bookmark_tree_data_provider';
 
 class MyViewBadge implements ViewBadge {
@@ -97,7 +96,7 @@ export class BookmarkTreeViewManager {
 
     static addSubGroup(treeItem: BookmarkTreeItem) {
         const group = treeItem.getBaseGroup()!;
-        this.controller!.inputBoxGetName().then((name: String) => {
+        this.controller!.inputBoxGetName().then((name: string) => {
             let uri = bmutil.joinTreeUri([group.get_full_uri(), name]);
             let wsf = this.controller!.get_wsf_with_node(group);
             this.controller!.addGroup(uri, wsf!);

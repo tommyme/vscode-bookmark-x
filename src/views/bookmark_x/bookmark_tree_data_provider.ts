@@ -1,18 +1,17 @@
-import {EventEmitter, TreeDataProvider, TreeItem, TreeItemCollapsibleState} from 'vscode';
+import { EventEmitter, TreeItem, TreeItemCollapsibleState } from 'vscode';
 import { Bookmark } from "./functional_types";
-import {BookmarkTreeItem, BookmarkTreeItemFactory, WsfTreeItem} from './bookmark_tree_item';
-import {Group, RootGroup} from './functional_types';
+import { BookmarkTreeItem, BookmarkTreeItemFactory, WsfTreeItem } from './bookmark_tree_item';
+import { Group } from './functional_types';
 import * as vscode from 'vscode';
 import { Controller, SpaceMap } from './controller';
 import { BookmarkTreeViewManager } from './bookmark_tree_view';
-import { ITEM_TYPE_BM, ITEM_TYPE_GROUP, ITEM_TYPE_GROUPBM } from './constants';
 import * as util from './util';
 
 export type BmxTreeItem = BookmarkTreeItem | WsfTreeItem;
 
-export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<BmxTreeItem>, vscode.TreeDragAndDropController<BmxTreeItem>  {
-	dropMimeTypes = ['application/vnd.code.tree.bookmarkitem'];
-	dragMimeTypes = ['application/vnd.code.tree.bookmarkitem'];
+export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<BmxTreeItem>, vscode.TreeDragAndDropController<BmxTreeItem> {
+    dropMimeTypes = ['application/vnd.code.tree.bookmarkitem'];
+    dragMimeTypes = ['application/vnd.code.tree.bookmarkitem'];
 
     private changeEmitter = new EventEmitter<BookmarkTreeItem | undefined | null | void>();
     private controller: Controller;
@@ -28,7 +27,7 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<BmxTree
     }
 
     // 初始化tree item
-    public getChildren(element?: BookmarkTreeItem | undefined | WsfTreeItem): Thenable<any> {
+    public getChildren(element?: BookmarkTreeItem | undefined | WsfTreeItem): Promise<BmxTreeItem[]|undefined> {
         console.log("get children call", element);
         let el;
         if (!element) {
@@ -75,21 +74,21 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<BmxTree
     public refresh() {
         this.changeEmitter.fire();
     }
-    public async handleDrag(source: BmxTreeItem[], treeDataTransfer: vscode.DataTransfer, token: vscode.CancellationToken): Promise<void> {
+    public async handleDrag(source: BmxTreeItem[], treeDataTransfer: vscode.DataTransfer): Promise<void> {
         if (!source.every(item => item instanceof BookmarkTreeItem)) {
             // 这里保证在拖拽workspace的时候 dropping items为空
             return;
         }
         // let uris2trans = source.map(x => x.base!.get_full_uri());
-		treeDataTransfer.set('application/vnd.code.tree.bookmarkitem', new vscode.DataTransferItem(source));
+        treeDataTransfer.set('application/vnd.code.tree.bookmarkitem', new vscode.DataTransferItem(source));
         console.log("handleDrag", source);
-	}
-    
-    public async handleDrop(target: WsfTreeItem | BookmarkTreeItem | undefined, sources: vscode.DataTransfer, token: vscode.CancellationToken): Promise<void> {
+    }
+
+    public async handleDrop(target: WsfTreeItem | BookmarkTreeItem | undefined, sources: vscode.DataTransfer): Promise<void> {
         // console.log("handleDrop", target)
         // let x = [target, sources, token]
         const obj = sources.get('application/vnd.code.tree.bookmarkitem');
-		const droppingItems: Array<BookmarkTreeItem> = obj?.value;
+        const droppingItems: Array<BookmarkTreeItem> = obj?.value;
         let changed_flag = false;
 
         if (typeof target === 'undefined') {
@@ -97,7 +96,7 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<BmxTree
             return;
             // target = new BookmarkTreeItem('');
         }
-        
+
         if (droppingItems.length === 1) {
             let tvitem = droppingItems[0];
             let src_wsf = this.controller.get_wsf_with_node(tvitem.base!);
@@ -120,7 +119,7 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<BmxTree
                 dst_wsf = this.controller.get_wsf_with_node(target);
             }
             // group -> root/group
-            if ( item instanceof Group && target!.base instanceof Group) {
+            if (item instanceof Group && target!.base instanceof Group) {
                 if (dst_rg.cache.get(
                     util.joinTreeUri([target.base.get_full_uri(), item.name])
                 )) {
@@ -153,7 +152,7 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<BmxTree
                 target!.collapsibleState = TreeItemCollapsibleState.Expanded;
             }
             // bookmark -> root/group
-            else if ( item instanceof Bookmark && target!.base instanceof Group) {
+            else if (item instanceof Bookmark && target!.base instanceof Group) {
                 // 判定是否存在
                 if (dst_rg.cache.get(
                     util.joinTreeUri([target.base.get_full_uri(), item.name])
@@ -176,7 +175,7 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<BmxTree
                 target!.collapsibleState = TreeItemCollapsibleState.Expanded;
             }
             // ? case not cover
-            else { 
+            else {
                 vscode.window.showInformationMessage("that situation not support yet");
                 return;
             }
@@ -209,7 +208,7 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<BmxTree
             this.controller.updateDecorations();
             this.controller.saveState();
         }
-	}
+    }
     /**
      * getParent
      */

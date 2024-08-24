@@ -1,6 +1,5 @@
 import { Uri, workspace } from "vscode";
 import * as fs from 'fs';
-import * as path from 'path';
 
 export class StoreManager {
   /**
@@ -19,7 +18,7 @@ export class StoreManager {
         return;
       }
     }
-    catch (error) {
+    catch {
       // dir not found, create it
       await workspace.fs.createDirectory(dirUri);
     }
@@ -42,7 +41,7 @@ export class StoreManager {
           fs.writeFileSync(path, content);
         }
       }
-    } catch (error) {
+    } catch {
       // file not exist
       fs.writeFileSync(path, content);
     }
