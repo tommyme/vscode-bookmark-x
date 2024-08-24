@@ -21,7 +21,7 @@ import { typeIsBookmarkLike } from './constants';
 import { BookmarkTreeDataProvider } from './bookmark_tree_data_provider';
 import { TextEncoder } from 'util';
 import { DecorationFactory } from './decoration_factory';
-import { BookmarkTreeItemFactory } from './bookmark_tree_item';
+import { BookmarkTreeItem, BookmarkTreeItemFactory } from './bookmark_tree_item';
 import { BookmarkTreeViewManager } from './bookmark_tree_view';
 import { error } from 'console';
 import { SAVED_WSFSDATA_KEY } from './constants';
@@ -41,16 +41,16 @@ export class SpaceMap {
     }
 }
 
-export class SpaceSortNode{
-    private static _sorting_node: NodeType | undefined = undefined;
+export class SpaceSortItem {
+    private static _sorting_item: BookmarkTreeItem | undefined = undefined;
     private static _sorting_ctx: string | undefined = undefined;
 
-    static get sorting_node() {
-        return this._sorting_node;
+    static get sorting_item() {
+        return this._sorting_item;
     }
 
-    static set sorting_node(node: NodeType | undefined) {
-        this._sorting_node = node;
+    static set sorting_item(item: BookmarkTreeItem | undefined) {
+        this._sorting_item = item;
     }
 
     static get sorting_ctx() {
@@ -103,32 +103,25 @@ export class Controller {
         return SpaceMap.active_group_map[wsf.uri.path];
     }
 
-    public get_sorting_node(): NodeType | undefined {
-        return SpaceSortNode.sorting_node;
-    }
-    
-    public disableNodeSorting(node: NodeType, wsf: vscode.WorkspaceFolder) {
-        let rg = this.get_root_group(this.wsf);
-        let tvitem = rg.vicache.get(node.get_full_uri());
-        tvitem.contextValue = SpaceSortNode.sorting_ctx;
-        SpaceSortNode.sorting_node = undefined;
-        SpaceSortNode.sorting_ctx = undefined;
+
+    public disableItemSorting(item: BookmarkTreeItem) {
+        item.contextValue = SpaceSortItem.sorting_ctx;
+        SpaceSortItem.sorting_item = undefined;
+        SpaceSortItem.sorting_ctx = undefined;
         this.updateDecorations();
         this.saveState();
     }
 
 
-    public enableNodeSorting(node: NodeType, wsf: vscode.WorkspaceFolder) {
+    public enableItemSorting(item: BookmarkTreeItem) {
         // get corresponding treeitem
-        let rg = this.get_root_group(wsf);
-        let tvitem = rg.vicache.get(node.get_full_uri());
-        if(SpaceSortNode.sorting_node !== undefined){
-            let old_tvitem = rg.vicache.get(SpaceSortNode.sorting_node.get_full_uri());
-            old_tvitem.contextValue = SpaceSortNode.sorting_ctx;
+        if (SpaceSortItem.sorting_item !== undefined) {
+            let old_tvitem = SpaceSortItem.sorting_item;
+            old_tvitem.contextValue = SpaceSortItem.sorting_ctx;
         }
-        SpaceSortNode.sorting_node = node;
-        SpaceSortNode.sorting_ctx = tvitem.contextValue;
-        tvitem.contextValue = "sortItem";
+        SpaceSortItem.sorting_item = item;
+        SpaceSortItem.sorting_ctx = item.contextValue;
+        item.contextValue = "sortItem";
         // TODO support icon change
 
 
@@ -141,11 +134,12 @@ export class Controller {
         let config = workspace.getConfiguration('bookmarkX');
         let sortOption = config.get('sort') as string;
         if (sortOption === 'manual') {
-            let node = SpaceSortNode.sorting_node;
-            if (node === undefined) {
+            let sorting_item = SpaceSortItem.sorting_item;
+            if (sorting_item === undefined) {
                 vscode.window.showInformationMessage("No sorting item selected.");
                 return;
             }
+            let node = sorting_item.base!;
             let wsf = this.get_wsf_with_node(node);
             let rg = this.get_root_group(wsf!);
             let father = rg.get_node(node.uri) as Group;
