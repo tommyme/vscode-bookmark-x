@@ -3,6 +3,7 @@ import { SerializableBookmark, SerializableGroup, SerializableGroupBookmark } fr
 import { ICON_ACTIVE_GROUP, ICON_GROUP, ITEM_TYPE_BM, ITEM_TYPE_GROUP, ITEM_TYPE_GROUPBM, ITEM_TYPE_GROUP_LIKE, typeIsGroupLike, } from './constants';
 import * as util from './util';
 import { BookmarkTreeItem, BookmarkTreeItemFactory } from './bookmark_tree_item';
+import { SpaceSortItem } from './controller';
 
 export type NodeType = Group | Bookmark | GroupBookmark;
 export type GroupLike = Group | GroupBookmark;
@@ -379,6 +380,10 @@ export class ViewItemUriMap extends UriMap<BookmarkTreeItem> {
         this.keys().forEach(key => {
             // reset icon status
             let tvi = this.get(key);
+            if(SpaceSortItem.sorting_item === tvi){
+                // item is sorting, use sorting icon
+                return;
+            }
             if (ITEM_TYPE_GROUP_LIKE.includes(tvi.base!.type)) {
                 if (util.isSubUriOrEqual(key, new_full_uri)) {
                     tvi.iconPath = ICON_ACTIVE_GROUP;

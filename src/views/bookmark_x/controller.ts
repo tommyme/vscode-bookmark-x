@@ -14,7 +14,7 @@ import * as path from 'path';
 import { Bookmark, GroupBookmark, NodeType, RootGroup } from "./functional_types";
 import { Group } from './functional_types';
 import { SerializableGroup } from './serializable_type';
-import {ITEM_TYPE_BM, ITEM_TYPE_GROUP, ITEM_TYPE_GROUP_LIKE} from "./constants";
+import { ITEM_TYPE_BM, ITEM_TYPE_GROUP, ITEM_TYPE_GROUP_LIKE, ITEM_TYPE_GROUPBM } from "./constants";
 import * as bmutil from './util';
 import * as commonUtil from '../utils/util';
 import { typeIsBookmarkLike } from './constants';
@@ -25,10 +25,11 @@ import { BookmarkTreeItem, BookmarkTreeItemFactory } from './bookmark_tree_item'
 import { BookmarkTreeViewManager } from './bookmark_tree_view';
 import { error } from 'console';
 import { SAVED_WSFSDATA_KEY } from './constants';
+import { ICON_BOOKMARK, ICON_ACTIVE_GROUP, ICON_GROUP, ICON_SORTING_BOOKMARK, ICON_SORTING_ACTIVE_GROUP, ICON_SORTING_GROUP } from "./constants"
 
 export class SpaceMap {
-    static root_group_map: {[key: string]: RootGroup} = {};
-    static active_group_map: {[key: string]: Group} = {};
+    static root_group_map: { [key: string]: RootGroup } = {};
+    static active_group_map: { [key: string]: Group } = {};
 
     static get wsfs() {
         if (vscode.workspace.workspaceFolders) {
@@ -62,7 +63,7 @@ export class SpaceSortItem {
     }
 }
 
-type WsfDataSerialiable = {rg: {[key: string]: any}, ag: {[key: string]: any}};
+type WsfDataSerialiable = { rg: { [key: string]: any }, ag: { [key: string]: any } };
 
 export class Controller {
 
@@ -103,9 +104,39 @@ export class Controller {
         return SpaceMap.active_group_map[wsf.uri.path];
     }
 
+    public using_active_icon(item: BookmarkTreeItem): Boolean {
+        let wsf = this.get_wsf_with_node(item.base!);
+        let active_group = this.get_active_group(wsf!);
+        if (ITEM_TYPE_GROUP_LIKE.includes(item.base!.type)) {
+            let group = item.base as Group;
+            return bmutil.isSubUriOrEqual(group.get_full_uri(), active_group.get_full_uri());
+        }
+        return false;
+    }
+
+    public using_sorting_icon(item: BookmarkTreeItem): Boolean {
+        return SpaceSortItem.sorting_item === item
+    }
+
 
     public disableItemSorting(item: BookmarkTreeItem) {
         item.contextValue = SpaceSortItem.sorting_ctx;
+        if (this.using_active_icon(item)) {
+            // the deselected item is using active group icon now.
+            item.iconPath = ICON_ACTIVE_GROUP;
+        } else {
+            switch (item.base!.type) {
+                case ITEM_TYPE_GROUP:
+                case ITEM_TYPE_GROUPBM:
+                    item.iconPath = ICON_GROUP;
+                    break;
+                case ITEM_TYPE_BM:
+                    item.iconPath = ICON_BOOKMARK;
+                    break;
+                default:
+                    break;
+            }
+        }
         SpaceSortItem.sorting_item = undefined;
         SpaceSortItem.sorting_ctx = undefined;
         this.updateDecorations();
@@ -118,12 +149,42 @@ export class Controller {
         if (SpaceSortItem.sorting_item !== undefined) {
             let old_tvitem = SpaceSortItem.sorting_item;
             old_tvitem.contextValue = SpaceSortItem.sorting_ctx;
+            if (this.using_active_icon(old_tvitem)) {
+                // the deselected item is using active group icon now.
+                old_tvitem.iconPath = ICON_ACTIVE_GROUP;
+            } else {
+                switch (old_tvitem.base!.type) {
+                    case ITEM_TYPE_GROUP:
+                    case ITEM_TYPE_GROUPBM:
+                        old_tvitem.iconPath = ICON_GROUP;
+                        break;
+                    case ITEM_TYPE_BM:
+                        old_tvitem.iconPath = ICON_BOOKMARK;
+                        break;
+                    default:
+                        break;
+                }
+            }
         }
         SpaceSortItem.sorting_item = item;
         SpaceSortItem.sorting_ctx = item.contextValue;
         item.contextValue = "sortItem";
-        // TODO support icon change
 
+        if (this.using_active_icon(item)) {
+            item.iconPath = ICON_SORTING_ACTIVE_GROUP;
+        } else {
+            switch (item.base!.type) {
+                case ITEM_TYPE_GROUP:
+                case ITEM_TYPE_GROUPBM:
+                    item.iconPath = ICON_SORTING_GROUP;
+                    break;
+                case ITEM_TYPE_BM:
+                    item.iconPath = ICON_SORTING_BOOKMARK;
+                    break;
+                default:
+                    break;
+            }
+        }
 
         this.updateDecorations();
         this.saveState();
@@ -223,7 +284,7 @@ export class Controller {
         }
     }
     public saveWsfsState() {
-        let res: WsfDataSerialiable = {rg:{}, ag:{}};
+        let res: WsfDataSerialiable = { rg: {}, ag: {} };
         workspace.workspaceFolders?.forEach(wsf => {
             res.rg[wsf.uri.path] = SpaceMap.root_group_map[wsf.uri.path].serialize();
             res.ag[wsf.uri.path] = SpaceMap.active_group_map[wsf.uri.path].get_full_uri();
@@ -237,7 +298,7 @@ export class Controller {
             return;
         } else {
             // let data = this.ctx.workspaceState.update(SAVED_WSFSDATA_KEY, undefined);
-            let data: WsfDataSerialiable = this.ctx.workspaceState.get(SAVED_WSFSDATA_KEY) ?? {rg: {}, ag: {}};
+            let data: WsfDataSerialiable = this.ctx.workspaceState.get(SAVED_WSFSDATA_KEY) ?? { rg: {}, ag: {} };
             workspace.workspaceFolders.forEach(wsf => {
                 let rg = data.rg[wsf.uri.path];
                 let ag = data.ag[wsf.uri.path];
@@ -263,7 +324,7 @@ export class Controller {
             rg.sortGroupBookmark();
             console.log("node map keys:", rg.cache.keys());
             console.log("view item map keys:", rg.vicache.keys());
-            console.log("restore saved state done");  
+            console.log("restore saved state done");
         });
     }
 
@@ -300,7 +361,7 @@ export class Controller {
      * @param {type} param1 - param1 desc
      * @returns {type} - return value desc
      */
-    public actionToggleLabeledBookmark(textEditor: TextEditor, force=false) {
+    public actionToggleLabeledBookmark(textEditor: TextEditor, force = false) {
         if (textEditor.selections.length === 0) {
             return;
         }
@@ -338,7 +399,7 @@ export class Controller {
         });
     }
 
-    public inputBoxGetName(value="") {
+    public inputBoxGetName(value = "") {
         return window.showInputBox({
             placeHolder: "node name",
             prompt: "Please enter a new node name",
@@ -379,7 +440,7 @@ export class Controller {
         });
     }
 
-    public async doSaveSerializedRoot(wsf: vscode.WorkspaceFolder|null=null) {
+    public async doSaveSerializedRoot(wsf: vscode.WorkspaceFolder | null = null) {
         if (wsf === null) {
             wsf = workspace.workspaceFolders![0];
         }
@@ -394,7 +455,7 @@ export class Controller {
         await workspace.fs.writeFile(uri, bytes);
         window.showInformationMessage("saved.");
     }
-    public async doLoadSerializedRoot(wsf: vscode.WorkspaceFolder|null=null) {
+    public async doLoadSerializedRoot(wsf: vscode.WorkspaceFolder | null = null) {
         if (wsf === null) {
             wsf = workspace.workspaceFolders![0];
         }
@@ -525,7 +586,7 @@ export class Controller {
         tvitem.label = val;
 
         rg.vicache.del(node.get_full_uri());
-        
+
         let father = this._editNodeLabel(node, val, wsf!);
         if (father) {
             father.sortGroupBookmark();
@@ -544,9 +605,9 @@ export class Controller {
         let wsf = this.get_wsf_with_node(group);
         if (group.children.length > 0) {
             let val = await
-            window.showInformationMessage(
-                "the group not empty, do you really want to delete it?", 'yes', 'no'
-            );
+                window.showInformationMessage(
+                    "the group not empty, do you really want to delete it?", 'yes', 'no'
+                );
             if (val === 'yes') {
                 this.deleteGroups(group, wsf!);
                 return true;
@@ -604,7 +665,7 @@ export class Controller {
      * @param {Boolean} force - delete the exist bm and create new.
      * @returns {Boolean} - success or fail
      */
-    public addBookmark(bm: Bookmark, force=false): boolean {
+    public addBookmark(bm: Bookmark, force = false): boolean {
         // uri confliction
         let wsf = commonUtil.getWsfWithPath(bm.fsPath);
         let rg = this.get_root_group(wsf!);
@@ -839,7 +900,7 @@ export class Controller {
                     window.showInformationMessage("current bookmark: " + item.get_full_uri());
                     let wsf = this.get_wsf_with_node(item);
                     let tvitem = this.get_root_group(wsf!).vicache.get(item.get_full_uri());
-                    BookmarkTreeViewManager.view.reveal(tvitem, {focus: true});
+                    BookmarkTreeViewManager.view.reveal(tvitem, { focus: true });
                 }
             });
         }
@@ -875,7 +936,7 @@ export class Controller {
         let res = workspace.workspaceFolders?.find(wsf => wsf.uri.path === path);
         return res!;
     }
-    
+
     async selectBookmark(option: string) {
         let wsf = commonUtil.getWsfWithActiveEditor();
 

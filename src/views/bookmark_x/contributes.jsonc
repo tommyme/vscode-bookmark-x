@@ -272,6 +272,28 @@
 					]
 				}
 			}
-		}
+		},
+		"colors": [
+			{
+				"id": "bookmark_x.activeGroupColor",
+				"description": "Color for icon of active group",
+				"defaults": {
+					"dark": "statusBarItem.remoteBackground",
+					"light": "statusBarItem.remoteBackground",
+					"highContrast": "statusBarItem.remoteBackground",
+					"highContrastLight": "statusBarItem.remoteBackground"
+				}
+			},
+			{
+				"id": "bookmark_x.sortingItemColor",
+				"description": "Color for icon of sorting item",
+				"defaults":{
+					"dark": "#007acc",
+					"light": "#007acc",
+					"highContrast": "#007acc",
+					"highContrastLight": "#007acc"
+				}
+			}
+		]
 	}
 }

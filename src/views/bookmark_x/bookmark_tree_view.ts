@@ -61,7 +61,13 @@ export class BookmarkTreeViewManager {
             this.controller!.get_root_group(wsf!).vicache.keys().forEach(key => {
                 // reset icon status
                 let tvi = this.controller!.get_root_group(wsf!).vicache.get(key);
-                if (ITEM_TYPE_GROUP_LIKE.includes(tvi.base!.type)) { tvi.iconPath = ICON_GROUP; }
+                if (ITEM_TYPE_GROUP_LIKE.includes(tvi.base!.type)) { 
+                    if(this.controller!.using_sorting_icon(tvi)){
+                        return;
+                    }else{
+                        tvi.iconPath = ICON_GROUP;
+                    }
+                 }
             });
         } else {
             this.controller!.activateGroup(group.get_full_uri(), wsf!);
