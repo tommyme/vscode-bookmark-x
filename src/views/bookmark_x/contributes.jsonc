@@ -275,23 +275,19 @@
 		},
 		"colors": [
 			{
-				"id": "bookmark_x.activeGroupColor",
+				"id": "bmx.bookmark.activeGroupColor",
 				"description": "Color for icon of active group",
 				"defaults": {
 					"dark": "statusBarItem.remoteBackground",
-					"light": "statusBarItem.remoteBackground",
-					"highContrast": "statusBarItem.remoteBackground",
-					"highContrastLight": "statusBarItem.remoteBackground"
+					"light": "statusBarItem.remoteBackground"
 				}
 			},
 			{
-				"id": "bookmark_x.sortingItemColor",
+				"id": "bmx.bookmark.sortingItemColor",
 				"description": "Color for icon of sorting item",
-				"defaults":{
+				"defaults": {
 					"dark": "#ff9966",
-					"light": "#ff9966",
-					"highContrast": "#ff9966",
-					"highContrastLight": "#ff9966"
+					"light": "#ff9966"
 				}
 			}
 		]

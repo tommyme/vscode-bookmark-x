@@ -117,10 +117,8 @@ export class BookmarkTreeViewManager {
 
     static activateGroup(treeItem: BookmarkTreeItem) {
         const group = treeItem.getBaseGroup();
-        let wsf = Controller.get_wsf_with_node(group!);
-        let rg = Controller.get_root_group(wsf!);
-        const activeGroup = Controller.get_active_group(wsf!);
-        if (group === null || activeGroup.get_full_uri() === group.get_full_uri()) {
+        let {wsf, rg, ag} = Controller.get_props(group!);
+        if (group === null || ag.get_full_uri() === group.get_full_uri()) {
             // switch to root group, reset icon status
             Controller.activateGroup("", wsf!);
             vscode.window.showInformationMessage(`switch to root group`);

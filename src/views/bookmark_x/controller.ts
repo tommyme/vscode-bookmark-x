@@ -419,15 +419,13 @@ export class Controller {
 
     // 提供给treeView，删除标签
     static deleteBookmark(bookmark: Bookmark) {
-        let wsf = this.get_wsf_with_node(bookmark);
-        let rg = this.get_root_group(wsf!);
-        let group = rg.get_node(bookmark.uri) as Group;
-        let index = group.children.indexOf(bookmark);
+        let {rg, fa} = this.get_props(bookmark);
+        let index = fa.children.indexOf(bookmark);
         if (index < 0) {
             return;
         }
 
-        group.children.splice(index, 1);
+        fa.children.splice(index, 1);
         rg.cache.del(bookmark.get_full_uri());
         rg.vicache.del(bookmark.get_full_uri());
         this.updateDecorations();
@@ -436,11 +434,9 @@ export class Controller {
 
     static deleteBookmarks(bms: Array<Bookmark>) {
         bms.forEach(bm => {
-            let wsf = this.get_wsf_with_node(bm);
-            let rg = this.get_root_group(wsf!);
-            let group = rg.cache.get(bm.uri) as Group;
-            let index = group.children.indexOf(bm);
-            group.children.splice(index, 1);
+            let {rg, fa} = this.get_props(bm);
+            let index = fa.children.indexOf(bm);
+            fa.children.splice(index, 1);
             rg.cache.del(bm.get_full_uri());
             rg.vicache.del(bm.get_full_uri());
         });
@@ -480,13 +476,11 @@ export class Controller {
      * @returns {type} - return value desc
      */
     static editNodeLabel(node: Bookmark | Group, val: string): boolean {
-        let wsf = this.get_wsf_with_node(node);
-        let rg = this.get_root_group(wsf!);
-        // 命名冲突
+        let {wsf, rg} = this.get_props(node);
+        // check naming confilict
         if (rg.cache.check_uri_exists(bmutil.joinTreeUri([node.uri, val]))) {
             return false;
         }
-        // 前后的缓存操作 用于输入的是bm的场合
         rg.cache.del(node.get_full_uri());
         // change tree view item's label
         let tvitem = rg.vicache.get(node.get_full_uri());
@@ -633,7 +627,7 @@ export class Controller {
                 editor.setDecorations(DecorationFactory.decoration, []);
             }
             // set decos, remove decos
-            for (let [decoration, ranges] of editorDecos) {
+            for (let [, ranges] of editorDecos) {
                 editor.setDecorations(DecorationFactory.decoration, ranges);
             }
 
