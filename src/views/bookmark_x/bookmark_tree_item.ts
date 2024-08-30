@@ -7,7 +7,6 @@ import { ICON_ACTIVE_GROUP, ICON_BOOKMARK, ICON_GROUP, ITEM_TYPE_BM, ITEM_TYPE_G
 import { DecorationFactory } from './decoration_factory';
 
 export class BookmarkTreeItemFactory {
-    static controller: Controller;
 
     static createBookmark(bm: Bookmark): BookmarkTreeItem {
         let result;
@@ -27,8 +26,8 @@ export class BookmarkTreeItemFactory {
         return result;
     }
     static getCollapseState(group: Group) {
-        let wsf = this.controller.get_wsf_with_node(group);
-        let currActiveGroupUri = this.controller.get_active_group(wsf!).get_full_uri();
+        let wsf = Controller.get_wsf_with_node(group);
+        let currActiveGroupUri = Controller.get_active_group(wsf!).get_full_uri();
         if (group.children.length > 0) {
             return (group.get_full_uri() === currActiveGroupUri) ? TreeItemCollapsibleState.Expanded : TreeItemCollapsibleState.Collapsed;
         } else {
@@ -36,8 +35,8 @@ export class BookmarkTreeItemFactory {
         }
     };
     static _createGroup(group: Group): BookmarkTreeItem {
-        let wsf = this.controller.get_wsf_with_node(group);
-        let currActiveGroupUri = this.controller.get_active_group(wsf!).get_full_uri();
+        let wsf = Controller.get_wsf_with_node(group);
+        let currActiveGroupUri = Controller.get_active_group(wsf!).get_full_uri();
         let result = new BookmarkTreeItem(group.name, this.getCollapseState(group));
         if (currActiveGroupUri && util.isSubUriOrEqual(group.get_full_uri(), currActiveGroupUri)) {
             result.iconPath = ICON_ACTIVE_GROUP;
@@ -79,10 +78,10 @@ export class BookmarkTreeItemFactory {
     }
 
     static fromType<T extends NodeType>(item: T): BookmarkTreeItem {
-        let wsf = this.controller.get_wsf_with_node(item);
-        if (this.controller.get_root_group(wsf!).vicache.check_uri_exists(item.get_full_uri())) {
+        let wsf = Controller.get_wsf_with_node(item);
+        if (Controller.get_root_group(wsf!).vicache.check_uri_exists(item.get_full_uri())) {
             console.log("item from bm using cache");
-            return this.controller.get_root_group(wsf!).vicache.get(item.get_full_uri());
+            return Controller.get_root_group(wsf!).vicache.get(item.get_full_uri());
         } else {
             console.log("unexpected from type");
             // 不会走到这里

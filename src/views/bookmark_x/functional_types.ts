@@ -1,6 +1,6 @@
 import { window, workspace } from 'vscode';
 import { SerializableBookmark, SerializableGroup, SerializableGroupBookmark } from './serializable_type';
-import { ICON_ACTIVE_GROUP, ICON_GROUP, ITEM_TYPE_BM, ITEM_TYPE_GROUP, ITEM_TYPE_GROUPBM, ITEM_TYPE_GROUP_LIKE, typeIsGroupLike, } from './constants';
+import { ICON_ACTIVE_GROUP, ICON_GROUP, ITEM_TYPE_BM, ITEM_TYPE_GROUP, ITEM_TYPE_GROUPBM, typeIsGroupLike, } from './constants';
 import * as util from './util';
 import { BookmarkTreeItem, BookmarkTreeItemFactory } from './bookmark_tree_item';
 import { SpaceSortItem } from './controller';
@@ -384,7 +384,7 @@ export class ViewItemUriMap extends UriMap<BookmarkTreeItem> {
                 // item is sorting, use sorting icon
                 return;
             }
-            if (ITEM_TYPE_GROUP_LIKE.includes(tvi.base!.type)) {
+            if (typeIsGroupLike(tvi.base!.type)) {
                 if (util.isSubUriOrEqual(key, new_full_uri)) {
                     tvi.iconPath = ICON_ACTIVE_GROUP;
                 } else {
@@ -494,5 +494,9 @@ export class RootGroup extends Group {
             }
         });
         return res;
+    }
+
+    public father_of(node: BaseFunctional) {
+        return this.get_node(node.uri) as Group;
     }
 }
