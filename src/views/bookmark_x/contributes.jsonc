@@ -272,6 +272,24 @@
 					]
 				}
 			}
-		}
+		},
+		"colors": [
+			{
+				"id": "bmx.bookmark.activeGroupColor",
+				"description": "Color for icon of active group",
+				"defaults": {
+					"dark": "statusBarItem.remoteBackground",
+					"light": "statusBarItem.remoteBackground"
+				}
+			},
+			{
+				"id": "bmx.bookmark.sortingItemColor",
+				"description": "Color for icon of sorting item",
+				"defaults": {
+					"dark": "#ff9966",
+					"light": "#ff9966"
+				}
+			}
+		]
 	}
 }
