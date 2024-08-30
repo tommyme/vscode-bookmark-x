@@ -14,7 +14,7 @@ import * as path from 'path';
 import { Bookmark, GroupBookmark, NodeType, RootGroup } from "./functional_types";
 import { Group } from './functional_types';
 import { SerializableGroup } from './serializable_type';
-import { ITEM_TYPE_BM, ITEM_TYPE_GROUP, ITEM_TYPE_GROUP_LIKE, ITEM_TYPE_GROUPBM } from "./constants";
+import { ITEM_TYPE_BM, ITEM_TYPE_GROUP, ITEM_TYPE_GROUP_LIKE } from "./constants";
 import * as bmutil from './util';
 import * as commonUtil from '../utils/util';
 import { typeIsBookmarkLike } from './constants';
@@ -25,7 +25,6 @@ import { BookmarkTreeItem, BookmarkTreeItemFactory } from './bookmark_tree_item'
 import { BookmarkTreeViewManager } from './bookmark_tree_view';
 import { error } from 'console';
 import { SAVED_WSFSDATA_KEY } from './constants';
-import { ICON_BOOKMARK, ICON_ACTIVE_GROUP, ICON_GROUP, ICON_SORTING_BOOKMARK, ICON_SORTING_ACTIVE_GROUP, ICON_SORTING_GROUP } from "./constants"
 
 export class SpaceMap {
     static root_group_map: { [key: string]: RootGroup } = {};
@@ -73,13 +72,13 @@ export class Controller {
     private decos2remove = new Map<TextEditorDecorationType, number>();
     public tprovider!: BookmarkTreeDataProvider;
     public _range?: Range;
-    private _wsf!: vscode.WorkspaceFolder;
+    static _wsf: vscode.WorkspaceFolder;
 
-    get fake_root_group(): RootGroup {
+    static get fake_root_group(): RootGroup {
         return SpaceMap.root_group_map[this.wsf.uri.path];
     }
 
-    set fake_root_group(val: RootGroup) {
+    static set fake_root_group(val: RootGroup) {
         SpaceMap.root_group_map[this.wsf.uri.path] = val;
     }
 
@@ -102,92 +101,6 @@ export class Controller {
 
     public get_active_group(wsf: vscode.WorkspaceFolder): Group {
         return SpaceMap.active_group_map[wsf.uri.path];
-    }
-
-    public using_active_icon(item: BookmarkTreeItem): Boolean {
-        let wsf = this.get_wsf_with_node(item.base!);
-        let active_group = this.get_active_group(wsf!);
-        if (ITEM_TYPE_GROUP_LIKE.includes(item.base!.type)) {
-            let group = item.base as Group;
-            return bmutil.isSubUriOrEqual(group.get_full_uri(), active_group.get_full_uri());
-        }
-        return false;
-    }
-
-    public using_sorting_icon(item: BookmarkTreeItem): Boolean {
-        return SpaceSortItem.sorting_item === item
-    }
-
-
-    public disableItemSorting(item: BookmarkTreeItem) {
-        item.contextValue = SpaceSortItem.sorting_ctx;
-        if (this.using_active_icon(item)) {
-            // the deselected item is using active group icon now.
-            item.iconPath = ICON_ACTIVE_GROUP;
-        } else {
-            switch (item.base!.type) {
-                case ITEM_TYPE_GROUP:
-                case ITEM_TYPE_GROUPBM:
-                    item.iconPath = ICON_GROUP;
-                    break;
-                case ITEM_TYPE_BM:
-                    item.iconPath = ICON_BOOKMARK;
-                    break;
-                default:
-                    break;
-            }
-        }
-        SpaceSortItem.sorting_item = undefined;
-        SpaceSortItem.sorting_ctx = undefined;
-        this.updateDecorations();
-        this.saveState();
-    }
-
-
-    public enableItemSorting(item: BookmarkTreeItem) {
-        // get corresponding treeitem
-        if (SpaceSortItem.sorting_item !== undefined) {
-            let old_tvitem = SpaceSortItem.sorting_item;
-            old_tvitem.contextValue = SpaceSortItem.sorting_ctx;
-            if (this.using_active_icon(old_tvitem)) {
-                // the deselected item is using active group icon now.
-                old_tvitem.iconPath = ICON_ACTIVE_GROUP;
-            } else {
-                switch (old_tvitem.base!.type) {
-                    case ITEM_TYPE_GROUP:
-                    case ITEM_TYPE_GROUPBM:
-                        old_tvitem.iconPath = ICON_GROUP;
-                        break;
-                    case ITEM_TYPE_BM:
-                        old_tvitem.iconPath = ICON_BOOKMARK;
-                        break;
-                    default:
-                        break;
-                }
-            }
-        }
-        SpaceSortItem.sorting_item = item;
-        SpaceSortItem.sorting_ctx = item.contextValue;
-        item.contextValue = "sortItem";
-
-        if (this.using_active_icon(item)) {
-            item.iconPath = ICON_SORTING_ACTIVE_GROUP;
-        } else {
-            switch (item.base!.type) {
-                case ITEM_TYPE_GROUP:
-                case ITEM_TYPE_GROUPBM:
-                    item.iconPath = ICON_SORTING_GROUP;
-                    break;
-                case ITEM_TYPE_BM:
-                    item.iconPath = ICON_SORTING_BOOKMARK;
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        this.updateDecorations();
-        this.saveState();
     }
 
     // move treeitem up or down
@@ -214,7 +127,7 @@ export class Controller {
             }
             // swap two elements
             [father.children[index], father.children[new_index]] = [father.children[new_index], father.children[index]];
-            this.updateDecorations();
+            // this.updateDecorations();
             this.saveState();
         } else {
             vscode.window.showInformationMessage("Manual sort is disabled. Enable it in the settings.");
@@ -223,11 +136,11 @@ export class Controller {
     }
 
 
-    set activeGroup(group: Group) {
+    static set activeGroup(group: Group) {
         SpaceMap.active_group_map[this.wsf.uri.path] = group;
     }
 
-    get wsf(): vscode.WorkspaceFolder {
+    static get wsf(): vscode.WorkspaceFolder {
         let fake_wsf = {
             uri: vscode.Uri.file("/path/to/404"),
             name: "",
@@ -244,7 +157,7 @@ export class Controller {
             return this._wsf;
         }
     }
-    set wsf(val: vscode.WorkspaceFolder) {
+    static set wsf(val: vscode.WorkspaceFolder) {
         this._wsf = val;
     }
 
@@ -330,9 +243,8 @@ export class Controller {
 
 
     /**
-     * command palette触发的toggleBookmark
-     * @param {type} param1 - param1 desc
-     * @returns {type} - return value desc
+     * create a bookmark with random name
+     * @param {TextEditor} textEditor - current textEditor you're focusing on
      */
     public actionToggleBookmark(textEditor: TextEditor) {
         if (textEditor.selections.length === 0) {
@@ -357,9 +269,8 @@ export class Controller {
     }
 
     /**
-     * command palette 触发的toggle labeled bookmark
-     * @param {type} param1 - param1 desc
-     * @returns {type} - return value desc
+     * create a bookmark with name specified
+     * @param {TextEditor} textEditor - current textEditor you're focusing on
      */
     public actionToggleLabeledBookmark(textEditor: TextEditor, force = false) {
         if (textEditor.selections.length === 0) {
@@ -399,6 +310,10 @@ export class Controller {
         });
     }
 
+    /**
+     * @param {string} value - default of input box
+     * @returns {PromiseLike<string>} string promise
+     */
     public inputBoxGetName(value = "") {
         return window.showInputBox({
             placeHolder: "node name",
@@ -604,10 +519,9 @@ export class Controller {
     public async safeDeleteGroups(group: Group): Promise<boolean> {
         let wsf = this.get_wsf_with_node(group);
         if (group.children.length > 0) {
-            let val = await
-                window.showInformationMessage(
-                    "the group not empty, do you really want to delete it?", 'yes', 'no'
-                );
+            let val = await window.showInformationMessage(
+                "the group not empty, do you really want to delete it?", 'yes', 'no'
+            );
             if (val === 'yes') {
                 this.deleteGroups(group, wsf!);
                 return true;

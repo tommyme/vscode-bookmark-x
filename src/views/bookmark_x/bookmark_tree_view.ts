@@ -1,10 +1,10 @@
 import * as vscode from 'vscode';
 import { ViewBadge } from 'vscode';
-import {Controller, SpaceMap} from './controller';
+import {Controller, SpaceMap, SpaceSortItem} from './controller';
 import {BookmarkTreeItem} from './bookmark_tree_item';
 import * as commonUtil from '../utils/util';
 import * as bmutil from './util';
-import { ICON_GROUP, ITEM_TYPE_GROUP_LIKE, typeIsGroupLike } from './constants';
+import { ICON_ACTIVE_GROUP, ICON_BOOKMARK, ICON_GROUP, ICON_SORTING_ACTIVE_GROUP, ICON_SORTING_BOOKMARK, ICON_SORTING_GROUP, typeIsGroupLike } from './constants';
 import { BmxTreeItem } from './bookmark_tree_data_provider';
 
 class MyViewBadge implements ViewBadge {
@@ -14,6 +14,77 @@ class MyViewBadge implements ViewBadge {
         this.value = value;
         this.tooltip = `${this.value} bookmarks`;
     }
+}
+
+class IconManager {
+
+    static tviIsSorting(tvi: BookmarkTreeItem): boolean {
+        return SpaceSortItem.sorting_item === tvi;
+    }
+
+    static deactivateResetGroupIcon(tvi: BookmarkTreeItem) {
+        if (typeIsGroupLike(tvi.base!.type)) {
+            if (!this.tviIsSorting(tvi)) {
+                tvi.iconPath = ICON_GROUP;
+            }
+        } else {
+            throw Error("type is not group like!");
+        }
+    }
+    
+    /**
+     * @param {BookmarkTreeItem} tvi - a tree view item
+     * @returns {boolean} whether the tvi is using activaed icon
+     */
+    static tviIsActive(tvi: BookmarkTreeItem): boolean {
+        // bmutil.isSubUriOrEqual()
+        return false;
+    }
+
+    static disableItemSorting(tvi: BookmarkTreeItem) {
+        tvi.contextValue = SpaceSortItem.sorting_ctx;
+        if (this.tviIsActive(tvi)) {
+            tvi.iconPath = ICON_ACTIVE_GROUP;
+        } else {
+            let tp2icon = {
+                ITEM_TYPE_GROUP: ICON_GROUP,
+                ITEM_TYPE_GROUPBM: ICON_GROUP,
+                ITEM_TYPE_BM: ICON_BOOKMARK
+            };
+        }
+        SpaceSortItem.sorting_item = undefined;
+        SpaceSortItem.sorting_ctx = undefined;
+    }
+
+    static enableItemSorting(tvi: BookmarkTreeItem) {
+        if (SpaceSortItem.sorting_item !== undefined) {
+            let old_tvi = SpaceSortItem.sorting_item;
+            old_tvi.contextValue = SpaceSortItem.sorting_ctx;
+            if (this.tviIsActive(tvi)) {
+                old_tvi.iconPath = ICON_ACTIVE_GROUP;
+            } else {
+                let tp2icon = {
+                    ITEM_TYPE_GROUP: ICON_GROUP,
+                    ITEM_TYPE_GROUPBM: ICON_GROUP,
+                    ITEM_TYPE_BM: ICON_BOOKMARK,
+                };
+            }
+        }
+        SpaceSortItem.sorting_item = tvi;
+        SpaceSortItem.sorting_ctx = tvi.contextValue;
+        tvi.contextValue = "sortItem";
+
+        if (this.tviIsActive(tvi)) {
+            tvi.iconPath = ICON_SORTING_ACTIVE_GROUP;
+        } else {
+            let tp2icon = {
+                ITEM_TYPE_GROUP: ICON_SORTING_GROUP,
+                ITEM_TYPE_GROUPBM: ICON_SORTING_GROUP,
+                ITEM_TYPE_BM: ICON_SORTING_BOOKMARK,
+            };
+        }
+    }
+
 }
 
 export class BookmarkTreeViewManager {
@@ -53,21 +124,15 @@ export class BookmarkTreeViewManager {
     static activateGroup(treeItem: BookmarkTreeItem) {
         const group = treeItem.getBaseGroup();
         let wsf = this.controller.get_wsf_with_node(group!);
+        let rg = this.controller.get_root_group(wsf!);
         const activeGroup = this.controller!.get_active_group(wsf!);
         if (group === null || activeGroup.get_full_uri() === group.get_full_uri()) {
-            // switch to root group
+            // switch to root group, reset icon status
             this.controller!.activateGroup("", wsf!);
             vscode.window.showInformationMessage(`switch to root group`);
-            this.controller!.get_root_group(wsf!).vicache.keys().forEach(key => {
-                // reset icon status
-                let tvi = this.controller!.get_root_group(wsf!).vicache.get(key);
-                if (ITEM_TYPE_GROUP_LIKE.includes(tvi.base!.type)) { 
-                    if(this.controller!.using_sorting_icon(tvi)){
-                        return;
-                    }else{
-                        tvi.iconPath = ICON_GROUP;
-                    }
-                 }
+            rg.vicache.keys().forEach(key => {
+                let tvi = rg.vicache.get(key);
+                IconManager.deactivateResetGroupIcon(tvi);
             });
         } else {
             this.controller!.activateGroup(group.get_full_uri(), wsf!);
@@ -77,11 +142,13 @@ export class BookmarkTreeViewManager {
     }
 
     static selectSortItem(treeItem: BookmarkTreeItem) {
-        this.controller!.enableItemSorting(treeItem!);
+        IconManager.enableItemSorting(treeItem);
+        this.controller!.updateDecorations();
     }
 
     static deselectSortItem(treeItem: BookmarkTreeItem) {
-        this.controller!.disableItemSorting(treeItem!);
+        IconManager.disableItemSorting(treeItem);
+        this.controller!.updateDecorations();
     }
 
 

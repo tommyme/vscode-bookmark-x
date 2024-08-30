@@ -27,7 +27,7 @@ export const SAVED_WSFSDATA_KEY    = "bookmarkDemo.wsfsData";
 export const ICON_BOOKMARK = new ThemeIcon("bookmark");
 export const ICON_ACTIVE_GROUP = new ThemeIcon("folder-opened", new ThemeColor("bookmark_x.activeGroupColor"));
 export const ICON_GROUP = new ThemeIcon("folder");
-export const ICON_SORTING_BOOKMARK = new ThemeIcon("bookmark", new ThemeColor("bookmark_x.sortingItemColor"))
+export const ICON_SORTING_BOOKMARK = new ThemeIcon("bookmark", new ThemeColor("bookmark_x.sortingItemColor"));
 export const ICON_SORTING_ACTIVE_GROUP = new ThemeIcon("folder-opened", new ThemeColor("bookmark_x.sortingItemColor"));
 export const ICON_SORTING_GROUP = new ThemeIcon("folder", new ThemeColor("bookmark_x.sortingItemColor"));
 
