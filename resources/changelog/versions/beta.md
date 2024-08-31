@@ -13,6 +13,7 @@
     - what you need to do is to set `bookmarkX.sort` to `manual` in vscode settings.
     - fix a bug when use it in multi-project [issue#13](https://github.com/tommyme/vscode-bookmark-x/issues/13)
     - configurable icon color for active group and sorting item in [PR#15](https://github.com/tommyme/vscode-bookmark-x/pull/15), you can configure it with `"workbench.colorCustomizations"` field in `settings.json`
+- fixed a bug when using groupBookmark [issue#17](https://github.com/tommyme/vscode-bookmark-x/issues/17)
 
 <h1 id="Beta_quick_run">quick run</h1>
 

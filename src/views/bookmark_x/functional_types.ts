@@ -106,7 +106,7 @@ export class Group extends BaseFunctional {
     }
 
     public add_group(group: Group) {
-        let father_group = this.get_node(group.uri, ITEM_TYPE_GROUP) as Group;
+        let father_group = this.get_node(group.uri) as Group;
         father_group.children.push(group);
         return father_group;
     }
@@ -441,7 +441,7 @@ export class RootGroup extends Group {
      * @returns {type} - return value desc
      */
     public cut_node(node: NodeType) {
-        let group = this.get_node(node.uri, ITEM_TYPE_GROUP) as Group;
+        let group = this.get_node(node.uri) as Group;
 
         let index = group.children.indexOf(node);
         if (index < 0) {

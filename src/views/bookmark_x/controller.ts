@@ -449,7 +449,7 @@ export class Controller {
      */
     static _editNodeLabel(node: NodeType, val: string, wsf: vscode.WorkspaceFolder): Group | undefined {
         let rg = this.get_root_group(wsf);
-        let father = rg.get_node(node.uri, "group") as Group;
+        let father = rg.get_node(node.uri) as Group;
 
         let index = father.children.indexOf(node);
         if (index < 0) {
