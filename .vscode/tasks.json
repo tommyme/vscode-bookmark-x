@@ -9,6 +9,13 @@
 			"command": [
 				"npx rollup -c --sourcemap --watch"
 			],
+		},
+		{
+			"label": "tsc build",
+			"type": "shell",
+			"command": [
+				"npx tsc -p . -m commonjs --watch"
+			],
 		}
 	],
 	"inputs": [

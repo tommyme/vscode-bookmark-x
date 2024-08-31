@@ -1,0 +1,99 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "contributes": {
+      "description": "All contributions of the VS Code extension represented by this package.",
+      "type": "object",
+      "properties": {
+        "commands": {
+          "description": "Contributes commands to the command palette.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "command": {
+                "description": "Identifier of the command to execute",
+                "type": "string"
+              },
+              "title": {
+                "description": "Title by which the command is represented in the UI",
+                "type": "string"
+              },
+              "icon": {
+                "description": "(Optional) Icon which is used to represent the command in the UI. Either a file path, an object with file paths for dark and light themes, or a theme icon references, like `$(zap)`",
+                "type": "string"
+              }
+            },
+            "required": ["command", "title"]
+          }
+        },
+        "viewsContainers": {
+          "description": "Contributes views containers to the editor",
+          "type": "object",
+          "properties": {
+            "activitybar": {
+              "description": "Contribute views containers to Activity Bar",
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "command": {
+                    "id": "Unique id used to identify the container in which views can be contributed using 'views' contribution point",
+                    "type": "string"
+                  },
+                  "title": {
+                    "description": "Human readable string used to render the container",
+                    "type": "string"
+                  },
+                  "icon": {
+                    "description": "Path to the container icon. Icons are 24x24 centered on a 50x40 block and have a fill color of 'rgb(215, 218, 224)' or '#d7dae0'. It is recommended that icons be in SVG, though any image file type is accepted.",
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "views": {
+          "description": "Contributes views to the editor",
+          "type": "object",
+          "properties": {
+          }
+        },
+        "menus": {
+          "description": "Contributes menu items to the editor",
+          "type": "object",
+          "properties": {
+          }
+        },
+        "viewsWelcome": {
+          "description": "Contributed views welcome content. Welcome content will be rendered in tree based views whenever they have no meaningful content to display, ie. the File Explorer when no folder is open. Such content is useful as in-product documentation to drive users to use certain features before they are available. A good example would be a `Clone Repository` button in the File Explorer welcome view.",
+          "type": "array"
+        },
+        "configuration": {
+          "description": "configuration",
+          "type": "object",
+          "properties": {
+          }
+        },
+        "colors": {
+          "description": "Contributes extension defined themable colors",
+          "type": "array"
+        },
+        "iconThemes": {
+          "description": "Contributes file icon themes.",
+          "type": "object",
+          "properties": {
+          }
+        },
+        "keybindings": {
+          "description": "Contributes keybindings.",
+          "type": "object",
+          "properties": {
+          }
+        }
+      }
+    }
+  }
+}

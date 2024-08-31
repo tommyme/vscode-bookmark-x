@@ -73,7 +73,7 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<BmxTree
     }
     public async handleDrag(source: BmxTreeItem[], treeDataTransfer: vscode.DataTransfer): Promise<void> {
         if (!source.every(item => item instanceof BookmarkTreeItem)) {
-            // 这里保证在拖拽workspace的时候 dropping items为空
+            // make sure when dragging workspace dropping items is empty
             return;
         }
         // let uris2trans = source.map(x => x.base!.get_full_uri());
@@ -82,17 +82,9 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<BmxTree
     }
 
     public async handleDrop(target: WsfTreeItem | BookmarkTreeItem | undefined, sources: vscode.DataTransfer): Promise<void> {
-        // console.log("handleDrop", target)
-        // let x = [target, sources, token]
         const obj = sources.get('application/vnd.code.tree.bookmarkitem');
         const droppingItems: Array<BookmarkTreeItem> = obj?.value;
         let changed_flag = false;
-
-        if (typeof target === 'undefined') {
-            vscode.window.showInformationMessage("that situation not support yet");
-            return;
-            // target = new BookmarkTreeItem('');
-        }
 
         if (droppingItems.length === 1) {
             let tvitem = droppingItems[0];
@@ -101,8 +93,15 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<BmxTree
             let src_rg = Controller.get_root_group(src_wsf!);
             let dst_rg = src_rg;
             let dst_wsf: vscode.WorkspaceFolder;
+            if (typeof target === 'undefined') {
+                // move to it's wsf, monitor a target node for root group
+                dst_wsf = src_wsf;
+                dst_rg = Controller.get_root_group(src_wsf);
+                target = new BookmarkTreeItem("");
+                target.base = Controller.get_root_group(dst_wsf);
+            }
             if (target instanceof WsfTreeItem) {
-                // item.
+                // monitor a target node for root group
                 dst_wsf = target.wsf;
                 dst_rg = Controller.get_root_group(target.wsf);
                 target = new BookmarkTreeItem("");
@@ -180,7 +179,7 @@ export class BookmarkTreeDataProvider implements vscode.TreeDataProvider<BmxTree
             return;
         } else {
             if (target instanceof WsfTreeItem) {
-                // item.
+                // wsf tvi can't be dropped.
                 return;
             }
             return;
