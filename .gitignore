@@ -17,3 +17,4 @@ documents
 pnpm-lock.yaml
 package.json
 resources/changelog/changelog.html
+yarn.lock

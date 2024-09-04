@@ -89,7 +89,7 @@
         },
         "keybindings": {
           "description": "Contributes keybindings.",
-          "type": "object",
+          "type": "array",
           "properties": {
           }
         }

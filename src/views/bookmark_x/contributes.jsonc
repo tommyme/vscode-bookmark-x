@@ -1,295 +1,291 @@
 {
-	"contributes": {
-		"commands": [
-			{
-				"command": "bookmark_x.toggleBookmark",
-				"title": "Bookmark X: toggle bookmark"
-			},
-			{
-				"command": "bookmark_x.toggleLabeledBookmark",
-				"title": "Bookmark X: toggle label bookmark"
-			},
-			{
-				"command": "bookmark_x.toggleLabeledBookmarkForce",
-				"title": "Bookmark X: toggle label bookmark force"
-			},
-			{
-				"command": "bookmark_x.addGroup",
-				"title": "Bookmark X: add group",
-				"icon": "$(file-directory-create)"
-			},
-			{
-				"command": "bookmark_x.clearData",
-				"title": "Bookmark X: clear data"
-			},
-			{
-				"command": "bookmark_x.saveBookmarksInWorkspace",
-				"title": "Bookmark X: save bookmarks in workspace(abandoned)"
-			},
-			{
-				"command": "bookmark_x.loadBookmarksInWorkSpace",
-				"title": "Bookmark X: load bookmarks in workspace(abandoned)"
-			},
-			{
-				"command": "bookmark_x.revealBookmark",
-				"title": "Bookmark X: reveal bookmark in current line"
-			},
-			{
-				"command": "bookmark_x.activateGroup", // disable in command palette
-				"title": "Activate bookmark group",
-				"icon": "$(eye)"
-			},
-			{
-				"command": "bookmark_x.editGroupName", // disable in command palette
-				"title": "edit group name",
-				"icon": "$(edit)"
-			},
-			{
-				"command": "bookmark_x.deleteGroup", // disable in command palette
-				"title": "Delete bookmark group",
-				"icon": "$(close)"
-			},
-			{
-				"command": "bookmark_x.jumpToBookmark", // disable in command palette
-				"title": "Jump to book mark"
-			},
-			{
-				"command": "bookmark_x.addSubGroup",
-				"title": "Add subgroup here"
-			},
-			{
-				"command": "bookmark_x.upgradeToGroupBookmark",
-				"title": "Bookmark X: upgrade to group bookmark"
-			},
-			{
-				"command": "bookmark_x.loadAllWsfState",
-				"title": "Bookmark X: load all workspace state"
-			},
-			{
-				"command": "bookmark_x.saveAllWsfState",
-				"title": "Bookmark X: save all workspace state"
-			},
-			{
-				"command": "bookmark_x.quickSelectActiveGroup",
-				"title": "Bookmark X: quick select active group"
-			},
-			{
-				"command": "bookmark_x.quickSelectBookmark",
-				"title": "Bookmark X: quick select bookmark"
-			},
-			{
-				"command": "bookmark_x.quickSelectBookmarkFromActive",
-				"title": "Bookmark X: quick select bookmark from active group"
-			},
-			{
-				"command": "bookmark_x.downgradeToGroup",
-				"title": "Bookmark X: downgrade to group"
-			},
-			{
-				"command": "bookmark_x.editBookmarkName", // disable in command palette(can be improved)
-				"title": "edit bookmark name",
-				"icon": "$(edit)"
-			},
-			{
-				"command": "bookmark_x.deleteBookmark", // disable in command palette(can be improved)
-				"title": "Delete bookmark",
-				"icon": "$(close)"
-			},
-			{
-				"command": "bookmark_x:selectSortItem",
-				"title": "Bookmark X: Select to sort this item",
-				"icon": "$(filter)"
-			},
-			{
-				"command": "bookmark_x:deselectSortItem",
-				"title": "Bookmark X: Deselect the sorting item",
-				"icon": "$(filter-filled)"
-			},
-			{
-				"command": "bookmark_x.moveItemUp",
-				"title": "Bookmark X: Move item up",
-				"icon": "$(arrow-up)"
-			},
-			{
-				"command": "bookmark_x.moveItemDown",
-				"title": "Bookmark X: Move item down",
-				"icon": "$(arrow-down)"
-			},
-			{
-				"command": "bmx.showChangelog",
-				"title": "bmx: show changelog"
-			}
-		],
-		"viewsContainers": {
-			"activitybar": [
-				{
-					"id": "bookmark_x",
-					"title": "Bookmark X",
-					"icon": "$(bookmark)"
-				}
-			]
-		},
-		"views": {
-			"bookmark_x": [
-				{
-					"id": "bookmarksByGroup",
-					"name": "bookmark x",
-					"icon": "$(bookmark)"
-				}
-			]
-		},
-		"viewsWelcome": [
-			{
-				"view": "bookmarksByGroup",
-				"contents": "Welcome 👋\nStart your journey with bookmark x by using command `toggle bookmark`"
-			}
-		],
-		"menus": {
-			"view/item/context": [
-				{
-					"command": "bookmark_x:selectSortItem",
-					"when": "view == bookmarksByGroup && viewItem && viewItem != sortItem && config.bookmarkX.sort == manual", // root group doesn't have contextValue. 'viewItem' will hide the button for root group.
-					"group": "inline@4" // keep select/deselect to be the last button.
-				},
-				{
-					"command": "bookmark_x:deselectSortItem",
-					"when": "view == bookmarksByGroup && viewItem && viewItem == sortItem && config.bookmarkX.sort == manual",
-					"group": "inline@4"
-				},
-				{
-					"command": "bookmark_x.activateGroup",
-					"when": "view == bookmarksByGroup && (viewItem == group || viewItem == groupbookmark)",
-					"group": "inline@1"
-				},
-				{
-					"command": "bookmark_x.editGroupName",
-					"when": "view == bookmarksByGroup && (viewItem == group || viewItem == groupbookmark)",
-					"group": "inline@3"
-				},
-				{
-					"command": "bookmark_x.deleteGroup",
-					"when": "view == bookmarksByGroup && (viewItem == group || viewItem == groupbookmark)",
-					"group": "inline@2"
-				},
-				{
-					"command": "bookmark_x.editBookmarkName",
-					"when": "viewItem == bookmark",
-					"group": "inline@3"
-				},
-				{
-					"command": "bookmark_x.deleteBookmark",
-					"when": "viewItem == bookmark",
-					"group": "inline@2"
-				},
-				{
-					"command": "bookmark_x.addSubGroup",
-					"when": "view == bookmarksByGroup && (viewItem == group || viewItem == groupbookmark)"
-				},
-				{
-					"command": "bookmark_x.upgradeToGroupBookmark",
-					"when": "view == bookmarksByGroup && viewItem == bookmark"
-				},
-				{
-					"command": "bookmark_x.downgradeToGroup",
-					"when": "view == bookmarksByGroup && viewItem == groupbookmark"
-				}
-			],
-			"view/title": [
-				{
-					"command": "bookmark_x.addGroup",
-					"when": "view == bookmarksByGroup",
-					"group": "navigation@1"
-				},
-				{
-					"command": "bookmark_x.moveItemUp",
-					"when": "view == bookmarksByGroup && config.bookmarkX.sort == manual",
-					"group": "navigation@2"
-				},
-				{
-					"command": "bookmark_x.moveItemDown",
-					"when": "view == bookmarksByGroup && config.bookmarkX.sort == manual",
-					"group": "navigation@3"
-				}
-			],
-			"commandPalette": [
-				{
-					"command": "bookmark_x.editBookmarkName",
-					"when": "false"
-				},
-				{
-					"command": "bookmark_x.deleteBookmark",
-					"when": "false"
-				},
-				{
-					"command": "bookmark_x.editGroupName",
-					"when": "false"
-				},
-				{
-					"command": "bookmark_x.deleteGroup",
-					"when": "false"
-				},
-				{
-					"command": "bookmark_x.jumpToBookmark",
-					"when": "false"
-				},
-				{
-					"command": "bookmark_x.activateGroup",
-					"when": "false"
-				},
-				{
-					"command": "bookmark_x:selectSortItem",
-					"when": "false"
-				},
-				{
-					"command": "bookmark_x:deselectSortItem",
-					"when": "false"
-				},
-				{
-					"command": "bookmark_x.moveItemUp",
-					"when": "false"
-				},
-				{
-					"command": "bookmark_x.moveItemDown",
-					"when": "false"
-				}
-			]
-		},
-		"configuration": {
-			"title": "BookmarkX",
-			"properties": {
-				"bookmarkX.bookmarkSvg": {
-					"type": "string",
-					"default": "",
-					"description": "Select svg for book icon show."
-				},
-				"bookmarkX.sort": {
-					"type": "string",
-					"default": "group first",
-					"enum": [
-						"group first",
-						"plain",
-						"manual"
-					]
-				}
-			}
-		},
-		"colors": [
-			{
-				"id": "bmx.bookmark.activeGroupColor",
-				"description": "Color for icon of active group",
-				"defaults": {
-					"dark": "statusBarItem.remoteBackground",
-					"light": "statusBarItem.remoteBackground"
-				}
-			},
-			{
-				"id": "bmx.bookmark.sortingItemColor",
-				"description": "Color for icon of sorting item",
-				"defaults": {
-					"dark": "#ff9966",
-					"light": "#ff9966"
-				}
-			}
-		]
-	}
+  "contributes": {
+    "commands": [
+      {
+        "command": "bookmark_x.toggleBookmark",
+        "title": "Bookmark X: toggle bookmark"
+      },
+      {
+        "command": "bookmark_x.toggleLabeledBookmark",
+        "title": "Bookmark X: toggle label bookmark"
+      },
+      {
+        "command": "bookmark_x.toggleLabeledBookmarkForce",
+        "title": "Bookmark X: toggle label bookmark force"
+      },
+      {
+        "command": "bookmark_x.addGroup",
+        "title": "Bookmark X: add group",
+        "icon": "$(file-directory-create)"
+      },
+      {
+        "command": "bookmark_x.clearData",
+        "title": "Bookmark X: clear data"
+      },
+      {
+        "command": "bookmark_x.saveBookmarksInWorkspace",
+        "title": "Bookmark X: save bookmarks in workspace(abandoned)"
+      },
+      {
+        "command": "bookmark_x.loadBookmarksInWorkSpace",
+        "title": "Bookmark X: load bookmarks in workspace(abandoned)"
+      },
+      {
+        "command": "bookmark_x.revealBookmark",
+        "title": "Bookmark X: reveal bookmark in current line"
+      },
+      {
+        "command": "bookmark_x.activateGroup", // disable in command palette
+        "title": "Activate bookmark group",
+        "icon": "$(eye)"
+      },
+      {
+        "command": "bookmark_x.editGroupName", // disable in command palette
+        "title": "edit group name",
+        "icon": "$(edit)"
+      },
+      {
+        "command": "bookmark_x.deleteGroup", // disable in command palette
+        "title": "Delete bookmark group",
+        "icon": "$(close)"
+      },
+      {
+        "command": "bookmark_x.jumpToBookmark", // disable in command palette
+        "title": "Jump to book mark"
+      },
+      {
+        "command": "bookmark_x.addSubGroup",
+        "title": "Add subgroup here"
+      },
+      {
+        "command": "bookmark_x.upgradeToGroupBookmark",
+        "title": "Bookmark X: upgrade to group bookmark"
+      },
+      {
+        "command": "bookmark_x.loadAllWsfState",
+        "title": "Bookmark X: load all workspace state"
+      },
+      {
+        "command": "bookmark_x.saveAllWsfState",
+        "title": "Bookmark X: save all workspace state"
+      },
+      {
+        "command": "bookmark_x.quickSelectActiveGroup",
+        "title": "Bookmark X: quick select active group"
+      },
+      {
+        "command": "bookmark_x.quickSelectBookmark",
+        "title": "Bookmark X: quick select bookmark"
+      },
+      {
+        "command": "bookmark_x.quickSelectBookmarkFromActive",
+        "title": "Bookmark X: quick select bookmark from active group"
+      },
+      {
+        "command": "bookmark_x.downgradeToGroup",
+        "title": "Bookmark X: downgrade to group"
+      },
+      {
+        "command": "bookmark_x.editBookmarkName", // disable in command palette(can be improved)
+        "title": "edit bookmark name",
+        "icon": "$(edit)"
+      },
+      {
+        "command": "bookmark_x.deleteBookmark", // disable in command palette(can be improved)
+        "title": "Delete bookmark",
+        "icon": "$(close)"
+      },
+      {
+        "command": "bookmark_x:selectSortItem",
+        "title": "Bookmark X: Select to sort this item",
+        "icon": "$(filter)"
+      },
+      {
+        "command": "bookmark_x:deselectSortItem",
+        "title": "Bookmark X: Deselect the sorting item",
+        "icon": "$(filter-filled)"
+      },
+      {
+        "command": "bookmark_x.moveItemUp",
+        "title": "Bookmark X: Move item up",
+        "icon": "$(arrow-up)"
+      },
+      {
+        "command": "bookmark_x.moveItemDown",
+        "title": "Bookmark X: Move item down",
+        "icon": "$(arrow-down)"
+      },
+      {
+        "command": "bmx.showChangelog",
+        "title": "bmx: show changelog"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "bookmark_x",
+          "title": "Bookmark X",
+          "icon": "$(bookmark)"
+        }
+      ]
+    },
+    "views": {
+      "bookmark_x": [
+        {
+          "id": "bookmarksByGroup",
+          "name": "bookmark x",
+          "icon": "$(bookmark)"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "bookmarksByGroup",
+        "contents": "Welcome 👋\nStart your journey with bookmark x by using command `toggle bookmark`"
+      }
+    ],
+    "menus": {
+      "view/item/context": [
+        {
+          "command": "bookmark_x:selectSortItem",
+          "when": "view == bookmarksByGroup && viewItem && viewItem != sortItem && config.bookmarkX.sort == manual", // root group doesn't have contextValue. 'viewItem' will hide the button for root group.
+          "group": "inline@4" // keep select/deselect to be the last button.
+        },
+        {
+          "command": "bookmark_x:deselectSortItem",
+          "when": "view == bookmarksByGroup && viewItem && viewItem == sortItem && config.bookmarkX.sort == manual",
+          "group": "inline@4"
+        },
+        {
+          "command": "bookmark_x.activateGroup",
+          "when": "view == bookmarksByGroup && (viewItem == group || viewItem == groupbookmark)",
+          "group": "inline@1"
+        },
+        {
+          "command": "bookmark_x.editGroupName",
+          "when": "view == bookmarksByGroup && (viewItem == group || viewItem == groupbookmark)",
+          "group": "inline@3"
+        },
+        {
+          "command": "bookmark_x.deleteGroup",
+          "when": "view == bookmarksByGroup && (viewItem == group || viewItem == groupbookmark)",
+          "group": "inline@2"
+        },
+        {
+          "command": "bookmark_x.editBookmarkName",
+          "when": "viewItem == bookmark",
+          "group": "inline@3"
+        },
+        {
+          "command": "bookmark_x.deleteBookmark",
+          "when": "viewItem == bookmark",
+          "group": "inline@2"
+        },
+        {
+          "command": "bookmark_x.addSubGroup",
+          "when": "view == bookmarksByGroup && (viewItem == group || viewItem == groupbookmark)"
+        },
+        {
+          "command": "bookmark_x.upgradeToGroupBookmark",
+          "when": "view == bookmarksByGroup && viewItem == bookmark"
+        },
+        {
+          "command": "bookmark_x.downgradeToGroup",
+          "when": "view == bookmarksByGroup && viewItem == groupbookmark"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "bookmark_x.addGroup",
+          "when": "view == bookmarksByGroup",
+          "group": "navigation@1"
+        },
+        {
+          "command": "bookmark_x.moveItemUp",
+          "when": "view == bookmarksByGroup && config.bookmarkX.sort == manual",
+          "group": "navigation@2"
+        },
+        {
+          "command": "bookmark_x.moveItemDown",
+          "when": "view == bookmarksByGroup && config.bookmarkX.sort == manual",
+          "group": "navigation@3"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "bookmark_x.editBookmarkName",
+          "when": "false"
+        },
+        {
+          "command": "bookmark_x.deleteBookmark",
+          "when": "false"
+        },
+        {
+          "command": "bookmark_x.editGroupName",
+          "when": "false"
+        },
+        {
+          "command": "bookmark_x.deleteGroup",
+          "when": "false"
+        },
+        {
+          "command": "bookmark_x.jumpToBookmark",
+          "when": "false"
+        },
+        {
+          "command": "bookmark_x.activateGroup",
+          "when": "false"
+        },
+        {
+          "command": "bookmark_x:selectSortItem",
+          "when": "false"
+        },
+        {
+          "command": "bookmark_x:deselectSortItem",
+          "when": "false"
+        },
+        {
+          "command": "bookmark_x.moveItemUp",
+          "when": "false"
+        },
+        {
+          "command": "bookmark_x.moveItemDown",
+          "when": "false"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "BookmarkX",
+      "properties": {
+        "bookmarkX.bookmarkSvg": {
+          "type": "string",
+          "default": "",
+          "description": "Select svg for book icon show."
+        },
+        "bookmarkX.sort": {
+          "type": "string",
+          "default": "group first",
+          "enum": ["group first", "plain", "manual"]
+        }
+      }
+    },
+    "colors": [
+      {
+        "id": "bmx.bookmark.activeGroupColor",
+        "description": "Color for icon of active group",
+        "defaults": {
+          "dark": "statusBarItem.remoteBackground",
+          "light": "statusBarItem.remoteBackground"
+        }
+      },
+      {
+        "id": "bmx.bookmark.sortingItemColor",
+        "description": "Color for icon of sorting item",
+        "defaults": {
+          "dark": "#ff9966",
+          "light": "#ff9966"
+        }
+      }
+    ]
+  }
 }

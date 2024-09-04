@@ -1,6 +1,6 @@
 {
   "contributes": {
-		"commands": [
+    "commands": [
       {
         "command": "bmx.quickrun.runItem",
         "title": "bmx.quickrun: run item"
@@ -34,40 +34,40 @@
         "icon": "$(issues)"
       },
       {
-				"command": "bmx.quickrun.openProgramFile",
-				"title": "open run config program file",
-				"icon": "$(code)"
-			}
+        "command": "bmx.quickrun.openProgramFile",
+        "title": "open run config program file",
+        "icon": "$(code)"
+      }
     ],
     "menus": {
-			"view/item/context": [
+      "view/item/context": [
         {
-					"command": "bmx.quickrun.openProgramFile",
-					"when": "view == bmx_quickrun && viewItem == task",
-					"group": "inline"
-				},
-				{
-					"command": "bmx.quickrun.openLaunchJson",
-					"when": "view == bmx_quickrun && viewItem == wsf",
-					"group": "inline"
-				},
-				{
-					"command": "bmx.quickrun.openTasksJson",
-					"when": "view == bmx_quickrun && viewItem == wsf",
-					"group": "inline"
-				}
+          "command": "bmx.quickrun.openProgramFile",
+          "when": "view == bmx_quickrun && viewItem == task",
+          "group": "inline"
+        },
+        {
+          "command": "bmx.quickrun.openLaunchJson",
+          "when": "view == bmx_quickrun && viewItem == wsf",
+          "group": "inline"
+        },
+        {
+          "command": "bmx.quickrun.openTasksJson",
+          "when": "view == bmx_quickrun && viewItem == wsf",
+          "group": "inline"
+        }
       ],
       "view/title": [
         {
-					"command": "bmx.quickrun.refresh",
-					"when": "view == bmx_quickrun",
-					"group": "navigation"
-				},
-				{
-					"command": "bmx.quickrun.gotoStackTop",
-					"when": "view == bmx_quickrun",
-					"group": "navigation"
-				}
+          "command": "bmx.quickrun.refresh",
+          "when": "view == bmx_quickrun",
+          "group": "navigation"
+        },
+        {
+          "command": "bmx.quickrun.gotoStackTop",
+          "when": "view == bmx_quickrun",
+          "group": "navigation"
+        }
       ],
       "commandPalette": [
         {
@@ -85,23 +85,23 @@
       ]
     },
     "views": {
-			"bookmark_x": [
-				{
-					"id": "bmx_quickrun",
-					"name": "quick run",
-					"icon": "$(bookmark)"
-				}
+      "bookmark_x": [
+        {
+          "id": "bmx_quickrun",
+          "name": "quick run",
+          "icon": "$(bookmark)"
+        }
       ]
     },
     "keybindings": [
-			{
-				"command": "bmx.quickrun.gotoTopOfDocument",
-				"key": "ctrl+k ctrl+i"
-			},
-			{
-				"command": "bmx.quickrun.gotoEndOfDocument",
-				"key": "ctrl+k ctrl+o"
-			}
-		]
+      {
+        "command": "bmx.quickrun.gotoTopOfDocument",
+        "key": "ctrl+k ctrl+i"
+      },
+      {
+        "command": "bmx.quickrun.gotoEndOfDocument",
+        "key": "ctrl+k ctrl+o"
+      }
+    ]
   }
 }
