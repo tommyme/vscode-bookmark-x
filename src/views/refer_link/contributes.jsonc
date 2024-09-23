@@ -34,9 +34,32 @@
         "title": "bmx.referLink: diff two file in visible editors"
       },
       {
+        "command": "bmx.referLink.copyAigcFilesContent",
+        "title": "bmx.referLink: copy aigc files content"
+      },
+      {
+        "command": "bmx.referLink.copyAigcFilesContentLastTime",
+        "title": "bmx.referLink: copy aigc files content last time"
+      },
+      {
         "command": "bmx.referLink.showHtmlPreview",
         "title": "bmx.referLink: show html preview"
       }
-    ]
+    ],
+    "menus": {
+      "explorer/context": [
+        {
+          "command": "bmx.referLink.copyAigcFilesContent",
+          "when": "resourceScheme == 'file'",
+          "group": "navigation"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "bmx.referLink.copyAigcFilesContent",
+          "when": "false"
+        }
+      ]
+    }
   }
 }

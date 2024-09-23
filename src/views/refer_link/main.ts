@@ -2,6 +2,11 @@ import * as vscode from "vscode";
 import * as os from "os";
 import * as path from "path";
 import * as fs from "fs";
+import { chan } from "../../channel";
+
+class Ctx {
+  static aigc: Array<vscode.Uri> = [];
+}
 export class ReferLinkLauncher {
   static async init(context: vscode.ExtensionContext) {
     let disposable;
@@ -142,6 +147,7 @@ export class ReferLinkLauncher {
           } else {
             return;
           }
+          chan.appendLine(full_path);
           fs.access(full_path, fs.constants.F_OK, async (err) => {
             if (err) {
               vscode.window.showErrorMessage(
@@ -231,5 +237,36 @@ export class ReferLinkLauncher {
       },
     );
     context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand(
+      "bmx.referLink.copyAigcFilesContent",
+      async (...commandArgs) => {
+        let filesUri: Array<vscode.Uri> = commandArgs[1];
+        Ctx.aigc = filesUri;
+        await copyUriFilesWithName(Ctx.aigc);
+      },
+    );
+    context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand(
+      "bmx.referLink.copyAigcFilesContentLastTime",
+      async () => {
+        if (Ctx.aigc.length > 0) {
+          await copyUriFilesWithName(Ctx.aigc);
+        } else {
+          vscode.window.showInformationMessage("aigc history empty!");
+        }
+      },
+    );
+    context.subscriptions.push(disposable);
   }
+}
+
+async function copyUriFilesWithName(filesUri: Array<vscode.Uri>) {
+  let result = "";
+  for (const uri of filesUri) {
+    const content = await vscode.workspace.fs.readFile(uri);
+    result += `///// ${path.basename(uri.fsPath)}\n`;
+    result += content.toString();
+    result += "\n";
+  }
+  await vscode.env.clipboard.writeText(result);
 }
