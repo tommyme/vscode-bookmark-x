@@ -297,6 +297,7 @@ export class TaskTreeViewManager {
         });
       },
     );
+    context.subscriptions.push(disposable);
 
     disposable = commands.registerCommand(
       "bmx.quickrun.gotoEndOfDocument",
