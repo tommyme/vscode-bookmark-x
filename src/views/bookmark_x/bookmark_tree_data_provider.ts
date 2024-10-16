@@ -136,8 +136,8 @@ export class BookmarkTreeDataProvider
         vscode.window.showInformationMessage("Same source and target!");
         return;
       }
-      if (target instanceof Group || target instanceof Bookmark) {
-        dst_wsf = Controller.get_wsf_with_node(target);
+      if (target.base instanceof Group || target.base instanceof Bookmark) {
+        dst_wsf = Controller.get_wsf_with_node(target.base);
       }
       // group -> root/group
       if (item instanceof Group && target!.base instanceof Group) {
