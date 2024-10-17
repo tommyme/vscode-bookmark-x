@@ -440,10 +440,13 @@ export class RootGroup extends Group {
     this.vicache = new ViewItemUriMap();
   }
 
-  public add_node_recache_all<T extends NodeType>(node: T) {
+  public add_node_recache_all<T extends NodeType>(
+    node: T,
+    strategy: util.AddElStrategy<NodeType> = new util.AddElPushBackStrategy(),
+  ) {
     let group = this.get_node(node.uri) as Group;
     if (group) {
-      group.children.push(node);
+      strategy.addEl(group.children, node);
     } else {
       throw new Error("add node recache error");
     }
@@ -498,15 +501,19 @@ export class RootGroup extends Group {
    * @param {type} param1 - param1 desc
    * @returns {type} - return value desc
    */
-  public mv_bm_recache_all(bm: Bookmark, target_group: Group) {
-    let old_key = bm.get_full_uri();
+  public mv_bm_recache_all(
+    bm: Bookmark,
+    target_group: Group,
+    strategy: util.AddElStrategy<NodeType> = new util.AddElPushBackStrategy(),
+  ) {
+    let old_uri = bm.get_full_uri();
     this.cut_node_recache(bm);
     bm.uri = target_group.get_full_uri();
-    // bm.group = target_group;
-    // let new_key = bm.get_full_uri();
-    this.add_node_recache_all(bm);
-    this.vicache.del(old_key);
-    // this.vicache.rename_key(old_key, new_key);
+    let new_uri = bm.get_full_uri();
+    this.add_node_recache_all(bm, strategy);
+    if (new_uri !== old_uri) {
+      this.vicache.del(old_uri);
+    }
   }
 
   /**

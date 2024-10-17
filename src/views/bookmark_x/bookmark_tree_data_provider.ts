@@ -1,5 +1,5 @@
 import { EventEmitter, TreeItem, TreeItemCollapsibleState } from "vscode";
-import { Bookmark } from "./functional_types";
+import { Bookmark, NodeType, RootGroup } from "./functional_types";
 import {
   BookmarkTreeItem,
   BookmarkTreeItemFactory,
@@ -9,7 +9,9 @@ import { Group } from "./functional_types";
 import * as vscode from "vscode";
 import { Controller, SpaceMap } from "./controller";
 import { BookmarkTreeViewManager } from "./bookmark_tree_view";
+import { TREEVIEW_ITEM_CTX_TYPE_SORTING_ITEM } from "./constants";
 import * as util from "./util";
+import { ResourceManager } from "./resource_manager";
 
 export type BmxTreeItem = BookmarkTreeItem | WsfTreeItem;
 
@@ -112,106 +114,8 @@ export class BookmarkTreeDataProvider
     let changed_flag = false;
 
     if (droppingItems.length === 1) {
-      let tvitem = droppingItems[0];
-      let src_wsf = Controller.get_wsf_with_node(tvitem.base!);
-      let item = tvitem.base;
-      let src_rg = Controller.get_root_group(src_wsf!);
-      let dst_rg = src_rg;
-      let dst_wsf: vscode.WorkspaceFolder;
-      if (typeof target === "undefined") {
-        // move to it's wsf, monitor a target node for root group
-        dst_wsf = src_wsf;
-        dst_rg = Controller.get_root_group(src_wsf);
-        target = new BookmarkTreeItem("");
-        target.base = Controller.get_root_group(dst_wsf);
-      }
-      if (target instanceof WsfTreeItem) {
-        // monitor a target node for root group
-        dst_wsf = target.wsf;
-        dst_rg = Controller.get_root_group(target.wsf);
-        target = new BookmarkTreeItem("");
-        target.base = Controller.get_root_group(dst_wsf);
-      }
-      if (target && item === target!.base) {
-        vscode.window.showInformationMessage("Same source and target!");
-        return;
-      }
-      if (target.base instanceof Group || target.base instanceof Bookmark) {
-        dst_wsf = Controller.get_wsf_with_node(target.base);
-      }
-      // group -> root/group
-      if (item instanceof Group && target!.base instanceof Group) {
-        if (
-          dst_rg.cache.get(
-            util.joinTreeUri([target.base.get_full_uri(), item.name]),
-          )
-        ) {
-          vscode.window.showInformationMessage(
-            "It's already in the target group!",
-          );
-          return;
-        }
-        // 源group断链
-        src_rg.cut_node(item);
-        item.uri = target!.base.get_full_uri();
-        // 给目标group添加链接
-        target!.base.children.push(item);
-        Group.dfsRefreshUri(target!.base);
-
-        // 跨区 而且是 active group
-        if (
-          src_rg !== dst_rg &&
-          Controller.get_active_group(src_wsf!) === item
-        ) {
-          // active group refresh
-          SpaceMap.active_group_map[src_wsf!.uri.path] =
-            Controller.get_root_group(src_wsf!);
-          SpaceMap.active_group_map[dst_wsf!.uri.path] = item;
-        }
-
-        src_rg.cache = src_rg.bfs_get_nodes();
-        // 通过 bfs tvmap 刷新状态
-        src_rg.vicache = src_rg.bfs_get_tvmap();
-        if (dst_rg !== src_rg) {
-          dst_rg.cache = dst_rg.bfs_get_nodes();
-          dst_rg.vicache = dst_rg.bfs_get_tvmap();
-        }
-        changed_flag = true;
-        target!.base.sortGroupBookmark();
-        target!.collapsibleState = TreeItemCollapsibleState.Expanded;
-      }
-      // bookmark -> root/group
-      else if (item instanceof Bookmark && target!.base instanceof Group) {
-        // 判定是否存在
-        if (
-          dst_rg.cache.get(
-            util.joinTreeUri([target.base.get_full_uri(), item.name]),
-          )
-        ) {
-          vscode.window.showInformationMessage(
-            "the bookmark is already in the target group",
-          );
-          return;
-        }
-        let target_group = target.base as Group;
-        if (src_rg === dst_rg) {
-          src_rg.mv_bm_recache_all(item, target_group);
-        } else {
-          let old_key = item.get_full_uri();
-          src_rg.cut_node_recache(item);
-          src_rg.vicache.del(old_key);
-          item.uri = target_group.get_full_uri();
-          dst_rg.add_node_recache_all(item);
-        }
-        changed_flag = true;
-        target_group.sortGroupBookmark();
-        target!.collapsibleState = TreeItemCollapsibleState.Expanded;
-      }
-      // ? case not cover
-      else {
-        vscode.window.showInformationMessage("that situation not support yet");
-        return;
-      }
+      let handler = new DropHandler(droppingItems, target);
+      changed_flag = handler.handle();
     } else if (droppingItems.length === 0) {
       return;
     } else {
@@ -250,5 +154,166 @@ export class BookmarkTreeDataProvider
     let uri = element.base!.uri;
     let bmti = Controller.get_root_group(wsf!).vicache.get(uri);
     return bmti;
+  }
+}
+
+class DropFlags {
+  Move_To_Undefined: boolean;
+  Move_To_WsfTreeItem: boolean;
+  Node_To_Bookmark: boolean;
+  Move_To_Group: boolean;
+  Move_To_NodeType: boolean;
+  Dst_Src_Same: boolean;
+  Group_To_Group: boolean;
+  Bookmark_To_Group: boolean;
+  Node_Is_Sorting: boolean;
+  Same_Name_Node_In_Target: boolean;
+  Src_Is_ActiveGroup: boolean;
+  Bookmark_To_NodeType: boolean;
+  constructor(handler: DropHandler) {
+    let item = handler.tvitem.base;
+    this.Move_To_Undefined = typeof handler.target === "undefined";
+    this.Move_To_WsfTreeItem = handler.target instanceof WsfTreeItem;
+    this.Node_To_Bookmark = handler.target!.base instanceof Bookmark;
+    this.Move_To_Group = handler.target!.base instanceof Group;
+    this.Move_To_NodeType = this.Move_To_Group || this.Node_To_Bookmark;
+
+    this.Dst_Src_Same = handler.target && item === handler.target!.base;
+
+    this.Group_To_Group = item instanceof Group && this.Move_To_Group;
+    this.Bookmark_To_Group = item instanceof Bookmark && this.Move_To_Group;
+    this.Node_Is_Sorting =
+      handler.tvitem.contextValue === TREEVIEW_ITEM_CTX_TYPE_SORTING_ITEM;
+    this.Same_Name_Node_In_Target =
+      handler.dst_rg.cache.get(
+        util.joinTreeUri([
+          handler.target.base.get_full_uri(),
+          handler.item.name,
+        ]),
+      ) !== undefined;
+    this.Src_Is_ActiveGroup =
+      Controller.get_active_group(handler.src_wsf!) === handler.item;
+    this.Bookmark_To_NodeType =
+      item instanceof Bookmark && this.Move_To_NodeType;
+  }
+}
+
+class DropHandler {
+  src_wsf: vscode.WorkspaceFolder;
+  dst_wsf: vscode.WorkspaceFolder | null = null;
+  src_rg: RootGroup;
+  dst_rg: RootGroup;
+  item: NodeType;
+  tvitem: BookmarkTreeItem;
+  target: WsfTreeItem | BookmarkTreeItem | undefined;
+  flags: DropFlags;
+
+  constructor(
+    dropping: Array<BookmarkTreeItem>,
+    target: WsfTreeItem | BookmarkTreeItem | undefined,
+  ) {
+    this.tvitem = dropping[0];
+    this.item = this.tvitem.base!;
+    this.src_wsf = Controller.get_wsf_with_node(this.item);
+    this.src_rg = Controller.get_root_group(this.src_wsf!);
+    this.dst_rg = this.src_rg;
+    this.target = target;
+    this.flags = new DropFlags(this);
+  }
+  public preprocess() {
+    if (this.flags.Move_To_Undefined) {
+      // move to it's wsf, monitor a target node for root group
+      this.dst_wsf = this.src_wsf;
+      this.dst_rg = Controller.get_root_group(this.src_wsf);
+      this.target = new BookmarkTreeItem("");
+      this.target.base = Controller.get_root_group(this.dst_wsf);
+    } else if (this.flags.Move_To_WsfTreeItem) {
+      // monitor a this.target node for root group
+      this.dst_wsf = (this.target as WsfTreeItem).wsf;
+      this.dst_rg = Controller.get_root_group((this.target as WsfTreeItem).wsf);
+      this.target = new BookmarkTreeItem("");
+      this.target.base = Controller.get_root_group(this.dst_wsf);
+    } else if (this.flags.Move_To_NodeType) {
+      this.dst_wsf = Controller.get_wsf_with_node(this.target!.base);
+    }
+  }
+  public handle(): boolean {
+    if (this.flags.Dst_Src_Same) {
+      vscode.window.showInformationMessage("Same source and this.target!");
+      return false;
+    }
+    this.preprocess();
+    if (this.flags.Same_Name_Node_In_Target) {
+      vscode.window.showInformationMessage("It's already in the target group!");
+      return false;
+    }
+
+    if (this.flags.Node_Is_Sorting) {
+      if (this.flags.Bookmark_To_NodeType) {
+        // calc new_index for different case
+        let node = (this.target as BookmarkTreeItem).base!;
+        let fa_dst = Controller.get_props(node).fa;
+        let index_dst = fa_dst.children.indexOf(node);
+        let fa_src = Controller.get_props(this.item).fa;
+        let index_src = fa_src.children.indexOf(this.item);
+
+        let new_index = index_dst + 1;
+        if (fa_src === fa_dst && index_src < index_dst) {
+          new_index = index_dst;
+        }
+
+        let strategy = new util.AddElInsertStrategy(new_index);
+        ResourceManager.mvbm2group(
+          this.item,
+          this.src_rg,
+          fa_dst,
+          this.dst_rg,
+          strategy,
+        );
+        return true;
+      }
+    } else {
+      if (this.flags.Group_To_Group) {
+        // 源group断链
+        this.src_rg.cut_node(this.item);
+        this.item.uri = this.target!.base.get_full_uri();
+        // 给目标group添加链接
+        this.target!.base.children.push(this.item);
+        Group.dfsRefreshUri(this.target!.base);
+
+        // 跨区 而且是 active group
+        if (this.src_rg !== this.dst_rg && this.flags.Src_Is_ActiveGroup) {
+          // active group refresh
+          SpaceMap.active_group_map[this.src_wsf!.uri.path] =
+            Controller.get_root_group(this.src_wsf!);
+          SpaceMap.active_group_map[this.dst_wsf!.uri.path] = this
+            .item as Group;
+        }
+
+        this.src_rg.cache = this.src_rg.bfs_get_nodes();
+        // 通过 bfs tvmap 刷新状态
+        this.src_rg.vicache = this.src_rg.bfs_get_tvmap();
+        if (this.dst_rg !== this.src_rg) {
+          this.dst_rg.cache = this.dst_rg.bfs_get_nodes();
+          this.dst_rg.vicache = this.dst_rg.bfs_get_tvmap();
+        }
+        this.target!.base.sortGroupBookmark();
+        this.target!.collapsibleState = TreeItemCollapsibleState.Expanded;
+        return true;
+      } else if (this.flags.Bookmark_To_Group) {
+        let target_group = this.target.base as Group;
+        ResourceManager.mvbm2group(
+          this.item,
+          this.src_rg,
+          target_group,
+          this.dst_rg,
+        );
+        target_group.sortGroupBookmark();
+        this.target!.collapsibleState = TreeItemCollapsibleState.Expanded;
+        return true;
+      }
+    }
+    vscode.window.showInformationMessage("that situation not support yet");
+    return false;
   }
 }
