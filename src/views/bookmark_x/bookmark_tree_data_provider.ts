@@ -164,7 +164,7 @@ class DropFlags {
     this.Move_To_Group = handler.target!.base instanceof Group;
     this.Move_To_NodeType = this.Move_To_Group || this.Node_To_Bookmark;
 
-    this.Dst_Src_Same = handler.target && item === handler.target!.base;
+    this.Dst_Src_Same = handler.target! && item === handler.target!.base;
 
     this.Group_To_Group = item instanceof Group && this.Move_To_Group;
     this.Bookmark_To_Group = item instanceof Bookmark && this.Move_To_Group;
@@ -173,7 +173,7 @@ class DropFlags {
     this.Same_Name_Node_In_Target =
       handler.dst_rg.cache.get(
         util.joinTreeUri([
-          handler.target.base.get_full_uri(),
+          handler.target!.base.get_full_uri(),
           handler.item.name,
         ]),
       ) !== undefined;
@@ -252,17 +252,15 @@ class DropHandler {
         // a b c, [b] -> [c] => a c b
         // a b c, [c] -> [b] => a c b
       }
-      if (this.flags.Bookmark_To_NodeType) {
-        let strategy = new util.AddElInsertStrategy(new_index);
-        ResourceManager.mvbm2group(
+      let strategy = new util.AddElInsertStrategy(new_index);
+      if (this.flags.Bookmark_To_NodeType || this.flags.Group_To_NodeType) {
+        ResourceManager.mvnode2group(
           this.item,
           this.src_rg,
           fa_dst,
           this.dst_rg,
           strategy,
         );
-        return true;
-      } else if (this.flags.Group_To_NodeType) {
         return true;
       }
     } else {
@@ -272,7 +270,6 @@ class DropHandler {
         this.item.uri = this.target!.base.get_full_uri();
         // 给目标group添加链接
         this.target!.base.children.push(this.item);
-        // BUG: 这里可能因为只刷了Uri 没有考虑对vicache的影响
         Group.dfsRefreshUri(this.target!.base);
 
         // 跨区 而且是 active group
@@ -284,18 +281,18 @@ class DropHandler {
             .item as Group;
         }
 
-        this.src_rg.cache = this.src_rg.bfs_get_nodes();
+        this.src_rg.cache = this.src_rg.bfs_get_nodemap();
         // 通过 bfs tvmap 刷新状态
         this.src_rg.vicache = this.src_rg.bfs_get_tvmap();
         if (this.dst_rg !== this.src_rg) {
-          this.dst_rg.cache = this.dst_rg.bfs_get_nodes();
+          this.dst_rg.cache = this.dst_rg.bfs_get_nodemap();
           this.dst_rg.vicache = this.dst_rg.bfs_get_tvmap();
         }
         this.target!.base.sortGroupBookmark();
         this.target!.collapsibleState = TreeItemCollapsibleState.Expanded;
         return true;
       } else if (this.flags.Bookmark_To_Group) {
-        let target_group = this.target.base as Group;
+        let target_group = this.target!.base as Group;
         ResourceManager.mvbm2group(
           this.item,
           this.src_rg,

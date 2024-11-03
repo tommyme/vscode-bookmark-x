@@ -252,7 +252,7 @@ export class Controller {
   static init_with_fake_root_wsfs() {
     vscode.workspace.workspaceFolders?.forEach((wsf) => {
       let rg = SpaceMap.root_group_map[wsf.uri.path];
-      rg.cache = rg.bfs_get_nodes();
+      rg.cache = rg.bfs_get_nodemap();
       rg.vicache = rg.bfs_get_tvmap();
       rg.sortGroupBookmark();
       console.log("node map keys:", rg.cache.keys());
@@ -508,13 +508,13 @@ export class Controller {
     if (node.type === ITEM_TYPE_GROUP) {
       // bfs edit uri
       (node as Group)
-        .bfs_get_nodes()
+        .bfs_get_nodemap()
         .values()
         .forEach((node) => {
           node.uri = node.uri.replace(original_full_uri, new_full_uri); // only replace once
         });
       // refresh cache
-      rg.cache = rg.bfs_get_nodes();
+      rg.cache = rg.bfs_get_nodemap();
       rg.vicache = rg.bfs_get_tvmap();
     }
     return father;
@@ -913,7 +913,7 @@ export class Controller {
     if (option.includes("root")) {
       cache = this.get_root_group(wsf!).cache;
     } else if (option.includes("active")) {
-      cache = this.get_active_group(wsf!).bfs_get_nodes();
+      cache = this.get_active_group(wsf!).bfs_get_nodemap();
     }
 
     if (cache === undefined) {

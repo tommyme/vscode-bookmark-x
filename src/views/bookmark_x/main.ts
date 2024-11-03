@@ -253,7 +253,7 @@ export class BmxLauncher {
             SpaceMap.root_group_map[wsf.uri.path];
         }
         let rg = SpaceMap.root_group_map[wsf.uri.path];
-        rg.cache = rg.bfs_get_nodes();
+        rg.cache = rg.bfs_get_nodemap();
         rg.vicache = rg.bfs_get_tvmap();
         rg.sortGroupBookmark();
         Controller.tprovider.refresh();
