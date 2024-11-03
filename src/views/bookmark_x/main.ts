@@ -53,27 +53,16 @@ export class BmxLauncher {
     context.subscriptions.push(disposable);
 
     disposable = vscode.commands.registerCommand(
-      "bookmark_x:selectSortItem",
-      (item: BookmarkTreeItem) => BookmarkTreeViewManager.selectSortItem(item),
+      "bookmark_x.selectSortItem",
+      () => BookmarkTreeViewManager.selectSortItem(),
     );
     context.subscriptions.push(disposable);
 
     disposable = vscode.commands.registerCommand(
-      "bookmark_x:deselectSortItem",
-      (item: BookmarkTreeItem) =>
-        BookmarkTreeViewManager.deselectSortItem(item),
+      "bookmark_x.deselectSortItem",
+      () => BookmarkTreeViewManager.deselectSortItem(),
     );
     context.subscriptions.push(disposable);
-
-    disposable = vscode.commands.registerCommand("bookmark_x.moveItemUp", () =>
-      Controller.moveItem("up"),
-    );
-    context.subscriptions.push(disposable);
-
-    disposable = vscode.commands.registerCommand(
-      "bookmark_x.moveItemDown",
-      () => Controller.moveItem("down"),
-    );
 
     // 通过面板-删除分组
     disposable = vscode.commands.registerCommand(

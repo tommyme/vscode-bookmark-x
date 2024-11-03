@@ -17,7 +17,6 @@ import {
   BookmarkTreeItem,
   BookmarkTreeItemFactory,
 } from "./bookmark_tree_item";
-import { SpaceSortItem } from "./controller";
 
 export type NodeType = Group | Bookmark | GroupBookmark;
 export type GroupLike = Group | GroupBookmark;
@@ -436,10 +435,6 @@ export class ViewItemUriMap extends UriMap<BookmarkTreeItem> {
     this.keys().forEach((key) => {
       // reset icon status
       let tvi = this.get(key);
-      if (SpaceSortItem.sorting_item === tvi) {
-        // item is sorting, use sorting icon
-        return;
-      }
       if (typeIsGroupLike(tvi.base!.type)) {
         if (util.isSubUriOrEqual(key, new_full_uri)) {
           tvi.iconPath = ICON_ACTIVE_GROUP;

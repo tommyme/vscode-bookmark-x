@@ -54,24 +54,7 @@ export class SpaceMap {
 }
 
 export class SpaceSortItem {
-  private static _sorting_item: BookmarkTreeItem | undefined = undefined;
-  private static _sorting_ctx: string | undefined = undefined;
-
-  static get sorting_item() {
-    return this._sorting_item;
-  }
-
-  static set sorting_item(item: BookmarkTreeItem | undefined) {
-    this._sorting_item = item;
-  }
-
-  static get sorting_ctx() {
-    return this._sorting_ctx;
-  }
-
-  static set sorting_ctx(ctx: string | undefined) {
-    this._sorting_ctx = ctx;
-  }
+  static sorting = false;
 }
 
 type WsfDataSerialiable = {
@@ -112,40 +95,6 @@ export class Controller {
 
   static get_active_group(wsf: vscode.WorkspaceFolder): Group {
     return SpaceMap.active_group_map[wsf.uri.path];
-  }
-
-  // move treeitem up or down
-  static moveItem(direction: string) {
-    let config = workspace.getConfiguration("bookmarkX");
-    let sortOption = config.get("sort") as string;
-    if (sortOption === "manual") {
-      let sorting_item = SpaceSortItem.sorting_item;
-      if (sorting_item === undefined) {
-        vscode.window.showInformationMessage("No sorting item selected.");
-        return;
-      }
-      let node = sorting_item.base!;
-      let { fa } = this.get_props(node);
-      let index = fa.children.indexOf(node);
-      if (index < 0) {
-        return;
-      }
-      let new_index = direction === "up" ? index - 1 : index + 1;
-      if (new_index < 0 || new_index >= fa.children.length) {
-        return;
-      }
-      // swap two elements
-      [fa.children[index], fa.children[new_index]] = [
-        fa.children[new_index],
-        fa.children[index],
-      ];
-      BookmarkTreeViewManager.refreshCallback();
-      this.saveState();
-    } else {
-      vscode.window.showInformationMessage(
-        "Manual sort is disabled. Enable it in the settings.",
-      );
-    }
   }
 
   static set activeGroup(group: Group) {

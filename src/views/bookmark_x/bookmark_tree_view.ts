@@ -4,18 +4,8 @@ import { Controller, SpaceMap, SpaceSortItem } from "./controller";
 import { BookmarkTreeItem } from "./bookmark_tree_item";
 import * as commonUtil from "../utils/util";
 import * as bmutil from "./util";
-import {
-  ICON_ACTIVE_GROUP,
-  ICON_BOOKMARK,
-  ICON_GROUP,
-  ICON_SORTING_ACTIVE_GROUP,
-  ICON_SORTING_BOOKMARK,
-  ICON_SORTING_GROUP,
-  typeIsGroupLike,
-  TREEVIEW_ITEM_CTX_TYPE_SORTING_ITEM,
-} from "./constants";
+import { ICON_GROUP, typeIsGroupLike } from "./constants";
 import { BmxTreeItem } from "./bookmark_tree_data_provider";
-import { ITEM_TYPE_BM, ITEM_TYPE_GROUPBM, ITEM_TYPE_GROUP } from "./constants";
 
 class MyViewBadge implements ViewBadge {
   tooltip: string;
@@ -27,15 +17,9 @@ class MyViewBadge implements ViewBadge {
 }
 
 class IconManager {
-  static tviIsSorting(tvi: BookmarkTreeItem): boolean {
-    return SpaceSortItem.sorting_item === tvi;
-  }
-
   static deactivateResetGroupIcon(tvi: BookmarkTreeItem) {
     if (typeIsGroupLike(tvi.base!.type)) {
-      if (!this.tviIsSorting(tvi)) {
-        tvi.iconPath = ICON_GROUP;
-      }
+      tvi.iconPath = ICON_GROUP;
     }
     return;
   }
@@ -54,43 +38,6 @@ class IconManager {
     }
     return false;
   }
-
-  static disableItemSorting(tvi: BookmarkTreeItem) {
-    tvi.contextValue = SpaceSortItem.sorting_ctx;
-    if (this.tviIconIsActive(tvi)) {
-      tvi.iconPath = ICON_ACTIVE_GROUP;
-    } else {
-      let tp2icon: { [key: string]: vscode.ThemeIcon } = {
-        [ITEM_TYPE_GROUP]: ICON_GROUP,
-        [ITEM_TYPE_BM]: ICON_BOOKMARK,
-        [ITEM_TYPE_GROUPBM]: ICON_GROUP,
-      };
-      tvi.iconPath = tp2icon[tvi.base!.type];
-    }
-    SpaceSortItem.sorting_item = undefined;
-    SpaceSortItem.sorting_ctx = undefined;
-  }
-
-  static enableItemSorting(tvi: BookmarkTreeItem) {
-    if (SpaceSortItem.sorting_item !== undefined) {
-      this.disableItemSorting(SpaceSortItem.sorting_item);
-    }
-    let tp2icon: { [key: string]: vscode.ThemeIcon };
-    SpaceSortItem.sorting_item = tvi;
-    SpaceSortItem.sorting_ctx = tvi.contextValue;
-    tvi.contextValue = TREEVIEW_ITEM_CTX_TYPE_SORTING_ITEM;
-
-    if (this.tviIconIsActive(tvi)) {
-      tvi.iconPath = ICON_SORTING_ACTIVE_GROUP;
-    } else {
-      tp2icon = {
-        [ITEM_TYPE_GROUP]: ICON_SORTING_GROUP,
-        [ITEM_TYPE_BM]: ICON_SORTING_BOOKMARK,
-        [ITEM_TYPE_GROUPBM]: ICON_SORTING_GROUP,
-      };
-      tvi.iconPath = tp2icon[tvi.base!.type];
-    }
-  }
 }
 
 export class BookmarkTreeViewManager {
@@ -101,6 +48,10 @@ export class BookmarkTreeViewManager {
       Controller.tprovider.refresh();
     }
     this.refreshBadge();
+  }
+
+  static init_view_message() {
+    this.view.message = "∠( ᐛ 」∠)_";
   }
 
   static async init() {
@@ -145,14 +96,16 @@ export class BookmarkTreeViewManager {
     }
   }
 
-  static selectSortItem(treeItem: BookmarkTreeItem) {
-    IconManager.enableItemSorting(treeItem);
-    Controller.updateDecorations();
+  static selectSortItem() {
+    vscode.commands.executeCommand("setContext", "bmx.isSorting", true);
+    SpaceSortItem.sorting = true;
+    BookmarkTreeViewManager.view.message += " -- [Sorting]";
   }
 
-  static deselectSortItem(treeItem: BookmarkTreeItem) {
-    IconManager.disableItemSorting(treeItem);
-    Controller.updateDecorations();
+  static deselectSortItem() {
+    vscode.commands.executeCommand("setContext", "bmx.isSorting", false);
+    SpaceSortItem.sorting = false;
+    BookmarkTreeViewManager.init_view_message();
   }
 
   static deleteGroup(treeItem: BookmarkTreeItem) {

@@ -7,9 +7,8 @@ import {
 } from "./bookmark_tree_item";
 import { Group } from "./functional_types";
 import * as vscode from "vscode";
-import { Controller, SpaceMap } from "./controller";
+import { Controller, SpaceMap, SpaceSortItem } from "./controller";
 import { BookmarkTreeViewManager } from "./bookmark_tree_view";
-import { TREEVIEW_ITEM_CTX_TYPE_SORTING_ITEM } from "./constants";
 import * as util from "./util";
 import { ResourceManager } from "./resource_manager";
 
@@ -48,7 +47,7 @@ export class BookmarkTreeDataProvider
       if (wsfs === undefined || wsfs.length === 0) {
         BookmarkTreeViewManager.view.message = "";
       } else {
-        BookmarkTreeViewManager.view.message = "∠( ᐛ 」∠)_"; // clear message and show welcome
+        BookmarkTreeViewManager.init_view_message(); // clear message and show welcome
       }
       return Promise.resolve(wsfs);
     } else if (element instanceof WsfTreeItem) {
@@ -151,7 +150,7 @@ class DropFlags {
   Dst_Src_Same: boolean;
   Group_To_Group: boolean;
   Bookmark_To_Group: boolean;
-  Node_Is_Sorting: boolean;
+  Is_Sorting: boolean;
   Same_Name_Node_In_Target: boolean;
   Src_Is_ActiveGroup: boolean;
   Bookmark_To_NodeType: boolean;
@@ -171,8 +170,7 @@ class DropFlags {
 
     this.Group_To_Group = item instanceof Group && this.Move_To_Group;
     this.Bookmark_To_Group = item instanceof Bookmark && this.Move_To_Group;
-    this.Node_Is_Sorting =
-      handler.tvitem.contextValue === TREEVIEW_ITEM_CTX_TYPE_SORTING_ITEM;
+    this.Is_Sorting = SpaceSortItem.sorting === true;
     this.Same_Name_Node_In_Target =
       handler.dst_rg.cache.get(
         util.joinTreeUri([
@@ -245,7 +243,7 @@ class DropHandler {
       return false;
     }
 
-    if (this.flags.Node_Is_Sorting) {
+    if (this.flags.Is_Sorting) {
       let tgnode = (this.target as BookmarkTreeItem).base!;
       let fa_dst = Controller.get_props(tgnode).fa;
       let index_dst = fa_dst.children.indexOf(tgnode);
