@@ -160,11 +160,14 @@ class DropFlags {
     let item = handler.tvitem.base;
     this.Move_To_Undefined = typeof handler.target === "undefined";
     this.Move_To_WsfTreeItem = handler.target instanceof WsfTreeItem;
-    this.Node_To_Bookmark = handler.target!.base instanceof Bookmark;
-    this.Move_To_Group = handler.target!.base instanceof Group;
+    // here, if target instanceof WsfTreeItem return false. use tricks to avoid check error.
+    // if you have better tricks, please make a pr ^_^.
+    handler.target = handler.target as BookmarkTreeItem;
+    this.Node_To_Bookmark = handler.target.base instanceof Bookmark;
+    this.Move_To_Group = handler.target.base instanceof Group;
     this.Move_To_NodeType = this.Move_To_Group || this.Node_To_Bookmark;
 
-    this.Dst_Src_Same = handler.target! && item === handler.target!.base;
+    this.Dst_Src_Same = handler.target! && item === handler.target.base!;
 
     this.Group_To_Group = item instanceof Group && this.Move_To_Group;
     this.Bookmark_To_Group = item instanceof Bookmark && this.Move_To_Group;
@@ -173,7 +176,7 @@ class DropFlags {
     this.Same_Name_Node_In_Target =
       handler.dst_rg.cache.get(
         util.joinTreeUri([
-          handler.target!.base.get_full_uri(),
+          handler.target.base!.get_full_uri(),
           handler.item.name,
         ]),
       ) !== undefined;
@@ -221,7 +224,8 @@ class DropHandler {
       this.target = new BookmarkTreeItem("");
       this.target.base = Controller.get_root_group(this.dst_wsf);
     } else if (this.flags.Move_To_NodeType) {
-      this.dst_wsf = Controller.get_wsf_with_node(this.target!.base);
+      this.target = this.target! as BookmarkTreeItem;
+      this.dst_wsf = Controller.get_wsf_with_node(this.target.base!);
       this.dst_rg = Controller.get_root_group(this.dst_wsf);
     }
   }
@@ -230,7 +234,12 @@ class DropHandler {
       vscode.window.showInformationMessage("Same source and this.target!");
       return false;
     }
-    this.preprocess();
+    this.preprocess(); // process (undefined_target case, WsfTreeItem case)
+
+    // from now on, type ensured.
+    this.target = this.target! as BookmarkTreeItem;
+    this.target.base = this.target.base! as NodeType;
+
     if (this.flags.Same_Name_Node_In_Target) {
       vscode.window.showInformationMessage("It's already in the target group!");
       return false;
@@ -265,20 +274,24 @@ class DropHandler {
       }
     } else {
       if (this.flags.Group_To_Group) {
+        this.target.base = this.target.base! as Group;
+
+        this.src_wsf = this.src_wsf!;
+        this.dst_wsf = this.dst_wsf!;
+
         // 源group断链
         this.src_rg.cut_node(this.item);
-        this.item.uri = this.target!.base.get_full_uri();
+        this.item.uri = this.target.base.get_full_uri();
         // 给目标group添加链接
-        this.target!.base.children.push(this.item);
-        Group.dfsRefreshUri(this.target!.base);
+        this.target.base.children.push(this.item);
+        Group.dfsRefreshUri(this.target.base);
 
         // 跨区 而且是 active group
         if (this.src_rg !== this.dst_rg && this.flags.Src_Is_ActiveGroup) {
           // active group refresh
-          SpaceMap.active_group_map[this.src_wsf!.uri.path] =
-            Controller.get_root_group(this.src_wsf!);
-          SpaceMap.active_group_map[this.dst_wsf!.uri.path] = this
-            .item as Group;
+          SpaceMap.active_group_map[this.src_wsf.uri.path] =
+            Controller.get_root_group(this.src_wsf);
+          SpaceMap.active_group_map[this.dst_wsf.uri.path] = this.item as Group;
         }
 
         this.src_rg.cache = this.src_rg.bfs_get_nodemap();
@@ -288,11 +301,11 @@ class DropHandler {
           this.dst_rg.cache = this.dst_rg.bfs_get_nodemap();
           this.dst_rg.vicache = this.dst_rg.bfs_get_tvmap();
         }
-        this.target!.base.sortGroupBookmark();
-        this.target!.collapsibleState = TreeItemCollapsibleState.Expanded;
+        this.target.base.sortGroupBookmark();
+        this.target.collapsibleState = TreeItemCollapsibleState.Expanded;
         return true;
       } else if (this.flags.Bookmark_To_Group) {
-        let target_group = this.target!.base as Group;
+        let target_group = this.target.base as Group;
         ResourceManager.mvbm2group(
           this.item,
           this.src_rg,
@@ -300,7 +313,7 @@ class DropHandler {
           this.dst_rg,
         );
         target_group.sortGroupBookmark();
-        this.target!.collapsibleState = TreeItemCollapsibleState.Expanded;
+        this.target.collapsibleState = TreeItemCollapsibleState.Expanded;
         return true;
       }
     }

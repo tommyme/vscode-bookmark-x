@@ -248,7 +248,7 @@ export class Group extends BaseFunctional {
       forEach: (
         callback: (root: Group, father: Group, node: BaseFunctional) => void,
       ) => {
-        dfs(group, fa, group, callback);
+        dfs(group, fa!, group, callback);
       },
     };
   }
