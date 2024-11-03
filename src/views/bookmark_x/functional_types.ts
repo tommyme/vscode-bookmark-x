@@ -482,7 +482,7 @@ export class RootGroup extends Group {
     group.children.splice(index, 1);
   }
   /**
-   * 断链; 刷新cache
+   * cut conn; refresh cache, when used for group, consider cost
    * @param {type} param1 - param1 desc
    * @returns {type} - return value desc
    */

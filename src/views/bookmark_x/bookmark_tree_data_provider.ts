@@ -124,21 +124,6 @@ export class BookmarkTreeDataProvider
         return;
       }
       return;
-      // // bookmarks to group
-      // const all_bookmark = droppingItems.every(full_uri => this.root_group.cache.get(full_uri).type === ITEM_TYPE_BM);
-      // if (all_bookmark && target!.base instanceof Group) {
-      //     let target_group = target.base as Group;
-      //     droppingItems.forEach(full_uri => {
-      //         let bm = this.root_group.cache.get(full_uri) as Bookmark;
-      //         this.root_group.mv_bm_recache_all(bm, target_group);
-      //     });
-      //     changed_flag = true;
-      //     target_group.sortGroupBookmark();
-      //     target.collapsibleState = TreeItemCollapsibleState.Expanded;
-      // } else {
-      //     vscode.window.showErrorMessage("drop items contain group is not supported at the moment");
-      // }
-      // // items contain group
     }
 
     if (changed_flag) {
@@ -170,6 +155,7 @@ class DropFlags {
   Same_Name_Node_In_Target: boolean;
   Src_Is_ActiveGroup: boolean;
   Bookmark_To_NodeType: boolean;
+  Group_To_NodeType: boolean;
   constructor(handler: DropHandler) {
     let item = handler.tvitem.base;
     this.Move_To_Undefined = typeof handler.target === "undefined";
@@ -195,6 +181,7 @@ class DropFlags {
       Controller.get_active_group(handler.src_wsf!) === handler.item;
     this.Bookmark_To_NodeType =
       item instanceof Bookmark && this.Move_To_NodeType;
+    this.Group_To_NodeType = item instanceof Group && this.Move_To_NodeType;
   }
 }
 
@@ -235,6 +222,7 @@ class DropHandler {
       this.target.base = Controller.get_root_group(this.dst_wsf);
     } else if (this.flags.Move_To_NodeType) {
       this.dst_wsf = Controller.get_wsf_with_node(this.target!.base);
+      this.dst_rg = Controller.get_root_group(this.dst_wsf);
     }
   }
   public handle(): boolean {
@@ -249,19 +237,22 @@ class DropHandler {
     }
 
     if (this.flags.Node_Is_Sorting) {
+      let tgnode = (this.target as BookmarkTreeItem).base!;
+      let fa_dst = Controller.get_props(tgnode).fa;
+      let index_dst = fa_dst.children.indexOf(tgnode);
+      let fa_src = Controller.get_props(this.item).fa;
+      // calc new_index for different case
+
+      // by default, we think src and dst from diff father
+      let index_src = fa_src.children.indexOf(this.item);
+      let new_index = index_dst + 1; // insert after that el
+      if (fa_src === fa_dst && index_src < index_dst) {
+        // same father
+        new_index = index_dst;
+        // a b c, [b] -> [c] => a c b
+        // a b c, [c] -> [b] => a c b
+      }
       if (this.flags.Bookmark_To_NodeType) {
-        // calc new_index for different case
-        let node = (this.target as BookmarkTreeItem).base!;
-        let fa_dst = Controller.get_props(node).fa;
-        let index_dst = fa_dst.children.indexOf(node);
-        let fa_src = Controller.get_props(this.item).fa;
-        let index_src = fa_src.children.indexOf(this.item);
-
-        let new_index = index_dst + 1;
-        if (fa_src === fa_dst && index_src < index_dst) {
-          new_index = index_dst;
-        }
-
         let strategy = new util.AddElInsertStrategy(new_index);
         ResourceManager.mvbm2group(
           this.item,
@@ -271,6 +262,8 @@ class DropHandler {
           strategy,
         );
         return true;
+      } else if (this.flags.Group_To_NodeType) {
+        return true;
       }
     } else {
       if (this.flags.Group_To_Group) {
@@ -279,6 +272,7 @@ class DropHandler {
         this.item.uri = this.target!.base.get_full_uri();
         // 给目标group添加链接
         this.target!.base.children.push(this.item);
+        // BUG: 这里可能因为只刷了Uri 没有考虑对vicache的影响
         Group.dfsRefreshUri(this.target!.base);
 
         // 跨区 而且是 active group
