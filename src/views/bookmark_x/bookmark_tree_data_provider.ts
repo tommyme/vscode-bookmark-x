@@ -173,6 +173,7 @@ class DropFlags {
     this.Bookmark_To_Group = item instanceof Bookmark && this.Move_To_Group;
     this.Is_Sorting = SpaceSortItem.sorting === true;
     this.Same_Name_Node_In_Target =
+      this.Move_To_NodeType &&
       handler.dst_rg.cache.get(
         util.joinTreeUri([
           handler.target.base!.get_full_uri(),
