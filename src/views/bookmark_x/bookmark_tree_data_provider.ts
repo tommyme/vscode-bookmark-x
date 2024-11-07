@@ -162,8 +162,9 @@ class DropFlags {
     // here, if target instanceof WsfTreeItem return false. use tricks to avoid check error.
     // if you have better tricks, please make a pr ^_^.
     handler.target = handler.target as BookmarkTreeItem;
-    this.Node_To_Bookmark = handler.target.base instanceof Bookmark;
-    this.Move_To_Group = handler.target.base instanceof Group;
+    this.Node_To_Bookmark =
+      handler.target && handler.target.base instanceof Bookmark;
+    this.Move_To_Group = handler.target && handler.target.base instanceof Group;
     this.Move_To_NodeType = this.Move_To_Group || this.Node_To_Bookmark;
 
     this.Dst_Src_Same = handler.target! && item === handler.target.base!;
@@ -215,12 +216,22 @@ class DropHandler {
       this.dst_rg = Controller.get_root_group(this.src_wsf);
       this.target = new BookmarkTreeItem("");
       this.target.base = Controller.get_root_group(this.dst_wsf);
+      this.flags.Move_To_Group = true;
+      this.flags.Group_To_Group =
+        this.item instanceof Group && this.flags.Move_To_Group;
+      this.flags.Bookmark_To_Group =
+        this.item instanceof Group && this.flags.Move_To_Group;
     } else if (this.flags.Move_To_WsfTreeItem) {
       // monitor a this.target node for root group
       this.dst_wsf = (this.target as WsfTreeItem).wsf;
       this.dst_rg = Controller.get_root_group((this.target as WsfTreeItem).wsf);
       this.target = new BookmarkTreeItem("");
       this.target.base = Controller.get_root_group(this.dst_wsf);
+      this.flags.Move_To_Group = true;
+      this.flags.Group_To_Group =
+        this.item instanceof Group && this.flags.Move_To_Group;
+      this.flags.Bookmark_To_Group =
+        this.item instanceof Group && this.flags.Move_To_Group;
     } else if (this.flags.Move_To_NodeType) {
       this.target = this.target! as BookmarkTreeItem;
       this.dst_wsf = Controller.get_wsf_with_node(this.target.base!);

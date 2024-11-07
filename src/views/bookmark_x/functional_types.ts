@@ -565,11 +565,13 @@ export class RootGroup extends Group {
       this.add_node_recache_all(node, strategy);
     } else if (node instanceof Group) {
       this.cut_node(node);
-      this.add_node(node, strategy);
       Group.dfsTraverse(node as Group, target_group).forEach(
         (root, fa, node) => {
           let old_key = node.get_full_uri();
           node.uri = fa.get_full_uri();
+          if (fa === target_group) {
+            this.add_node(node as Group, strategy);
+          }
           let new_key = node.get_full_uri();
           this.cache.set(new_key, this.cache.pop(old_key));
           this.vicache.set(new_key, this.vicache.pop(old_key));
