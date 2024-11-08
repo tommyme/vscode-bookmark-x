@@ -254,8 +254,12 @@
         },
         "bookmarkX.sort": {
           "type": "string",
-          "default": "group first",
-          "enum": ["group first", "plain", "manual"]
+          "default": "manual",
+          "enum": [
+            "group first",
+            "plain",
+            "manual"
+          ]
         }
       }
     },
