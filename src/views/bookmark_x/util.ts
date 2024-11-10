@@ -1,6 +1,7 @@
 import * as path from "path";
 import { WorkspaceFolder } from "vscode";
 import * as vscode from "vscode";
+import { NodeType } from "./functional_types";
 /**
  * 返回随机颜色
  */
@@ -122,6 +123,27 @@ async function wsfReadBookmarkJson(
   return result;
 }
 
+interface AddElStrategy<T> {
+  addEl(src: Array<T>, el: T): boolean;
+}
+class AddElPushBackStrategy implements AddElStrategy<NodeType> {
+  addEl(src: Array<NodeType>, el: NodeType) {
+    src.push(el);
+    return true;
+  }
+}
+
+class AddElInsertStrategy implements AddElStrategy<NodeType> {
+  idx: number;
+  constructor(idx: number) {
+    this.idx = idx;
+  }
+  addEl(src: NodeType[], el: NodeType): boolean {
+    src.splice(this.idx, 0, el);
+    return true;
+  }
+}
+
 export {
   randomColor,
   splitTreeUri2parts as splitString,
@@ -132,4 +154,7 @@ export {
   isSubUriOrEqual,
   wsfGetBookmarkJsonUri,
   wsfReadBookmarkJson,
+  AddElStrategy,
+  AddElPushBackStrategy,
+  AddElInsertStrategy,
 };

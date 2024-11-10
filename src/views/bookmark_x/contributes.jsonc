@@ -96,12 +96,12 @@
         "icon": "$(close)"
       },
       {
-        "command": "bookmark_x:selectSortItem",
+        "command": "bookmark_x.selectSortItem",
         "title": "Bookmark X: Select to sort this item",
         "icon": "$(filter)"
       },
       {
-        "command": "bookmark_x:deselectSortItem",
+        "command": "bookmark_x.deselectSortItem",
         "title": "Bookmark X: Deselect the sorting item",
         "icon": "$(filter-filled)"
       },
@@ -147,16 +147,6 @@
     "menus": {
       "view/item/context": [
         {
-          "command": "bookmark_x:selectSortItem",
-          "when": "view == bookmarksByGroup && viewItem && viewItem != sortItem && config.bookmarkX.sort == manual", // root group doesn't have contextValue. 'viewItem' will hide the button for root group.
-          "group": "inline@4" // keep select/deselect to be the last button.
-        },
-        {
-          "command": "bookmark_x:deselectSortItem",
-          "when": "view == bookmarksByGroup && viewItem && viewItem == sortItem && config.bookmarkX.sort == manual",
-          "group": "inline@4"
-        },
-        {
           "command": "bookmark_x.activateGroup",
           "when": "view == bookmarksByGroup && (viewItem == group || viewItem == groupbookmark)",
           "group": "inline@1"
@@ -201,14 +191,14 @@
           "group": "navigation@1"
         },
         {
-          "command": "bookmark_x.moveItemUp",
-          "when": "view == bookmarksByGroup && config.bookmarkX.sort == manual",
+          "command": "bookmark_x.selectSortItem",
+          "when": "view == bookmarksByGroup && config.bookmarkX.sort == manual && !bmx.isSorting",
           "group": "navigation@2"
         },
         {
-          "command": "bookmark_x.moveItemDown",
-          "when": "view == bookmarksByGroup && config.bookmarkX.sort == manual",
-          "group": "navigation@3"
+          "command": "bookmark_x.deselectSortItem",
+          "when": "view == bookmarksByGroup && config.bookmarkX.sort == manual && bmx.isSorting",
+          "group": "navigation@2"
         }
       ],
       "commandPalette": [
@@ -237,11 +227,11 @@
           "when": "false"
         },
         {
-          "command": "bookmark_x:selectSortItem",
+          "command": "bookmark_x.selectSortItem",
           "when": "false"
         },
         {
-          "command": "bookmark_x:deselectSortItem",
+          "command": "bookmark_x.deselectSortItem",
           "when": "false"
         },
         {
@@ -264,8 +254,12 @@
         },
         "bookmarkX.sort": {
           "type": "string",
-          "default": "group first",
-          "enum": ["group first", "plain", "manual"]
+          "default": "manual",
+          "enum": [
+            "group first",
+            "plain",
+            "manual"
+          ]
         }
       }
     },

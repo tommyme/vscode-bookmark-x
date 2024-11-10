@@ -17,7 +17,6 @@ import {
   BookmarkTreeItem,
   BookmarkTreeItemFactory,
 } from "./bookmark_tree_item";
-import { SpaceSortItem } from "./controller";
 
 export type NodeType = Group | Bookmark | GroupBookmark;
 export type GroupLike = Group | GroupBookmark;
@@ -177,7 +176,7 @@ export class Group extends BaseFunctional {
    * @param {type} param1 - param1 desc
    * @returns {type} - return value desc
    */
-  public bfs_get_nodes(): NodeUriMap {
+  public bfs_get_nodemap(): NodeUriMap {
     let res = new NodeUriMap();
     function bfs(node: BaseFunctional) {
       res.set(node.get_full_uri(), node);
@@ -226,6 +225,31 @@ export class Group extends BaseFunctional {
         Group.dfsRefreshUri(child as Group);
       }
     });
+  }
+
+  public static dfsTraverse(group: Group, fa: Group | null = null) {
+    function dfs(
+      root: Group,
+      father: Group,
+      node: BaseFunctional,
+      callback: (root: Group, father: Group, node: BaseFunctional) => void,
+    ) {
+      callback(root, father, node);
+
+      if (node.children.length > 0) {
+        node.children.forEach((child) => {
+          dfs(root, node as Group, child, callback);
+        });
+      }
+    }
+
+    return {
+      forEach: (
+        callback: (root: Group, father: Group, node: BaseFunctional) => void,
+      ) => {
+        dfs(group, fa!, group, callback);
+      },
+    };
   }
 }
 
@@ -350,6 +374,11 @@ class UriMap<T> extends Object {
   public del(key: string) {
     delete this.map[key];
   }
+  public pop(key: string) {
+    let val = this.map[key];
+    delete this.map[key];
+    return val;
+  }
   public keys(): Array<string> {
     return Object.keys(this.map);
   }
@@ -406,10 +435,6 @@ export class ViewItemUriMap extends UriMap<BookmarkTreeItem> {
     this.keys().forEach((key) => {
       // reset icon status
       let tvi = this.get(key);
-      if (SpaceSortItem.sorting_item === tvi) {
-        // item is sorting, use sorting icon
-        return;
-      }
       if (typeIsGroupLike(tvi.base!.type)) {
         if (util.isSubUriOrEqual(key, new_full_uri)) {
           tvi.iconPath = ICON_ACTIVE_GROUP;
@@ -439,19 +464,48 @@ export class RootGroup extends Group {
     this.cache = new NodeUriMap();
     this.vicache = new ViewItemUriMap();
   }
-
-  public add_node_recache_all<T extends NodeType>(node: T) {
+  public add_node<T extends NodeType>(
+    node: T,
+    strategy: util.AddElStrategy<NodeType> = new util.AddElPushBackStrategy(),
+  ) {
     let group = this.get_node(node.uri) as Group;
     if (group) {
-      group.children.push(node);
+      strategy.addEl(group.children, node);
     } else {
-      throw new Error("add node recache error");
+      throw new Error("add node error");
     }
-    this.cache.set(node.get_full_uri(), node);
-    this.vicache.set(
-      node.get_full_uri(),
-      BookmarkTreeItemFactory.createType(node),
-    );
+    return group;
+  }
+
+  /**
+   * add node to rg, then recache that node
+   * @param {T} node - node
+   * @returns {Group} - return the node's father
+   */
+  public add_node_recache_all<T extends NodeType>(
+    node: T,
+    strategy: util.AddElStrategy<NodeType> = new util.AddElPushBackStrategy(),
+  ) {
+    let group = this.add_node(node, strategy);
+    if (node instanceof Bookmark || node instanceof GroupBookmark) {
+      // node is bm / downgrade from gbm
+      this.cache.set(node.get_full_uri(), node);
+      this.vicache.set(
+        node.get_full_uri(),
+        BookmarkTreeItemFactory.createType(node),
+      );
+    } else if (node instanceof Group) {
+      Group.dfsTraverse(node).forEach((root, fa, node) => {
+        this.cache.set(node.get_full_uri(), node);
+        this.vicache.set(
+          node.get_full_uri(),
+          BookmarkTreeItemFactory.createType(node),
+        );
+        if (fa) {
+          node.uri = fa.get_full_uri();
+        }
+      });
+    }
     return group;
   }
 
@@ -479,17 +533,19 @@ export class RootGroup extends Group {
     group.children.splice(index, 1);
   }
   /**
-   * 断链; 刷新cache
+   * cut conn; refresh cache, when used for group, consider cost
    * @param {type} param1 - param1 desc
    * @returns {type} - return value desc
    */
-  public cut_node_recache(node: NodeType) {
+  public cut_node_recache_all(node: NodeType) {
     this.cut_node(node);
     if (node instanceof Bookmark) {
       this.cache.del(node.get_full_uri());
+      this.vicache.del(node.get_full_uri());
     } else if (node instanceof Group) {
       // 由于group可能有很多级, 所以直接重新bfs一遍, 构建cache
-      this.cache = this.bfs_get_nodes();
+      this.cache = this.bfs_get_nodemap();
+      this.vicache = this.bfs_get_tvmap();
     }
   }
 
@@ -498,15 +554,32 @@ export class RootGroup extends Group {
    * @param {type} param1 - param1 desc
    * @returns {type} - return value desc
    */
-  public mv_bm_recache_all(bm: Bookmark, target_group: Group) {
-    let old_key = bm.get_full_uri();
-    this.cut_node_recache(bm);
-    bm.uri = target_group.get_full_uri();
-    // bm.group = target_group;
-    // let new_key = bm.get_full_uri();
-    this.add_node_recache_all(bm);
-    this.vicache.del(old_key);
-    // this.vicache.rename_key(old_key, new_key);
+  public mv_node_recache_one(
+    node: NodeType,
+    target_group: Group,
+    strategy: util.AddElStrategy<NodeType> = new util.AddElPushBackStrategy(),
+  ) {
+    if (node instanceof Bookmark) {
+      this.cut_node_recache_all(node);
+      node.uri = target_group.get_full_uri();
+      this.add_node_recache_all(node, strategy);
+    } else if (node instanceof Group) {
+      this.cut_node(node);
+      Group.dfsTraverse(node as Group, target_group).forEach(
+        (root, fa, node) => {
+          let old_key = node.get_full_uri();
+          node.uri = fa.get_full_uri();
+          if (fa === target_group) {
+            this.add_node(node as Group, strategy);
+          }
+          let new_key = node.get_full_uri();
+          this.cache.set(new_key, this.cache.pop(old_key));
+          this.vicache.set(new_key, this.vicache.pop(old_key));
+        },
+      );
+    } else {
+      throw new Error("mv_node_recache_one fail.");
+    }
   }
 
   /**
