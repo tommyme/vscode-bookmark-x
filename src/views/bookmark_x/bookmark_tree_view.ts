@@ -1,11 +1,12 @@
 import * as vscode from "vscode";
 import { ViewBadge } from "vscode";
-import { Controller, SpaceMap, SpaceSortItem } from "./controller";
+import { Controller, SpaceMap } from "./controller";
 import { BookmarkTreeItem } from "./bookmark_tree_item";
 import * as commonUtil from "../utils/util";
 import * as bmutil from "./util";
 import { ICON_GROUP, typeIsGroupLike } from "./constants";
 import { BmxTreeItem } from "./bookmark_tree_data_provider";
+import { ctxFixing, ctxSortItem } from "./ctx";
 
 class MyViewBadge implements ViewBadge {
   tooltip: string;
@@ -40,6 +41,31 @@ class IconManager {
   }
 }
 
+export class TVMsgManager {
+  static msg: string = `∠( ᐛ 」∠)_`;
+  static setMsgBug() {
+    this.setMsg(`${bmutil.Gitmoji.bug} It's a bug`);
+  }
+  static setMsgFix() {
+    this.setMsg(`${bmutil.Gitmoji.fix} Fix needed`);
+  }
+  static setMsgInit() {
+    this.setMsg(`∠( ᐛ 」∠)_`);
+  }
+  static setMsgEmpty() {
+    this.setMsg(`${bmutil.Gitmoji.dialog} Bookmark Empty`);
+  }
+  static setMsgSort() {
+    this.setMsg(`${bmutil.Gitmoji.sort} sorting`);
+  }
+  static setMsg(msg: string | null = null) {
+    if (msg !== null) {
+      this.msg = msg;
+    }
+    BookmarkTreeViewManager.view.message = this.msg;
+  }
+}
+
 export class BookmarkTreeViewManager {
   static view: vscode.TreeView<BmxTreeItem>;
 
@@ -48,10 +74,6 @@ export class BookmarkTreeViewManager {
       Controller.tprovider.refresh();
     }
     this.refreshBadge();
-  }
-
-  static init_view_message() {
-    this.view.message = "∠( ᐛ 」∠)_";
   }
 
   static async init() {
@@ -94,18 +116,6 @@ export class BookmarkTreeViewManager {
         group!.get_full_uri(),
       );
     }
-  }
-
-  static selectSortItem() {
-    vscode.commands.executeCommand("setContext", "bmx.isSorting", true);
-    SpaceSortItem.sorting = true;
-    BookmarkTreeViewManager.view.message += " -- [Sorting]";
-  }
-
-  static deselectSortItem() {
-    vscode.commands.executeCommand("setContext", "bmx.isSorting", false);
-    SpaceSortItem.sorting = false;
-    BookmarkTreeViewManager.init_view_message();
   }
 
   static deleteGroup(treeItem: BookmarkTreeItem) {
@@ -188,5 +198,11 @@ export class BookmarkTreeViewManager {
       selectedGroupName,
     );
     return;
+  }
+  static async fixBookmark() {
+    // get bookmark
+    // change bookmark line text
+    // fix over
+    ctxFixing.finishFixBookmark();
   }
 }

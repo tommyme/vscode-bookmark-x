@@ -116,6 +116,10 @@
         "icon": "$(arrow-down)"
       },
       {
+        "command": "bookmark_x.fixBookmark",
+        "title": "Fix bookmark"
+      },
+      {
         "command": "bmx.showChangelog",
         "title": "bmx: show changelog"
       }
@@ -242,6 +246,12 @@
           "command": "bookmark_x.moveItemDown",
           "when": "false"
         }
+      ],
+      "editor/lineNumber/context": [
+        {
+          "command": "bookmark_x.fixBookmark",
+          "when": "bmx.isFixingBm"
+        }
       ]
     },
     "configuration": {
@@ -270,6 +280,14 @@
         "defaults": {
           "dark": "statusBarItem.remoteBackground",
           "light": "statusBarItem.remoteBackground"
+        }
+      },
+      {
+        "id": "bmx.bookmark.errorColor",
+        "description": "Color for bookmarks need fix",
+        "defaults": {
+          "dark": "#b53e3d",
+          "light": "#b53e3d"
         }
       },
       {

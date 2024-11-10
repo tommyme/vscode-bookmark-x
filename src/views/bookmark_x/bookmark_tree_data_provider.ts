@@ -7,10 +7,11 @@ import {
 } from "./bookmark_tree_item";
 import { Group } from "./functional_types";
 import * as vscode from "vscode";
-import { Controller, SpaceMap, SpaceSortItem } from "./controller";
-import { BookmarkTreeViewManager } from "./bookmark_tree_view";
+import { Controller, SpaceMap } from "./controller";
+import { TVMsgManager } from "./bookmark_tree_view";
 import * as util from "./util";
 import { ResourceManager } from "./resource_manager";
+import { ctxSortItem } from "./ctx";
 
 export type BmxTreeItem = BookmarkTreeItem | WsfTreeItem;
 
@@ -45,9 +46,9 @@ export class BookmarkTreeDataProvider
         (wsf) => new WsfTreeItem(wsf),
       );
       if (wsfs === undefined || wsfs.length === 0) {
-        BookmarkTreeViewManager.view.message = "";
+        TVMsgManager.setMsgEmpty();
       } else {
-        BookmarkTreeViewManager.init_view_message(); // clear message and show welcome
+        TVMsgManager.setMsg();
       }
       return Promise.resolve(wsfs);
     } else if (element instanceof WsfTreeItem) {
@@ -171,7 +172,7 @@ class DropFlags {
 
     this.Group_To_Group = item instanceof Group && this.Move_To_Group;
     this.Bookmark_To_Group = item instanceof Bookmark && this.Move_To_Group;
-    this.Is_Sorting = SpaceSortItem.sorting === true;
+    this.Is_Sorting = ctxSortItem.sorting === true;
     this.Same_Name_Node_In_Target =
       this.Move_To_NodeType &&
       handler.dst_rg.cache.get(

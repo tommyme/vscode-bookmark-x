@@ -114,7 +114,7 @@ export class BookmarkTreeItemFactory {
       return Controller.get_root_group(wsf!).vicache.get(item.get_full_uri());
     } else {
       console.log("unexpected from type");
-      // 不会走到这里
+      // won't be here.
       return this.createType(item);
     }
   }

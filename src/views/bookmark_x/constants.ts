@@ -25,6 +25,14 @@ export const SAVED_WSFSDATA_KEY = "bookmarkDemo.wsfsData";
 // icons
 // colors are controlled by contributes.
 export const ICON_BOOKMARK = new ThemeIcon("bookmark");
+export const ICON_BOOKMARK_FIXING = new ThemeIcon(
+  "debug-disconnect",
+  new ThemeColor("bmx.bookmark.errorColor"),
+);
+export const ICON_BOOKMARK_RED = new ThemeIcon(
+  "bookmark",
+  new ThemeColor("bmx.bookmark.errorColor"),
+);
 export const ICON_ACTIVE_GROUP = new ThemeIcon(
   "folder-opened",
   new ThemeColor("bmx.bookmark.activeGroupColor"),
