@@ -20,8 +20,6 @@ import {
 import { Group } from "./functional_types";
 import { SerializableGroup } from "./serializable_type";
 import {
-  ICON_BOOKMARK_FIXING,
-  ICON_BOOKMARK_RED,
   ITEM_TYPE_BM,
   ITEM_TYPE_GROUP,
   ITEM_TYPE_GROUP_LIKE,
@@ -32,11 +30,8 @@ import { typeIsBookmarkLike } from "./constants";
 import { BookmarkTreeDataProvider } from "./bookmark_tree_data_provider";
 import { TextEncoder } from "util";
 import { DecorationFactory } from "./decoration_factory";
-import {
-  BookmarkTreeItem,
-  BookmarkTreeItemFactory,
-} from "./bookmark_tree_item";
-import { BookmarkTreeViewManager } from "./bookmark_tree_view";
+import { BookmarkTreeItemFactory } from "./bookmark_tree_item";
+import { BookmarkTreeViewManager, TVMsgManager } from "./bookmark_tree_view";
 import { error } from "console";
 import { SAVED_WSFSDATA_KEY } from "./constants";
 import { ctxFixing } from "./ctx";
@@ -725,21 +720,27 @@ export class Controller {
         // 考虑2点
         // 前一个没fix 现在这个是 tobefix 前面的变红
         // 前一个没fix 现在这个是 normal  前面的变红
-        ctxFixing.someFunc();
+        let need_fresh = ctxFixing.stash();
         if (lineText !== bm.lineText) {
           ctxFixing.startFixBookmark(bm);
           let succ = Controller.tryAutoFixBm_finish(bm);
           if (succ) {
             // jump to new location
             // window.showTextDocument()
+            // set icon
+            // do not refresh
             return;
           }
           BookmarkTreeViewManager.refreshCallback();
         } else {
+          if (need_fresh) {
+            BookmarkTreeViewManager.refreshCallback();
+            TVMsgManager.setMsgInit();
+          }
           // click on other normal bookmark
           // fixing status changed by gutter's rightclick menu.
           // 上一个是 fixing/normal
-          ctxFixing.finishFixBookmark(); // tvm refresh here
+          // ctxFixing.finishFixBookmark(); // tvm refresh here
         }
       });
   }

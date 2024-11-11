@@ -160,7 +160,7 @@ export class BmxLauncher {
         let line = x.lineNumber;
         let bm: Bookmark;
         const document = await vscode.workspace.openTextDocument(x.uri);
-        const lineContent = document.lineAt(x.lineNumber).text;
+        const lineContent = document.lineAt(x.lineNumber - 1).text;
         Controller.getCurrBookmark(ctxFixing.fixing_bm!.line, fsPath, (bm) => {
           bm.lineText = lineContent;
           // change tvi lineText here OR create a new one.

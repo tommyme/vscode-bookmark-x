@@ -2,11 +2,15 @@ import { BookmarkTreeViewManager, TVMsgManager } from "./bookmark_tree_view";
 import * as vscode from "vscode";
 import { Bookmark } from "./functional_types";
 import { Controller } from "./controller";
-import { ICON_BOOKMARK_FIXING, ICON_BOOKMARK_RED } from "./constants";
+import {
+  ICON_BOOKMARK,
+  ICON_BOOKMARK_FIXING,
+  ICON_BOOKMARK_RED,
+} from "./constants";
 
 export class ctxFixing {
   static fixing_bm: Bookmark | null = null;
-  static someFunc() {
+  static stash() {
     let wsf, rg;
     if (this.fixing_bm) {
       // prev not fixing_bm not fixed, leave it red.
@@ -14,7 +18,9 @@ export class ctxFixing {
       rg = Controller.get_root_group(wsf);
       rg.vicache.get(this.fixing_bm.get_full_uri()).iconPath =
         ICON_BOOKMARK_RED;
+      return true;
     }
+    return false;
   }
 
   static startFixBookmark(bm: Bookmark) {
@@ -33,9 +39,7 @@ export class ctxFixing {
       wsf = Controller.get_wsf_with_node(this.fixing_bm);
       rg = Controller.get_root_group(wsf);
 
-      // 这里一定是没fix的
-      rg.vicache.get(this.fixing_bm.get_full_uri()).iconPath =
-        ICON_BOOKMARK_RED;
+      rg.vicache.get(this.fixing_bm.get_full_uri()).iconPath = ICON_BOOKMARK;
       BookmarkTreeViewManager.refreshCallback();
     }
     this.fixing_bm = null;

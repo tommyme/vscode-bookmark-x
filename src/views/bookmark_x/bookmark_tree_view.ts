@@ -199,10 +199,4 @@ export class BookmarkTreeViewManager {
     );
     return;
   }
-  static async fixBookmark() {
-    // get bookmark
-    // change bookmark line text
-    // fix over
-    ctxFixing.finishFixBookmark();
-  }
 }
