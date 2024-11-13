@@ -8,6 +8,7 @@ import * as commonutil from "../utils/util";
 import { StoreManager } from "../../store";
 import { DecorationFactory } from "./decoration_factory";
 import { SerializableGroup } from "./serializable_type";
+import { ctxFixing, ctxSortItem } from "./ctx";
 export class BmxLauncher {
   static async init(context: vscode.ExtensionContext) {
     StoreManager.home = context.globalStorageUri;
@@ -54,13 +55,13 @@ export class BmxLauncher {
 
     disposable = vscode.commands.registerCommand(
       "bookmark_x.selectSortItem",
-      () => BookmarkTreeViewManager.selectSortItem(),
+      () => ctxSortItem.selectSortItem(),
     );
     context.subscriptions.push(disposable);
 
     disposable = vscode.commands.registerCommand(
       "bookmark_x.deselectSortItem",
-      () => BookmarkTreeViewManager.deselectSortItem(),
+      () => ctxSortItem.deselectSortItem(),
     );
     context.subscriptions.push(disposable);
 
@@ -149,6 +150,27 @@ export class BmxLauncher {
     disposable = vscode.commands.registerCommand(
       "bookmark_x.saveAllWsfState",
       () => Controller.actionSaveAllWsfState(),
+    );
+    context.subscriptions.push(disposable);
+
+    disposable = vscode.commands.registerCommand(
+      "bookmark_x.detectBookmarksToFix",
+      () => Controller.detectBms2Fix(),
+    );
+    context.subscriptions.push(disposable);
+
+    disposable = vscode.commands.registerCommand(
+      "bookmark_x.fixBookmark",
+      async (x) => {
+        let fsPath = x.uri.fsPath;
+        const document = await vscode.workspace.openTextDocument(x.uri);
+        const lineContent = document.lineAt(x.lineNumber - 1).text.trim();
+        Controller.getCurrBookmark(ctxFixing.fixing_bm!.line, fsPath, (bm) => {
+          bm.lineText = lineContent;
+          ctxFixing.finishFixBookmark();
+          Controller.updateDecorations();
+        });
+      },
     );
     context.subscriptions.push(disposable);
 

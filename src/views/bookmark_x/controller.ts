@@ -30,13 +30,11 @@ import { typeIsBookmarkLike } from "./constants";
 import { BookmarkTreeDataProvider } from "./bookmark_tree_data_provider";
 import { TextEncoder } from "util";
 import { DecorationFactory } from "./decoration_factory";
-import {
-  BookmarkTreeItem,
-  BookmarkTreeItemFactory,
-} from "./bookmark_tree_item";
-import { BookmarkTreeViewManager } from "./bookmark_tree_view";
+import { BookmarkTreeItemFactory } from "./bookmark_tree_item";
+import { BookmarkTreeViewManager, TVMsgManager } from "./bookmark_tree_view";
 import { error } from "console";
 import { SAVED_WSFSDATA_KEY } from "./constants";
+import { ctxFixing } from "./ctx";
 
 export class SpaceMap {
   static root_group_map: { [key: string]: RootGroup } = {};
@@ -51,10 +49,6 @@ export class SpaceMap {
   static get rgs() {
     return Object.values(this.root_group_map);
   }
-}
-
-export class SpaceSortItem {
-  static sorting = false;
 }
 
 type WsfDataSerialiable = {
@@ -219,7 +213,11 @@ export class Controller {
       return;
     }
     let documentFsPath = textEditor.document.uri.fsPath;
+    // 如果能用相对路径就用相对路径 不能就用绝对路径 因为有的是project外的书签
     let wsf = commonUtil.getWsfWithPath(documentFsPath);
+    const workspaceRoot = wsf!.uri.fsPath;
+    const relativePath = path.relative(workspaceRoot, documentFsPath);
+    let documentFsRelPath = relativePath;
     // 可能存在着多个光标
     for (let selection of textEditor.selections) {
       let line = selection.start.line;
@@ -227,7 +225,7 @@ export class Controller {
       let lineText = textEditor.document.lineAt(line).text.trim();
 
       this.toggleBookmark(
-        documentFsPath,
+        documentFsRelPath,
         line,
         col,
         lineText,
@@ -718,15 +716,17 @@ export class Controller {
         selection: new Range(bm.line, bm.col, bm.line, bm.col),
       })
       .then((editor) => {
-        // 更新lineText
         let lineText = editor.document.lineAt(bm.line).text.trim();
+        let need_fresh = ctxFixing.stash();
         if (lineText !== bm.lineText) {
-          bm.lineText = lineText;
-          let wsf = this.get_wsf_with_node(bm);
-          this.get_root_group(wsf!).vicache.get(bm.get_full_uri()).description =
-            lineText;
+          ctxFixing.startFixBookmark(bm);
+          Controller.tryAutoFixBm_finish(bm);
           BookmarkTreeViewManager.refreshCallback();
-          this.saveState();
+        } else {
+          if (need_fresh) {
+            BookmarkTreeViewManager.refreshCallback();
+            TVMsgManager.setMsgInit();
+          }
         }
       });
   }
@@ -804,22 +804,32 @@ export class Controller {
     this.saveState();
   }
 
+  static getCurrBookmark(
+    line: number,
+    fsPath: string,
+    callback: (bookmark: Bookmark) => void,
+  ) {
+    const bookmarks = this.getBookmarksInFile(fsPath);
+    for (const item of bookmarks) {
+      if (item.line === line) {
+        callback(item);
+        break;
+      }
+    }
+  }
+
   static revealBookmark(textEditor: TextEditor) {
     let fspath = textEditor.document.uri.fsPath;
     if (textEditor.selections.length === 1) {
       let selection = textEditor.selections[0];
       let line = selection.start.line;
-      this.getBookmarksInFile(fspath).forEach((item) => {
-        if (item.line === line) {
-          window.showInformationMessage(
-            "current bookmark: " + item.get_full_uri(),
-          );
-          let wsf = this.get_wsf_with_node(item);
-          let tvitem = this.get_root_group(wsf!).vicache.get(
-            item.get_full_uri(),
-          );
-          BookmarkTreeViewManager.view.reveal(tvitem, { focus: true });
-        }
+      this.getCurrBookmark(line, fspath, (item) => {
+        window.showInformationMessage(
+          "current bookmark: " + item.get_full_uri(),
+        );
+        let wsf = this.get_wsf_with_node(item);
+        let tvitem = this.get_root_group(wsf!).vicache.get(item.get_full_uri());
+        BookmarkTreeViewManager.view.reveal(tvitem, { focus: true });
       });
     }
   }
@@ -903,5 +913,54 @@ export class Controller {
       rg: rg,
       fa: fa,
     };
+  }
+
+  static async tryAutoFixBm_finish(bm: Bookmark) {
+    let succ = false;
+    let uri = Uri.file(bm.fsPath);
+    let doc = await vscode.workspace.openTextDocument(uri);
+    for (let i = 0; i < doc.lineCount; i++) {
+      if (doc.lineAt(i).text.trim() === bm.lineText) {
+        bm.line = i;
+        this.saveState();
+        succ = true;
+        ctxFixing.finishFixBookmark();
+        this.updateDecorations();
+        break;
+      }
+    }
+    return succ;
+  }
+
+  static detectBms2Fix() {
+    const promises: any[] = [];
+    let cnt = 0;
+
+    SpaceMap.rgs.forEach((rg) => {
+      rg.cache.values().forEach((item) => {
+        if (item instanceof Bookmark) {
+          const promise = vscode.workspace
+            .openTextDocument(item.fsPath)
+            .then((doc) => {
+              if (doc.lineAt(item.line).text.trim() !== item.lineText) {
+                ctxFixing.markAsToFix(item);
+                cnt += 1;
+              }
+            });
+          promises.push(promise);
+        }
+      });
+    });
+
+    Promise.all(promises)
+      .then(() => {
+        if (cnt) {
+          BookmarkTreeViewManager.refreshCallback();
+        }
+        vscode.window.showInformationMessage(`detect ${cnt} bookmarks to fix.`);
+      })
+      .catch((err) => {
+        console.error("Error processing bookmarks:", err);
+      });
   }
 }

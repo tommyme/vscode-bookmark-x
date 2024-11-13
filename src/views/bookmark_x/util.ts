@@ -144,6 +144,16 @@ class AddElInsertStrategy implements AddElStrategy<NodeType> {
   }
 }
 
+const Gitmoji = {
+  fix: "🚨",
+  bug: "🐛",
+  linght: "⚡️",
+  pass: "✅",
+  rocket: "🚀",
+  dialog: "💬",
+  sort: "🔀",
+};
+
 export {
   randomColor,
   splitTreeUri2parts as splitString,
@@ -157,4 +167,5 @@ export {
   AddElStrategy,
   AddElPushBackStrategy,
   AddElInsertStrategy,
+  Gitmoji,
 };
