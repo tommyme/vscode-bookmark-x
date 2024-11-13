@@ -723,14 +723,7 @@ export class Controller {
         let need_fresh = ctxFixing.stash();
         if (lineText !== bm.lineText) {
           ctxFixing.startFixBookmark(bm);
-          let succ = Controller.tryAutoFixBm_finish(bm);
-          if (succ) {
-            // jump to new location
-            // window.showTextDocument()
-            // set icon
-            // do not refresh
-            return;
-          }
+          Controller.tryAutoFixBm_finish(bm);
           BookmarkTreeViewManager.refreshCallback();
         } else {
           if (need_fresh) {
@@ -929,22 +922,20 @@ export class Controller {
     };
   }
 
-  static tryAutoFixBm_finish(bm: Bookmark) {
+  static async tryAutoFixBm_finish(bm: Bookmark) {
     let succ = false;
-    let lineText = "hello";
-    if (succ) {
-      Controller.updateBm(bm, lineText);
-      ctxFixing.finishFixBookmark();
-      return succ;
+    let uri = Uri.file(bm.fsPath);
+    let doc = await vscode.workspace.openTextDocument(uri);
+    for (let i = 0; i < doc.lineCount; i++) {
+      if (doc.lineAt(i).text === bm.lineText) {
+        bm.line = i;
+        this.saveState();
+        succ = true;
+        ctxFixing.finishFixBookmark();
+        this.updateDecorations();
+        break;
+      }
     }
-  }
-
-  static updateBm(bm: Bookmark, lineText: string) {
-    bm.lineText = lineText;
-    let wsf = this.get_wsf_with_node(bm);
-    this.get_root_group(wsf!).vicache.get(bm.get_full_uri()).description =
-      lineText;
-    BookmarkTreeViewManager.refreshCallback();
-    this.saveState();
+    return succ;
   }
 }

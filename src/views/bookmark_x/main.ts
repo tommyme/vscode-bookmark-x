@@ -157,8 +157,6 @@ export class BmxLauncher {
       "bookmark_x.fixBookmark",
       async (x) => {
         let fsPath = x.uri.fsPath;
-        let line = x.lineNumber;
-        let bm: Bookmark;
         const document = await vscode.workspace.openTextDocument(x.uri);
         const lineContent = document.lineAt(x.lineNumber - 1).text;
         Controller.getCurrBookmark(ctxFixing.fixing_bm!.line, fsPath, (bm) => {
