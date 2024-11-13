@@ -11,11 +11,9 @@ import {
 export class ctxFixing {
   static fixing_bm: Bookmark | null = null;
   static stash() {
-    let wsf, rg;
     if (this.fixing_bm) {
       // prev not fixing_bm not fixed, leave it red.
-      wsf = Controller.get_wsf_with_node(this.fixing_bm);
-      rg = Controller.get_root_group(wsf);
+      let { rg } = Controller.get_props(this.fixing_bm);
       rg.vicache.get(this.fixing_bm.get_full_uri()).iconPath =
         ICON_BOOKMARK_RED;
       return true;
@@ -24,22 +22,25 @@ export class ctxFixing {
   }
 
   static startFixBookmark(bm: Bookmark) {
-    let wsf, rg;
     this.fixing_bm = bm;
-    wsf = Controller.get_wsf_with_node(bm);
-    rg = Controller.get_root_group(wsf);
+    let { rg } = Controller.get_props(this.fixing_bm);
     rg.vicache.get(bm.get_full_uri()).iconPath = ICON_BOOKMARK_FIXING;
     vscode.commands.executeCommand("setContext", "bmx.isFixingBm", true);
     TVMsgManager.setMsgFix();
   }
 
-  static finishFixBookmark() {
-    let wsf, rg;
-    if (this.fixing_bm) {
-      wsf = Controller.get_wsf_with_node(this.fixing_bm);
-      rg = Controller.get_root_group(wsf);
+  static markAsToFix(bm: Bookmark) {
+    let { rg } = Controller.get_props(bm);
+    rg.vicache.get(bm.get_full_uri()).iconPath = ICON_BOOKMARK_RED;
+  }
 
-      rg.vicache.get(this.fixing_bm.get_full_uri()).iconPath = ICON_BOOKMARK;
+  static finishFixBookmark() {
+    // called by autoFix or manualFix
+    if (this.fixing_bm) {
+      let { rg } = Controller.get_props(this.fixing_bm);
+      let tvi = rg.vicache.get(this.fixing_bm.get_full_uri());
+      tvi.iconPath = ICON_BOOKMARK;
+      tvi.description = this.fixing_bm.lineText;
       BookmarkTreeViewManager.refreshCallback();
     }
     this.fixing_bm = null;

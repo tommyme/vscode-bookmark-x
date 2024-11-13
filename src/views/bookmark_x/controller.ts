@@ -717,9 +717,6 @@ export class Controller {
       })
       .then((editor) => {
         let lineText = editor.document.lineAt(bm.line).text.trim();
-        // 考虑2点
-        // 前一个没fix 现在这个是 tobefix 前面的变红
-        // 前一个没fix 现在这个是 normal  前面的变红
         let need_fresh = ctxFixing.stash();
         if (lineText !== bm.lineText) {
           ctxFixing.startFixBookmark(bm);
@@ -730,10 +727,6 @@ export class Controller {
             BookmarkTreeViewManager.refreshCallback();
             TVMsgManager.setMsgInit();
           }
-          // click on other normal bookmark
-          // fixing status changed by gutter's rightclick menu.
-          // 上一个是 fixing/normal
-          // ctxFixing.finishFixBookmark(); // tvm refresh here
         }
       });
   }
@@ -927,7 +920,7 @@ export class Controller {
     let uri = Uri.file(bm.fsPath);
     let doc = await vscode.workspace.openTextDocument(uri);
     for (let i = 0; i < doc.lineCount; i++) {
-      if (doc.lineAt(i).text === bm.lineText) {
+      if (doc.lineAt(i).text.trim() === bm.lineText) {
         bm.line = i;
         this.saveState();
         succ = true;
@@ -937,5 +930,37 @@ export class Controller {
       }
     }
     return succ;
+  }
+
+  static detectBms2Fix() {
+    const promises: any[] = [];
+    let cnt = 0;
+
+    SpaceMap.rgs.forEach((rg) => {
+      rg.cache.values().forEach((item) => {
+        if (item instanceof Bookmark) {
+          const promise = vscode.workspace
+            .openTextDocument(item.fsPath)
+            .then((doc) => {
+              if (doc.lineAt(item.line).text.trim() !== item.lineText) {
+                ctxFixing.markAsToFix(item);
+                cnt += 1;
+              }
+            });
+          promises.push(promise);
+        }
+      });
+    });
+
+    Promise.all(promises)
+      .then(() => {
+        if (cnt) {
+          BookmarkTreeViewManager.refreshCallback();
+        }
+        vscode.window.showInformationMessage(`detect ${cnt} bookmarks to fix.`);
+      })
+      .catch((err) => {
+        console.error("Error processing bookmarks:", err);
+      });
   }
 }

@@ -154,15 +154,21 @@ export class BmxLauncher {
     context.subscriptions.push(disposable);
 
     disposable = vscode.commands.registerCommand(
+      "bookmark_x.detectBookmarksToFix",
+      () => Controller.detectBms2Fix(),
+    );
+    context.subscriptions.push(disposable);
+
+    disposable = vscode.commands.registerCommand(
       "bookmark_x.fixBookmark",
       async (x) => {
         let fsPath = x.uri.fsPath;
         const document = await vscode.workspace.openTextDocument(x.uri);
-        const lineContent = document.lineAt(x.lineNumber - 1).text;
+        const lineContent = document.lineAt(x.lineNumber - 1).text.trim();
         Controller.getCurrBookmark(ctxFixing.fixing_bm!.line, fsPath, (bm) => {
           bm.lineText = lineContent;
-          // change tvi lineText here OR create a new one.
           ctxFixing.finishFixBookmark();
+          Controller.updateDecorations();
         });
       },
     );

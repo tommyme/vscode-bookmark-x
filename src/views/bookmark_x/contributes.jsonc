@@ -120,6 +120,10 @@
         "title": "Fix bookmark"
       },
       {
+        "command": "bookmark_x.detectBookmarksToFix",
+        "title": "detect bookmarks to fix"
+      },
+      {
         "command": "bmx.showChangelog",
         "title": "bmx: show changelog"
       }
