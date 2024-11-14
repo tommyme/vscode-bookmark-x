@@ -167,6 +167,7 @@ export class BmxLauncher {
         const lineContent = document.lineAt(x.lineNumber - 1).text.trim();
         Controller.getCurrBookmark(ctxFixing.fixing_bm!.line, fsPath, (bm) => {
           bm.lineText = lineContent;
+          bm.line = x.lineNumber - 1;
           ctxFixing.finishFixBookmark();
           Controller.updateDecorations();
         });

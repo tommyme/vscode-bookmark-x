@@ -212,20 +212,15 @@ export class Controller {
     if (textEditor.selections.length === 0) {
       return;
     }
-    let documentFsPath = textEditor.document.uri.fsPath;
-    // 如果能用相对路径就用相对路径 不能就用绝对路径 因为有的是project外的书签
-    let wsf = commonUtil.getWsfWithPath(documentFsPath);
-    const workspaceRoot = wsf!.uri.fsPath;
-    const relativePath = path.relative(workspaceRoot, documentFsPath);
-    let documentFsRelPath = relativePath;
-    // 可能存在着多个光标
+    let { bmPath, wsf } = commonUtil.getPathFromEditor(textEditor);
+    // may be there are more than one cursors
     for (let selection of textEditor.selections) {
       let line = selection.start.line;
       let col = selection.start.character;
       let lineText = textEditor.document.lineAt(line).text.trim();
 
       this.toggleBookmark(
-        documentFsRelPath,
+        bmPath,
         line,
         col,
         lineText,
@@ -242,10 +237,8 @@ export class Controller {
     if (textEditor.selections.length === 0) {
       return;
     }
-
-    const fsPath = textEditor.document.uri.fsPath;
-    const lineNumber = textEditor.selection.start.line;
-    let wsf = commonUtil.getWsfWithPath(fsPath);
+    let lineNumber = textEditor.selection.start.line;
+    let { bmPath, wsf, fsPath } = commonUtil.getPathFromEditor(textEditor);
 
     const existingBookmark = this.getBookmarksInFile(fsPath).find(
       (bookmark) => {
@@ -266,7 +259,7 @@ export class Controller {
       const lineText = textEditor.document.lineAt(lineNumber).text.trim();
 
       const bookmark = new Bookmark(
-        fsPath,
+        bmPath,
         lineNumber,
         characterNumber,
         label,
@@ -697,7 +690,7 @@ export class Controller {
     SpaceMap.rgs.forEach((rg) => {
       rg.cache.keys().forEach((full_uri) => {
         let item = rg.cache.get(full_uri) as Bookmark;
-        if (item.fsPath === fsPath) {
+        if (item.path === fsPath) {
           fileBookmarks.push(item);
         }
       });
@@ -712,11 +705,15 @@ export class Controller {
    */
   static jumpToBookmark(bm: Bookmark) {
     window
-      .showTextDocument(Uri.file(bm.fsPath), {
+      .showTextDocument(Uri.file(bm.path), {
         selection: new Range(bm.line, bm.col, bm.line, bm.col),
       })
       .then((editor) => {
-        let lineText = editor.document.lineAt(bm.line).text.trim();
+        let line =
+          bm.line > editor.document.lineCount - 1
+            ? editor.document.lineCount - 1
+            : bm.line;
+        let lineText = editor.document.lineAt(line).text.trim();
         let need_fresh = ctxFixing.stash();
         if (lineText !== bm.lineText) {
           ctxFixing.startFixBookmark(bm);
@@ -917,7 +914,7 @@ export class Controller {
 
   static async tryAutoFixBm_finish(bm: Bookmark) {
     let succ = false;
-    let uri = Uri.file(bm.fsPath);
+    let uri = Uri.file(bm.path);
     let doc = await vscode.workspace.openTextDocument(uri);
     for (let i = 0; i < doc.lineCount; i++) {
       if (doc.lineAt(i).text.trim() === bm.lineText) {
@@ -934,22 +931,34 @@ export class Controller {
 
   static detectBms2Fix() {
     const promises: any[] = [];
+    const fileMap: Map<string, Bookmark[]> = new Map();
     let cnt = 0;
 
     SpaceMap.rgs.forEach((rg) => {
       rg.cache.values().forEach((item) => {
         if (item instanceof Bookmark) {
-          const promise = vscode.workspace
-            .openTextDocument(item.fsPath)
-            .then((doc) => {
-              if (doc.lineAt(item.line).text.trim() !== item.lineText) {
-                ctxFixing.markAsToFix(item);
-                cnt += 1;
-              }
-            });
-          promises.push(promise);
+          if (!fileMap.has(item.path)) {
+            fileMap.set(item.path, []);
+          }
+          fileMap.get(item.path)?.push(item);
         }
       });
+    });
+
+    fileMap.forEach((bookmarks, path) => {
+      const promise = vscode.workspace.openTextDocument(path).then((doc) => {
+        bookmarks.forEach((item) => {
+          // lineCount [1-10] -- line [0-9]
+          if (
+            doc.lineCount <= item.line ||
+            doc.lineAt(item.line).text.trim() !== item.lineText
+          ) {
+            ctxFixing.markAsToFix(item);
+            cnt += 1;
+          }
+        });
+      });
+      promises.push(promise);
     });
 
     Promise.all(promises)

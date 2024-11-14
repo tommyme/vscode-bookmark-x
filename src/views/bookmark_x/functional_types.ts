@@ -17,6 +17,8 @@ import {
   BookmarkTreeItem,
   BookmarkTreeItemFactory,
 } from "./bookmark_tree_item";
+import { Controller } from "./controller";
+import * as path from "path";
 
 export type NodeType = Group | Bookmark | GroupBookmark;
 export type GroupLike = Group | GroupBookmark;
@@ -309,6 +311,20 @@ export class Bookmark extends BaseFunctional {
       this.uri,
     );
   }
+
+  public get path() {
+    // relpath or abspath to abspath
+    const wsf = Controller.get_wsf_with_node(this);
+    let res;
+    const absPath = path.resolve(wsf.uri.fsPath, this.fsPath);
+    if (this.fsPath.startsWith("..")) {
+      res = this.fsPath;
+    } else {
+      res = absPath;
+    }
+
+    return res;
+  }
 }
 
 export class GroupBookmark extends Group {
@@ -352,6 +368,19 @@ export class GroupBookmark extends Group {
       this.lineText,
       this.uri,
     );
+  }
+  public get path() {
+    // relpath or abspath to abspath
+    const wsf = Controller.get_wsf_with_node(this);
+    let res;
+    const absPath = path.resolve(wsf.uri.fsPath, this.fsPath);
+    if (this.fsPath.startsWith("..")) {
+      res = this.fsPath;
+    } else {
+      res = absPath;
+    }
+
+    return res;
   }
 }
 

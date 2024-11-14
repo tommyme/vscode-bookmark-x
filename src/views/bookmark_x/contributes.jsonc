@@ -121,7 +121,7 @@
       },
       {
         "command": "bookmark_x.detectBookmarksToFix",
-        "title": "detect bookmarks to fix"
+        "title": "Bookmark X: detect bookmarks to fix"
       },
       {
         "command": "bmx.showChangelog",
