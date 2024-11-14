@@ -212,20 +212,15 @@ export class Controller {
     if (textEditor.selections.length === 0) {
       return;
     }
-    let documentFsPath = textEditor.document.uri.fsPath;
-    // 如果能用相对路径就用相对路径 不能就用绝对路径 因为有的是project外的书签
-    let wsf = commonUtil.getWsfWithPath(documentFsPath);
-    const workspaceRoot = wsf!.uri.fsPath;
-    const relativePath = path.relative(workspaceRoot, documentFsPath);
-    let documentFsRelPath = relativePath;
-    // 可能存在着多个光标
+    let { bmPath, wsf } = commonUtil.getPathFromEditor(textEditor);
+    // may be there are more than one cursors
     for (let selection of textEditor.selections) {
       let line = selection.start.line;
       let col = selection.start.character;
       let lineText = textEditor.document.lineAt(line).text.trim();
 
       this.toggleBookmark(
-        documentFsRelPath,
+        bmPath,
         line,
         col,
         lineText,
@@ -242,10 +237,8 @@ export class Controller {
     if (textEditor.selections.length === 0) {
       return;
     }
-
-    const fsPath = textEditor.document.uri.fsPath;
-    const lineNumber = textEditor.selection.start.line;
-    let wsf = commonUtil.getWsfWithPath(fsPath);
+    let lineNumber = textEditor.selection.start.line;
+    let { bmPath, wsf, fsPath } = commonUtil.getPathFromEditor(textEditor);
 
     const existingBookmark = this.getBookmarksInFile(fsPath).find(
       (bookmark) => {
@@ -266,7 +259,7 @@ export class Controller {
       const lineText = textEditor.document.lineAt(lineNumber).text.trim();
 
       const bookmark = new Bookmark(
-        fsPath,
+        bmPath,
         lineNumber,
         characterNumber,
         label,
@@ -697,7 +690,7 @@ export class Controller {
     SpaceMap.rgs.forEach((rg) => {
       rg.cache.keys().forEach((full_uri) => {
         let item = rg.cache.get(full_uri) as Bookmark;
-        if (item.fsPath === fsPath) {
+        if (item.path === fsPath) {
           fileBookmarks.push(item);
         }
       });
@@ -712,7 +705,7 @@ export class Controller {
    */
   static jumpToBookmark(bm: Bookmark) {
     window
-      .showTextDocument(Uri.file(bm.fsPath), {
+      .showTextDocument(Uri.file(bm.path), {
         selection: new Range(bm.line, bm.col, bm.line, bm.col),
       })
       .then((editor) => {

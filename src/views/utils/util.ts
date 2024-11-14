@@ -40,4 +40,23 @@ function getWsfWithActiveEditor() {
   return wsf;
 }
 
-export { isSubPath, getWsfWithPath, getWsfWithActiveEditor };
+function getPathFromEditor(textEditor: vscode.TextEditor) {
+  let documentFsPath = textEditor.document.uri.fsPath;
+  let wsf = getWsfWithPath(documentFsPath);
+  const wsRoot = wsf!.uri.fsPath;
+  const relPath = path.relative(wsRoot, documentFsPath);
+  let bmPath;
+  if (relPath.startsWith("..")) {
+    // outof wsRoot
+    bmPath = documentFsPath;
+  } else {
+    bmPath = relPath;
+  }
+  return {
+    bmPath: bmPath,
+    wsf: wsf,
+    fsPath: documentFsPath,
+  };
+}
+
+export { isSubPath, getWsfWithPath, getWsfWithActiveEditor, getPathFromEditor };
