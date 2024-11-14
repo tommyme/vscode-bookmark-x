@@ -709,7 +709,11 @@ export class Controller {
         selection: new Range(bm.line, bm.col, bm.line, bm.col),
       })
       .then((editor) => {
-        let lineText = editor.document.lineAt(bm.line).text.trim();
+        let line =
+          bm.line > editor.document.lineCount - 1
+            ? editor.document.lineCount - 1
+            : bm.line;
+        let lineText = editor.document.lineAt(line).text.trim();
         let need_fresh = ctxFixing.stash();
         if (lineText !== bm.lineText) {
           ctxFixing.startFixBookmark(bm);
@@ -910,7 +914,7 @@ export class Controller {
 
   static async tryAutoFixBm_finish(bm: Bookmark) {
     let succ = false;
-    let uri = Uri.file(bm.fsPath);
+    let uri = Uri.file(bm.path);
     let doc = await vscode.workspace.openTextDocument(uri);
     for (let i = 0; i < doc.lineCount; i++) {
       if (doc.lineAt(i).text.trim() === bm.lineText) {
@@ -927,22 +931,34 @@ export class Controller {
 
   static detectBms2Fix() {
     const promises: any[] = [];
+    const fileMap: Map<string, Bookmark[]> = new Map();
     let cnt = 0;
 
     SpaceMap.rgs.forEach((rg) => {
       rg.cache.values().forEach((item) => {
         if (item instanceof Bookmark) {
-          const promise = vscode.workspace
-            .openTextDocument(item.fsPath)
-            .then((doc) => {
-              if (doc.lineAt(item.line).text.trim() !== item.lineText) {
-                ctxFixing.markAsToFix(item);
-                cnt += 1;
-              }
-            });
-          promises.push(promise);
+          if (!fileMap.has(item.path)) {
+            fileMap.set(item.path, []);
+          }
+          fileMap.get(item.path)?.push(item);
         }
       });
+    });
+
+    fileMap.forEach((bookmarks, path) => {
+      const promise = vscode.workspace.openTextDocument(path).then((doc) => {
+        bookmarks.forEach((item) => {
+          // lineCount [1-10] -- line [0-9]
+          if (
+            doc.lineCount <= item.line ||
+            doc.lineAt(item.line).text.trim() !== item.lineText
+          ) {
+            ctxFixing.markAsToFix(item);
+            cnt += 1;
+          }
+        });
+      });
+      promises.push(promise);
     });
 
     Promise.all(promises)
