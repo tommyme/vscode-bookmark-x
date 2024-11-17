@@ -229,12 +229,15 @@ export class Group extends BaseFunctional {
     });
   }
 
-  public static dfsTraverse(group: Group, fa: Group | null = null) {
+  public static dfsTraverse<T extends Group>(
+    group: T,
+    fa: Group | null = null,
+  ) {
     function dfs(
-      root: Group,
+      root: T,
       father: Group,
-      node: BaseFunctional,
-      callback: (root: Group, father: Group, node: BaseFunctional) => void,
+      node: NodeType,
+      callback: (root: T, father: Group, node: NodeType) => void,
     ) {
       callback(root, father, node);
 
@@ -246,9 +249,7 @@ export class Group extends BaseFunctional {
     }
 
     return {
-      forEach: (
-        callback: (root: Group, father: Group, node: BaseFunctional) => void,
-      ) => {
+      forEach: (callback: (root: T, father: Group, node: NodeType) => void) => {
         dfs(group, fa!, group, callback);
       },
     };

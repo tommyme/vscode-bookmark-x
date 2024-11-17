@@ -856,7 +856,7 @@ export class Controller {
     });
     if (!found) {
       console.log(new Error().stack);
-      throw error("situation error!");
+      throw error("[get_wsf_with_node] find from cache fail");
     }
     let res = workspace.workspaceFolders?.find((wsf) => wsf.uri.path === path);
     return res!;
@@ -1003,11 +1003,14 @@ export class Controller {
       return;
     }
     let i = 0;
-    SpaceMap.rgs.forEach((rg) => {
+    for (const rg of SpaceMap.rgs) {
       Group.dfsTraverse(rg).forEach((rg, fa, node) => {
         node.name = arr[i++];
       });
-    });
+    }
     this.saveState();
+    this.init_with_fake_root_wsfs();
+    BookmarkTreeViewManager.refreshCallback();
+    vscode.window.showInformationMessage("apply bulk edit node done.");
   }
 }

@@ -7,6 +7,15 @@
 
 <h1 id="Beta_bookmark">bookmark</h1>
 
+- ✨ now, manual sort is the default sort method and you can drag and drop nodes to sort them (drag nodeA to nodeB means place A after B)
+  - use button on bmx container status bar to toggle sorting.
+- 🐛 add new command to detect all outdated bookmark
+  - now when you click on a bookmark, bmx will check if the line content is the same as that in bookmark
+    - if diff, the bookmark will be marked as `tobefixed`, and you can fix it by right click on gutter of the lineNumber area of editor.
+- 🔥 add new bulk edit command to edit node name quickly(Performance is not optimized)
+  - that command opens a tmp file and show name of bookmarks in it, you can edit node names here.
+    - when you've done, use command `Bookmark X: bulk apply node name` to apply the file
+
 <h1 id="Beta_quick_run">quick run</h1>
 
 <h1 id="Beta_refer_link">refer link</h1>
