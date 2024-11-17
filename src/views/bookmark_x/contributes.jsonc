@@ -124,6 +124,14 @@
         "title": "Bookmark X: detect bookmarks to fix"
       },
       {
+        "command": "bookmark_x.bulkEditNodeName",
+        "title": "Bookmark X: bulk edit node name"
+      },
+      {
+        "command": "bookmark_x.bulkApplyNodeName",
+        "title": "Bookmark X: bulk apply node name"
+      },
+      {
         "command": "bmx.showChangelog",
         "title": "bmx: show changelog"
       }

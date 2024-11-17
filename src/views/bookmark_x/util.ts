@@ -2,6 +2,8 @@ import * as path from "path";
 import { WorkspaceFolder } from "vscode";
 import * as vscode from "vscode";
 import { NodeType } from "./functional_types";
+import { SpaceMap } from "../bookmark_x/controller";
+
 /**
  * 返回随机颜色
  */
@@ -154,6 +156,14 @@ const Gitmoji = {
   sort: "🔀",
 };
 
+async function openBmxEditableFile(content: string) {
+  const filePath = path.resolve(SpaceMap.wsfs[0].uri.fsPath, ".vscode/BMX.txt");
+  const uri = vscode.Uri.file(filePath);
+  const bytes = Buffer.from(content, "utf8");
+  await vscode.workspace.fs.writeFile(uri, bytes);
+  await vscode.window.showTextDocument(uri);
+}
+
 export {
   randomColor,
   splitTreeUri2parts as splitString,
@@ -168,4 +178,5 @@ export {
   AddElPushBackStrategy,
   AddElInsertStrategy,
   Gitmoji,
+  openBmxEditableFile,
 };

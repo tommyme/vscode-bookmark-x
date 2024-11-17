@@ -176,6 +176,18 @@ export class BmxLauncher {
     context.subscriptions.push(disposable);
 
     disposable = vscode.commands.registerCommand(
+      "bookmark_x.bulkEditNodeName",
+      () => Controller.printNodes(),
+    );
+    context.subscriptions.push(disposable);
+
+    disposable = vscode.commands.registerCommand(
+      "bookmark_x.bulkApplyNodeName",
+      () => Controller.applyPrintNodes(),
+    );
+    context.subscriptions.push(disposable);
+
+    disposable = vscode.commands.registerCommand(
       "bookmark_x.quickSelectActiveGroup",
       () => BookmarkTreeViewManager.selectActiveGroup(),
     );

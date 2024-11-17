@@ -28,7 +28,7 @@ import * as bmutil from "./util";
 import * as commonUtil from "../utils/util";
 import { typeIsBookmarkLike } from "./constants";
 import { BookmarkTreeDataProvider } from "./bookmark_tree_data_provider";
-import { TextEncoder } from "util";
+import { TextDecoder, TextEncoder } from "util";
 import { DecorationFactory } from "./decoration_factory";
 import { BookmarkTreeItemFactory } from "./bookmark_tree_item";
 import { BookmarkTreeViewManager, TVMsgManager } from "./bookmark_tree_view";
@@ -971,5 +971,43 @@ export class Controller {
       .catch((err) => {
         console.error("Error processing bookmarks:", err);
       });
+  }
+
+  static printNodes() {
+    let res: string[] = [];
+    SpaceMap.rgs.forEach((rg) => {
+      Group.dfsTraverse(rg).forEach((rg, fa, node) => {
+        res.push(node.name);
+      });
+    });
+    bmutil.openBmxEditableFile(res.join("\n"));
+  }
+
+  static async applyPrintNodes() {
+    const filePath = path.resolve(
+      SpaceMap.wsfs[0].uri.fsPath,
+      ".vscode/BMX.txt",
+    );
+    const uri = vscode.Uri.file(filePath);
+    let content = await vscode.workspace.fs.readFile(uri);
+    const decoder = new TextDecoder("utf-8");
+    const str = decoder.decode(content);
+    let arr = str.split("\n");
+
+    let total_len = SpaceMap.rgs.reduce(
+      (sum, rg) => sum + rg.cache.values().length,
+      0,
+    );
+    if (arr.length != total_len) {
+      vscode.window.showErrorMessage("node len different, not applied");
+      return;
+    }
+    let i = 0;
+    SpaceMap.rgs.forEach((rg) => {
+      Group.dfsTraverse(rg).forEach((rg, fa, node) => {
+        node.name = arr[i++];
+      });
+    });
+    this.saveState();
   }
 }

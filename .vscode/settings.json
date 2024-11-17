@@ -11,7 +11,9 @@
   "eslint.useFlatConfig": true,
   "json.schemas": [
     {
-      "fileMatch": ["**/contributes.jsonc"],
+      "fileMatch": [
+        "**/contributes.jsonc"
+      ],
       "url": "./pkgAssets/contributes_schema.json"
     }
   ],
