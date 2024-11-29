@@ -42,6 +42,10 @@
         "title": "bmx.referLink: copy aigc files content last time"
       },
       {
+        "command": "bmx.referLink.downloadVscodeServerArch",
+        "title": "bmx.referLink: download vscode server with commitId for arch"
+      },
+      {
         "command": "bmx.referLink.showHtmlPreview",
         "title": "bmx.referLink: show html preview"
       }

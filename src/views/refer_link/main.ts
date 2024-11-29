@@ -3,6 +3,7 @@ import * as os from "os";
 import * as path from "path";
 import * as fs from "fs";
 import { chan } from "../../channel";
+import { exec } from "child_process";
 
 class Ctx {
   static aigc: Array<vscode.Uri> = [];
@@ -254,6 +255,34 @@ export class ReferLinkLauncher {
         } else {
           vscode.window.showInformationMessage("aigc history empty!");
         }
+      },
+    );
+    context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand(
+      "bmx.referLink.downloadVscodeServerArch",
+      () => {
+        const shell =
+          process.platform === "win32" ? "powershell.exe" : "/bin/bash";
+        exec("code --version", { shell }, async (error, stdout, stderr) => {
+          console.log(stdout);
+          if (error) {
+            vscode.window.showErrorMessage(`Error: ${error.message}`);
+            return;
+          }
+          if (stderr) {
+            vscode.window.showErrorMessage(`Stderr: ${stderr}`);
+            return;
+          }
+          const commitId = stdout.trim().split("\n")[1];
+          const avaliable_archs = ["x64", "arm64"];
+          const arch = await vscode.window.showQuickPick(avaliable_archs, {
+            placeHolder: "select a arch(default x64)",
+          });
+
+          if (!arch) return;
+          const url = `https://update.code.visualstudio.com/commit:${commitId}/server-linux-${arch}/stable`;
+          vscode.env.openExternal(vscode.Uri.parse(url));
+        });
       },
     );
     context.subscriptions.push(disposable);
