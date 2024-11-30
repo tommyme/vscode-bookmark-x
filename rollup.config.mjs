@@ -32,7 +32,6 @@ fs.writeFileSync(outputJsonFile, JSON.stringify(res, null, 2));
 
 console.log(`合并完成，结果已写入 ${outputJsonFile}`);
 
-
 export default {
   input: 'src/extension.ts',  // 入口文件
   output: {

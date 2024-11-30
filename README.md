@@ -13,7 +13,7 @@ Drag-and-drop, grouping, sorting bookmarklet plugin
 
 ![](./pkgAssets/example1.png)
 
-## features
+## Features
 
 - drag and drop
 - customized bookmark svg icon(set in settings)
@@ -21,7 +21,7 @@ Drag-and-drop, grouping, sorting bookmarklet plugin
 - activate group(new bookmarks'll be added here)
 - bookmark count(shown on badge)
 
-## all avaliable commands
+## All avaliable commands
 
 - `toggle bookmark`: toggle bookmark on current line
 - `toggle lable bookmark`: toggle bookmark and input label
@@ -47,7 +47,21 @@ Drag-and-drop, grouping, sorting bookmarklet plugin
 - when using git or svn to pull code from repo, If there are bookmarks in the updated file, it is not possible to anticipate changes to bookmarks. bookmarks in other files are unaffected.
 - Formatter large changes to the document may also cause bookmarks to be misplaced
 
-## development
+## Code contributions
+
+## Building
+
+This project is organized through the rollup plugin, so the environment needs to be initialized
+
+```
+bash setup.sh
+```
+
+Then you can refer to the tutorial: https://code.visualstudio.com/api/get-started/your-first-extension To learn how to participate in development.
+
+You can also use the command 'yarn run vscode:package' to complete the plugin packaging
+
+## Development
 
 Commonly used object relation figure is shown below.
 
@@ -61,11 +75,11 @@ graph LR
     tree_data_provider --> treeview
 ```
 
-### tobe improved
+### Tobe improved
 
 - Bookmark Movement Logic
 
-## recomended settings
+## Recomended settings
 
 ```json
 "workbench.colorCustomizations": {
