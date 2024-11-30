@@ -157,7 +157,16 @@ export class ReferLinkLauncher {
             } else {
               let jsonData;
               let _data = fs.readFileSync(full_path, { encoding: "utf8" });
-              jsonData = JSON.parse(_data);
+              try {
+                jsonData = JSON.parse(_data);
+              } catch {
+                vscode.window.showErrorMessage(
+                  "parse json file failed, your file maybe jsonc format(json with comments). please delete the comment and retry.",
+                );
+                console.log(full_path);
+                vscode.window.showTextDocument(vscode.Uri.file(full_path));
+                return;
+              }
               const [firstSelection] = editor.selections;
               const firstText = editor.document.getText(firstSelection);
               if (firstText.length === 0) {
