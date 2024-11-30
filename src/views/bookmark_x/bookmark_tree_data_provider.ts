@@ -222,7 +222,7 @@ class DropHandler {
       this.flags.Group_To_Group =
         this.item instanceof Group && this.flags.Move_To_Group;
       this.flags.Bookmark_To_Group =
-        this.item instanceof Group && this.flags.Move_To_Group;
+        this.item instanceof Bookmark && this.flags.Move_To_Group;
     } else if (this.flags.Move_To_WsfTreeItem) {
       // monitor a this.target node for root group
       this.dst_wsf = (this.target as WsfTreeItem).wsf;
@@ -233,7 +233,7 @@ class DropHandler {
       this.flags.Group_To_Group =
         this.item instanceof Group && this.flags.Move_To_Group;
       this.flags.Bookmark_To_Group =
-        this.item instanceof Group && this.flags.Move_To_Group;
+        this.item instanceof Bookmark && this.flags.Move_To_Group;
     } else if (this.flags.Move_To_NodeType) {
       this.target = this.target! as BookmarkTreeItem;
       this.dst_wsf = Controller.get_wsf_with_node(this.target.base!);
