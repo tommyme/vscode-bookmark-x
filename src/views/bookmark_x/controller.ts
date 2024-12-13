@@ -225,6 +225,7 @@ export class Controller {
         col,
         lineText,
         this.get_active_group(wsf!),
+        wsf,
       );
     }
   }
@@ -266,7 +267,7 @@ export class Controller {
         lineText,
         this.get_active_group(wsf!).get_full_uri(),
       );
-      if (!this.addBookmark(bookmark, force)) {
+      if (!this.addBookmark(bookmark, wsf, force)) {
         window.showInformationMessage(
           `Label conflicts with existing bookmarks`,
         );
@@ -374,6 +375,7 @@ export class Controller {
     characterNumber: number,
     lineText: string,
     group: Group,
+    wsf: vscode.WorkspaceFolder | null,
   ) {
     // TODO 可以添加一个异常情况处理, 处理group 为undefined的时候
     // 获取已存在的标签
@@ -396,7 +398,7 @@ export class Controller {
         group.get_full_uri(),
       );
       // TODO 需要应对小概率的随机串碰撞
-      this.addBookmark(bookmark);
+      this.addBookmark(bookmark, wsf);
     }
   }
 
@@ -565,9 +567,15 @@ export class Controller {
    * @param {Boolean} force - delete the exist bm and create new.
    * @returns {Boolean} - success or fail
    */
-  static addBookmark(bm: Bookmark, force = false): boolean {
+  static addBookmark(
+    bm: Bookmark,
+    wsf: vscode.WorkspaceFolder | null = null,
+    force = false,
+  ): boolean {
     // uri confliction
-    let wsf = commonUtil.getWsfWithPath(bm.fsPath);
+    if (wsf === null) {
+      wsf = vscode.workspace.workspaceFolders![0];
+    }
     let rg = this.get_root_group(wsf!);
     if (rg.cache.check_uri_exists(bm.get_full_uri())) {
       if (force) {

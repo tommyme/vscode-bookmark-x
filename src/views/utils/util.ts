@@ -14,7 +14,7 @@ function isSubPath(childPath: string, parentPath: string) {
 function getWsfWithPath(path: string): WorkspaceFolder | null {
   let res = null;
   vscode.workspace.workspaceFolders?.forEach((wsf) => {
-    if (isSubPath(path, wsf.uri.path.slice(1))) {
+    if (isSubPath(path, wsf.uri.fsPath)) {
       res = wsf;
     }
   });
