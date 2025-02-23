@@ -46,6 +46,10 @@
         "title": "bmx.referLink: download vscode server with commitId for arch"
       },
       {
+        "command": "bmx.referLink.setRandomColorForCurrTheme",
+        "title": "bmx.referLink: set random color for curr theme"
+      },
+      {
         "command": "bmx.referLink.showHtmlPreview",
         "title": "bmx.referLink: show html preview"
       }

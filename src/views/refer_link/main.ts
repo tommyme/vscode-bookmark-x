@@ -4,6 +4,8 @@ import * as path from "path";
 import * as fs from "fs";
 import { chan } from "../../channel";
 import { exec } from "child_process";
+import { getSettingsPath } from "../utils/util";
+import { parse } from "jsonc-parser";
 
 class Ctx {
   static aigc: Array<vscode.Uri> = [];
@@ -158,11 +160,9 @@ export class ReferLinkLauncher {
               let jsonData;
               let _data = fs.readFileSync(full_path, { encoding: "utf8" });
               try {
-                jsonData = JSON.parse(_data);
+                jsonData = parse(_data);
               } catch {
-                vscode.window.showErrorMessage(
-                  "parse json file failed, your file maybe jsonc format(json with comments). please delete the comment and retry.",
-                );
+                vscode.window.showErrorMessage("parse json/jsonc file failed");
                 console.log(full_path);
                 vscode.window.showTextDocument(vscode.Uri.file(full_path));
                 return;
@@ -257,6 +257,67 @@ export class ReferLinkLauncher {
     );
     context.subscriptions.push(disposable);
     disposable = vscode.commands.registerCommand(
+      "bmx.referLink.setRandomColorForCurrTheme",
+      async () => {
+        const currentTheme = vscode.workspace
+          .getConfiguration("workbench")
+          .get<string>("colorTheme", "Default");
+
+        const randomColor = generateRandomColor();
+
+        const settings = await getSettingsPath();
+        if (!settings) {
+          vscode.window.showErrorMessage("there is no workspace or proj!");
+          return;
+        } else if (!settings.path) {
+          vscode.window.showErrorMessage(
+            "please create workspace settings file first.",
+          );
+          return;
+        }
+
+        // read/create settings.json
+        let settingsObj: any = {};
+        if (fs.existsSync(settings.path)) {
+          const settingsContent = fs.readFileSync(settings.path, "utf8");
+          try {
+            settingsObj = parse(settingsContent);
+          } catch (error) {
+            vscode.window.showErrorMessage("parse json/jsonc file failed");
+            return;
+          }
+        }
+
+        if (settings.isWS) {
+          settingsObj["settings"] ??= {};
+          settingsObj["settings"]["workbench.colorCustomizations"] ??= {};
+          settingsObj["settings"]["workbench.colorCustomizations"][
+            `[${currentTheme}]`
+          ] ??= {};
+          settingsObj["settings"]["workbench.colorCustomizations"][
+            `[${currentTheme}]`
+          ]["editor.background"] = randomColor;
+        } else {
+          settingsObj["workbench.colorCustomizations"] ??= {};
+          settingsObj["workbench.colorCustomizations"][`[${currentTheme}]`] ??=
+            {};
+          settingsObj["workbench.colorCustomizations"][`[${currentTheme}]`][
+            "editor.background"
+          ] = randomColor;
+        }
+
+        // 将更新后的配置写回 settings.json
+        const updatedContent = JSON.stringify(settingsObj, null, 2);
+        fs.writeFileSync(settings.path, updatedContent, "utf8");
+
+        vscode.window.showInformationMessage(
+          `theme "${currentTheme}" bgcolor changed to ${randomColor}`,
+        );
+      },
+    );
+
+    context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand(
       "bmx.referLink.copyAigcFilesContentLastTime",
       async () => {
         if (Ctx.aigc.length > 0) {
@@ -307,4 +368,55 @@ async function copyUriFilesWithName(filesUri: Array<vscode.Uri>) {
     result += "\n";
   }
   await vscode.env.clipboard.writeText(result);
+}
+
+// 生成随机颜色
+function generateRandomColor(): string {
+  let dark_colors = [
+    "#000000", //"Black"
+    "#2f4f4f", //"Dark Slate Grey"
+    "#080808", //"Vampire black"
+    "#100c08", //"Smoky Black"
+    "#1b1b1b", //"Eerie black"
+    "#3d0c02", //"Black Bean"
+    "#004242", //"Warm Black"
+    "#004040", //"Rich Black"
+    "#242124", //"Raisin Black"
+    "#253529", //"Black Leather Jacket"
+    "#3b3c36", //"Black olive"
+    "#52593b", //"Blue Black Crayfish"
+    "#704241", //    "Roast Coffee"
+    "#674846", //    "Rose Ebony"
+    "#555d50", //"Ebony"
+    "#555555", //"Davy’s grey"
+    "#414a4c", //"Outer Space"
+    "#36454f", //"Charcoal"
+    "#444c38", //"Rifle Green"
+    "#454d32", //"Pine needle color"
+    "#483c32", //"Taupe"
+    "#264348", //"Japanese Indigo"
+    "#353839", //"Onyx"
+    "#354230", //"Kombu Green"
+    "#43302e", //"Old Burgundy"
+    "#32174d", //"Russian Violet"
+    "#333333", //"Dark charcoal"
+    "#343434", //"Jet"
+    "#1c2841", //"Yankees Blue"
+    "#3c341f", //"Olive Drab #7"
+    "#560319", //"Dark Scarlet"
+    "#004953", //"Midnight Green"
+    "#3c1414", //"Dark Sienna"
+    "#232b2b", //"Charleston Green"
+    "#480607", //"Bulgarian Rose"
+    "#123524", //"Phthalo Green"
+    "#321414", //"Seal Brown"
+    "#1a2421", //"Dark Jungle Green"
+    "#000036", //"Dark Midnight Blue"
+    "#000039", //"Dark Powder Blue"
+    "#2c1608", //"Zinnwaldite Brown"
+    "#1a1110", //"Licoric"
+  ];
+  const randomIndex = Math.floor(Math.random() * dark_colors.length);
+
+  return dark_colors[randomIndex];
 }

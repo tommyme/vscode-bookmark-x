@@ -1,4 +1,5 @@
 import * as path from "path";
+import * as fs from "fs";
 import { WorkspaceFolder } from "vscode";
 import * as vscode from "vscode";
 
@@ -59,4 +60,52 @@ function getPathFromEditor(textEditor: vscode.TextEditor) {
   };
 }
 
-export { isSubPath, getWsfWithPath, getWsfWithActiveEditor, getPathFromEditor };
+interface ProjSettings {
+  isWS: boolean;
+  path: string | null;
+}
+
+async function getSettingsPath(): Promise<ProjSettings | null> {
+  const workspaceFolders = vscode.workspace.workspaceFolders;
+
+  if (!workspaceFolders || workspaceFolders.length === 0) {
+    return null; // 没有打开的工作区
+  }
+
+  let settings: ProjSettings = { isWS: false, path: null };
+  // 检查是否是多根工作区
+  const workspaceFile = vscode.workspace.workspaceFile;
+  if (workspaceFile) {
+    settings.isWS = true;
+    if (workspaceFile.scheme === "file") {
+      settings.path = workspaceFile.fsPath;
+    } else if (workspaceFile.scheme === "untitled") {
+      settings.path = null;
+    }
+    return settings;
+  }
+
+  // 单个工作区，返回 .vscode/settings.json
+  const workspaceFolder = workspaceFolders[0];
+  settings.path = path.join(
+    workspaceFolder.uri.fsPath,
+    ".vscode",
+    "settings.json",
+  );
+
+  // 如果 .vscode 文件夹不存在，则创建它
+  const vscodeFolder = path.dirname(settings.path);
+  if (!fs.existsSync(vscodeFolder)) {
+    fs.mkdirSync(vscodeFolder, { recursive: true });
+  }
+
+  return settings;
+}
+
+export {
+  isSubPath,
+  getWsfWithPath,
+  getWsfWithActiveEditor,
+  getPathFromEditor,
+  getSettingsPath,
+};
